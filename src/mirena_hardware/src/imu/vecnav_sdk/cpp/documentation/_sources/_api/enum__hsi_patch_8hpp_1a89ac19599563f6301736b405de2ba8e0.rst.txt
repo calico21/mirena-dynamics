@@ -1,0 +1,14 @@
+.. _exhale_enum__hsi_patch_8hpp_1a89ac19599563f6301736b405de2ba8e0:
+
+Enum NumPatches
+===============
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_HsiPatch.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: VN::Calibration::NumPatches
+   :project: VectorNav SDK

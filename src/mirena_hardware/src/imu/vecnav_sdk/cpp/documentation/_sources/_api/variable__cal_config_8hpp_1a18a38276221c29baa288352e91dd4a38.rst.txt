@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a18a38276221c29baa288352e91dd4a38:
+
+Variable VN::Calibration::dynamicAccelBiasMaxDt
+===============================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::dynamicAccelBiasMaxDt
+   :project: VectorNav SDK

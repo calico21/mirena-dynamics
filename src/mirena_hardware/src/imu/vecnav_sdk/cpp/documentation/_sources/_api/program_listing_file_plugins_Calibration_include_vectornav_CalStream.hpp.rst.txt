@@ -1,0 +1,48 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalStream.hpp:
+
+Program Listing for File CalStream.hpp
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalStream.hpp>` (``plugins\Calibration\include\vectornav\CalStream.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALSTREAM_HPP_
+   #define VN_CALSTREAM_HPP_
+   
+   #include <iomanip>
+   #include <ostream>
+   
+   #include "vectornav/CalSolution.hpp"
+   
+   namespace VN
+   {
+   
+   template <uint16_t N>
+   inline std::ostream& operator<<(std::ostream& os, const Calibration::CalSolution<N>& sol) noexcept
+   {
+       if (auto si = sol.getSI(); si.has_value()) { os << "Soft Iron:" << std::endl << *si << std::endl; }
+       if (auto hi = sol.getHI(); hi.has_value()) { os << "Hard Iron:" << std::endl << *hi << std::endl; }
+       if (auto acc = sol.getAccelBias(); acc.has_value()) { os << "Accel Bias:" << std::endl << *acc << std::endl; }
+       if (auto gyro = sol.getGyroBias(); gyro.has_value()) { os << "Gyro Bias:" << std::endl << *gyro << std::endl; }
+       if (auto rfr = sol.getRFR(); rfr.has_value()) { os << "RFR:" << std::endl << *rfr << std::endl; }
+   
+       std::array<Calibration::FomScore, N> fomScores = sol.getFomScores();
+       std::array<float, N> foms = sol.getFomVals();
+       std::array<Calibration::FomDef*, N> fomDefs = sol.getFomDefs();
+   
+       os << "Figures of Merit:" << std::endl;
+       std::ios_base::fmtflags f(os.flags());
+       os << std::fixed << std::setprecision(2);
+       for (uint16_t i = 0; i < N; i++) { os << fomDefs[i]->name << ":\t" << foms[i] << " (" << Calibration::fomScoreToString(fomScores[i]) << ")" << std::endl; }
+       os.flags(f);
+   
+       return os;
+   }
+   
+   }  // namespace VN
+   
+   #endif  // VN_CALSTREAM_HPP_

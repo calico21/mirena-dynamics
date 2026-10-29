@@ -1,0 +1,188 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_Hsi.hpp:
+
+Program Listing for File Hsi.hpp
+================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_Hsi.hpp>` (``plugins\Calibration\include\vectornav\Hsi.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_HSI_HPP_
+   #define VN_HSI_HPP_
+   
+   #include <cstdint>
+   
+   #include "vectornav/AttitudeMath.hpp"
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalSolution.hpp"
+   #include "vectornav/HsiDipole.hpp"
+   #include "vectornav/SampleStats.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct HsiMeas
+   {
+       Vec3f mag;
+       Ypr ypr;
+   };
+   
+   struct HsiConfig
+   {
+       std::optional<double> latitude;   // Calibration location latitude (decimal degrees).
+       std::optional<double> longitude;  // Calibration location longitude (decimal degrees).
+   };
+   
+   template <typename HsiConfigType, uint16_t nFom, uint16_t buffSize>
+   class Hsi : public CalBase<HsiMeas, HsiConfigType, nFom, buffSize>
+   {
+   public:
+       Hsi(const HsiConfigType& config, const std::array<FomDef, 8>& fomDef)
+           : CalBase<HsiMeas, HsiConfigType, nFom, buffSize>(config, fomDef), _dipole(config.latitude, config.longitude)
+       {
+           if (config.latitude.has_value() && config.longitude.has_value()) { _noLocation = false; }
+       }
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::HardSoftIronEstimator::RealTimeHsiControl hsiCtrl;
+           Registers::IMU::ImuFilterControl imuFilter;
+   
+           static constexpr size_t NumRegisters = 3;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &hsiCtrl, &imuFilter}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.imu.uncompMag = true;
+           storage.binOut1.attitude.ypr = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::hsiMeasRate;
+   
+           storage.hsiCtrl.mode = Registers::HardSoftIronEstimator::RealTimeHsiControl::Mode::Off;
+           storage.hsiCtrl.applyCompensation = Registers::HardSoftIronEstimator::RealTimeHsiControl::ApplyCompensation::Disable;
+           storage.hsiCtrl.convergeRate = 0;
+   
+           storage.imuFilter.accelFilterMode.emplace();
+           storage.imuFilter.accelFilterMode->uncomp = true;
+           storage.imuFilter.accelWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.gyroFilterMode.emplace();
+           storage.imuFilter.gyroFilterMode->uncomp = true;
+           storage.imuFilter.gyroWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.magFilterMode.emplace();
+           storage.imuFilter.magFilterMode->uncomp = true;
+           storage.imuFilter.magWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.presFilterMode.emplace();
+           storage.imuFilter.presFilterMode->uncomp = true;
+           storage.imuFilter.presWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.tempFilterMode.emplace();
+           storage.imuFilter.tempFilterMode->uncomp = true;
+           storage.imuFilter.tempWindowSize = storage.binOut1.rateDivisor;
+       }
+   
+       float getMagneticInclination() const { return _magneticInclination; }
+   
+       using CalBase<HsiMeas, HsiConfigType, nFom, buffSize>::addMeasurement;
+       ErrorCal addMeasurement(const Vec3f& mag, const Ypr& ypr) { return addMeasurement({mag, ypr}); }
+       ErrorCal addMeasurement(const Vec3f& mag, const Quat& quat) { return addMeasurement({mag, Math::quat2ypr(quat)}); }
+       ErrorCal addMeasurement(const Vec3f& mag, const Mat3f& dcm) { return addMeasurement({mag, Math::dcm2ypr(dcm)}); }
+   
+       ErrorCal solve() noexcept override
+       {
+           ErrorCal err = ErrorCal::None;
+           // calculate calibration parameters
+           err = _solve(false);
+           if (err != ErrorCal::None) { return err; }
+   
+           // apply those parameters and re-solve to calculate coverage FOM
+           err = _solve(true);
+           if (err != ErrorCal::None) { return err; }
+   
+           // calculate other FOM
+           Vec2f B = _dipole.getDipole(true);
+           float fieldStrength = _dipole.getFieldStrength(true);
+   
+           float vertRes, sphereRes;
+           Math::SampleStats<1, float> vertResStats, sphereResStats;
+           const Vec3f gravityVec{0.0, 0.0, 1.0};
+           for (uint16_t i = 0; i < this->_measIndex; i++)
+           {
+               // Calculate gravity vector from ypr
+               Vec3f gr = Math::ypr2dcm(this->_measBuff[i].ypr) * gravityVec;
+               Vec3f correctedMag = this->_measBuff[i].mag;
+               _applyHsi(correctedMag);
+   
+               sphereRes = Math::norm(correctedMag) / fieldStrength - 1.0;
+               vertRes = (Math::dot(correctedMag, gr) - B(1)) / fieldStrength;
+   
+               vertResStats.addSample(vertRes);
+               sphereResStats.addSample(sphereRes);
+           }
+           _setFomFromStats(sphereResStats, 0);
+           _setFomFromStats(vertResStats, 4);
+   
+           return err;
+       }
+   
+   protected:
+       HsiDipole _dipole;
+       bool _noLocation = true;
+       float _magneticInclination = 0.0;
+   
+       void _applyHsi(Vec3f& mag) const noexcept
+       {
+           // always called when has_value() is true, but just in case, this prevents throwing exception
+           mag = this->solution.getSI().value_or(Mat3f::identity()) * (mag - this->solution.getHI().value_or(Vec3f::null()));
+       }
+   
+   private:
+       virtual bool _keepMeasurement([[maybe_unused]] const HsiDipole& dipole, [[maybe_unused]] const HsiMeas& meas) noexcept { return true; }
+   
+       ErrorCal _addMeasurement() noexcept override
+       {
+           if (_keepMeasurement(_dipole, this->_measBuff[this->_measIndex - 1])) { return ErrorCal::None; }
+           else
+           {
+               this->_measIndex--;
+               return ErrorCal::IgnoredMeasurement;
+           }
+       }
+   
+       std::optional<HsiMeas> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override
+       {
+           Vec3f mag;
+           Ypr ypr;
+   
+           if (cdMeas.imu.uncompMag.has_value()) { mag = cdMeas.imu.uncompMag.value(); }
+           else if (cdMeas.imu.mag.has_value()) { mag = cdMeas.imu.mag.value(); }
+           else { return std::nullopt; }
+   
+           if (cdMeas.attitude.ypr.has_value()) { ypr = cdMeas.attitude.ypr.value(); }
+           else if (cdMeas.attitude.quaternion.has_value()) { ypr = Math::quat2ypr(cdMeas.attitude.quaternion.value()); }
+           else if (cdMeas.attitude.dcm.has_value()) { ypr = Math::dcm2ypr(cdMeas.attitude.dcm.value()); }
+           else { return std::nullopt; }
+   
+           return std::make_optional(HsiMeas{mag, ypr});
+       }
+   
+       void _setFomFromStats(Math::SampleStats<1, float> stats, uint16_t fomInd)
+       {
+           this->_setFom(std::abs(stats.getMean()[0]) * 100.0f, fomInd);
+           this->_setFom(stats.getStdDev()[0] * 100.0f, fomInd + 1);
+           this->_setFom(stats.getMaxNorm() * 100.0f, fomInd + 2);
+       }
+   
+       virtual ErrorCal _solve([[maybe_unused]] bool updatedFlag) noexcept { return ErrorCal::Unknown; };
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_HSI_HPP_

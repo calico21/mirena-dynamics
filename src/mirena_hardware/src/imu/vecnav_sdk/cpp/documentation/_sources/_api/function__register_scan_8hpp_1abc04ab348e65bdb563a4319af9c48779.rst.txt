@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1abc04ab348e65bdb563a4319af9c48779:
+
+Function VN::RegisterScan::_getRegisterList
+===========================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::_getRegisterList(SaveConfigurationFilter, Vector<uint8_t, NUM_REG>&)
+   :project: VectorNav SDK

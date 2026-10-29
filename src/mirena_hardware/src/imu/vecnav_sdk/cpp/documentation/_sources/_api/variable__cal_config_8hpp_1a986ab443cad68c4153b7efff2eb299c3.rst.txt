@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a986ab443cad68c4153b7efff2eb299c3:
+
+Variable VN::Calibration::fomNameMaxLength
+==========================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::fomNameMaxLength
+   :project: VectorNav SDK

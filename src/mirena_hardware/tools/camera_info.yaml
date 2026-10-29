@@ -1,0 +1,54 @@
+image_width: 640
+image_height: 480
+camera_name: standard_camera
+camera_matrix:
+  rows: 3
+  cols: 3
+  data:
+  - 516.2515090936564
+  - 0.0
+  - 324.6267212760343
+  - 0.0
+  - 517.5477925325315
+  - 232.2032072640376
+  - 0.0
+  - 0.0
+  - 1.0
+distortion_model: equidistant
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data:
+  - -0.07098902230487623
+  - -0.05160350577029637
+  - 0.168366449655533
+  - -0.12445310386174441
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data:
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+projection_matrix:
+  rows: 3
+  cols: 4
+  data:
+  - 516.2515090936564
+  - 0.0
+  - 324.6267212760343
+  - 0.0
+  - 0.0
+  - 517.5477925325315
+  - 232.2032072640376
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0

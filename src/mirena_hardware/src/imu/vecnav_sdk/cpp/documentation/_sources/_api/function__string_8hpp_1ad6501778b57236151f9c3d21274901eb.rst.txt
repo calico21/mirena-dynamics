@@ -1,0 +1,14 @@
+.. _exhale_function__string_8hpp_1ad6501778b57236151f9c3d21274901eb:
+
+Function VN::StringUtils::extractBetween(const std::string_view, const char, const char)
+========================================================================================
+
+- Defined in :ref:`file_include_vectornav_TemplateLibrary_String.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::StringUtils::extractBetween(const std::string_view, const char, const char)
+   :project: VectorNav SDK

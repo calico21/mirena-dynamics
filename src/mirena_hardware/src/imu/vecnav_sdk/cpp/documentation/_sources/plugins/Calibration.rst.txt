@@ -1,0 +1,356 @@
+.. _cppCalibrationPage:
+
+Calibration
+###########
+
+.. note::
+    Access to the Calibration Plugin requires a license agreement; it will not be provided until the agreement is signed—please email VectorNav Support at support@vectornav.com to initiate the licensing process.
+
+The Calibration Plugin offers several different tools for the user to take advantage of.
+
+* :ref:`Hard and Soft Iron (HSI) Calibration <hsi-calibration>` - Accounts for any time-invariant magnetic disturbances fixed with respect to the VectorNav unit
+* Bias Calibration - Estimates the accelerometer and gyroscope biases
+* Static IMU Calibration - Estimates the static accelerometer bias of the VectorNav unit and estimates the reference frame rotation between the VectorNav unit and a platform it is mounted to.
+
+.. _hsi-calibration:
+
+Hard and Soft Iron (HSI) Calibration 
+====================================
+
+A magnetometer is used to measure the strength and direction of the local magnetic field surrounding a system. This magnetic field measurement can then be compared to models of Earth's magnetic field to determine the heading of a system with respect to magnetic North. While seemingly straightforward, using a magnetometer to accurately estimate heading can prove to be quite challenging as Earth's magnetic field is relatively weak and there often exist a number of different magnetic disturbances that can impact magnetometer measurements.
+
+To account for any magnetic disturbances that are time-invariant and fixed with respect to the VectorNav unit, VectorNav has developed a Hard and Soft Iron Calibration tool. It is recommended to perform this calibration if the VectorNav unit requires an accurate heading solution, and either does not have access to GNSS, or will be operating in GNSS denied areas for extended periods of time. Additionally, it is typically recommended that an HSI calibration be performed on VectorNav's single-antenna GNSS/INS products for robustness, particularly if the system will experience static and/or low-dynamic conditions. An HSI calibration is not usually required for VectorNav's dual-antenna GNSS/INS products if the GNSS compass is active, but it should be performed for robustness if GNSS outages are expected. More information about the HSI calibration can be found in the `Hard and Soft Iron technical note <https://www.vectornav.com/resources/detail/hard-and-soft-iron-calibration-technical-notes?return=/resources/technical-documentation/technical-notes&title=Technical%20Notes>`_ available on the VectorNav website.
+
+Motion Requirements
+-------------------
+
+The HSI calibration can be implemented using two different types of motion - a 2D calibration or a 3D calibration depending on the range of movement feasible during calibration. Typically, a 2D calibration is sufficient if the platform will stay between 5° to 10° of level in both pitch and roll. Outside of that range, a full 3D calibration is strongly recommended.
+
+A 2D calibration requires that the VectorNav unit be rotated 360° about the axis parallel to gravity. The unit should be rotated on a flat surface with less than 10° of tilt.  During a 2D calibration, the unit does not necessarily need to travel in a full circle — simply spinning the unit in place is sufficient. 
+
+When performing a full 3D calibration, the unit needs to be rotated about all axes to cover as much as possible a sphere of measurement. To achieve this, the following steps are recommended:
+
+#. Align the unit x-axis to the North-South vector and rotate a full 360°
+#. Repeat Step 1 for the y- and z-axes, aligning each to the North-South vector and rotating the unit a full 360°
+#. Align the unit x-axis to the East-West vector and rotate a full 360°
+#. Repeat Steps 1-3 for the y- and z-axes, aligning each to the East-West vector and rotating the unit a full 360°
+
+If this type of motion is not feasible, contact VectorNav support for feedback on other viable motion profiles.
+
+Usage
+-----
+
+.. note::
+    When performing an HSI calibration, the latitude and longitude of the unit must be known.
+
+The HSI calibration can be run either by from a previously logged data file or while connected to the VectorNav unit.
+
+Performing an HSI Calibration from a Data File
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When performing an HSI calibration using recorded data from a VectorNav unit, a :struct:`~VN::Calibration::HsiConfig` object must first be created. This allows the user to define the parameters needed for calibration. The sensor's latitude and longitude must be provided so the calibration algorithm can accurately reference the local magnetic field. The number of patches can also be configured, which defines how the measurement space is divided for data collection. This setting determines when measurements are retained, based on whether the magnetic field vector, or the vector perpendicular to it (east), passes through a given patch. For a 3D calibration, the number of data points can also be configured. This parameter controls how measurements are retained within each patch, either by limiting the total number of stored data points or by retaining measurements when the unit's attitude changes by at least ``360/numDataPointsPerPatch`` degrees, ensuring uniform orientation coverage within each patch.
+
+If performing a 2D calibration motion profile, the :class:`~VN::Calibration::Hsi2d` object will be used.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: Calibration::Hsi2dConfig hsiConfiguration;
+   :end-at: Calibration::Hsi2d hsi(hsiConfiguration);
+   :dedent: 4
+
+If performing a 3D calibration motion profile, the :class:`~VN::Calibration::Hsi3d` object will be used.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: Calibration::Hsi3dConfig hsiConfiguration;
+   :end-at: Calibration::Hsi3d hsi(hsiConfiguration);
+   :dedent: 4
+
+When processing data from a previously recorded log file, a :class:`~VN::Sensor` object must first be created and should be configured with :cpp:enumerator:`MeasQueueMode::Retry <VN::Sensor::MeasQueueMode::Retry>`.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-after: // 2. Create a Sensor object for file processing
+   :end-at: Sensor sensor(pushToCompositeData);
+   :dedent: 4
+
+Next, connect to the :class:`~VN::Sensor` object using the inputted file path.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: sensor.connect(filePath);
+   :end-at: sensor.connect(filePath);
+   :dedent: 4
+
+The data from the logged file is then loaded into the :class:`~VN::Calibration::CalBase` object for processing using the :func:`~VN::Calibration::addMeasurement` method.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: while (auto meas = sensor.getNextMeasurement())
+   :end-before: // 4. Disconnect from the VectorNav unit
+   :dedent: 4
+
+To close the file, disconnect from the :class:`~VN::Sensor` object.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: sensor.disconnect();
+   :end-at: sensor.disconnect();
+   :dedent: 4
+
+Finally, solve and print out the HSI calibration results. This calibration solution should then be applied to the Magnetometer Calibration register (Register 23) on the VectorNav unit. A :func:`~VN::Sensor::writeSettings` command should be issued to the sensor in order for the calibration values to persist through a reset or power cycle of the sensor.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromFile/main.cpp
+   :language: c++
+   :start-at: latestError = hsi.solve();
+   :end-at: std::cout << hsi.solution;
+   :dedent: 4
+
+Performing an HSI Calibration on a Connected VectorNav Unit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When performing an HSI calibration with a connected VectorNav unit, a :class:`~VN::Sensor` object first needs to be created. This object should then be used to connect to the VectorNav unit, such as by using the :func:`~VN::Sensor::autoConnect` method.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: Sensor sensor;
+   :end-at: Error latestError = sensor.autoConnect(portName);
+   :dedent: 4
+
+
+
+Once the :class:`~VN::Sensor` object has been created and connected to the VectorNav unit, a :struct:`~VN::Calibration::HsiConfig` object must first be created to define the calibration parameters. Once the configuration is set, either a :class:`~VN::Calibration::Hsi2d` or :class:`~VN::Calibration::Hsi3d` object should be created which will be where the calibration measurements are added, and the calibration is solved. The sensor's latitude and longitude must be provided so the calibration algorithm can accurately reference the local magnetic field. The number of patches can also be configured, which defines how the measurement space is divided for data collection. This setting determines when measurements are retained, based on whether the magnetic field vector, or the vector perpendicular to it (east), passes through a given patch.
+
+If performing a 2D calibration motion profile, the :class:`~VN::Calibration::Hsi2d` object will be used.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: Calibration::Hsi2dConfig hsiConfiguration;
+   :end-at: Calibration::Hsi2d hsi(hsiConfiguration);
+   :dedent: 0
+
+If performing a 3D calibration motion profile, the :class:`~VN::Calibration::Hsi3d` object will be used. For a 3D calibration, the number of data points can also be configured. This parameter controls how measurements are retained within each patch, either by limiting the total number of stored data points or by retaining measurements when the unit's attitude changes by at least ``360/numDataPointsPerPatch`` degrees, ensuring uniform orientation coverage within each patch.
+
+.. literalinclude:: ../../examples/Calibration/HSiFromSensor/main.cpp
+   :language: c++
+   :start-at: Calibration::Hsi3dConfig hsiConfiguration;
+   :end-at: Calibration::Hsi3d hsi(hsiConfiguration);
+   :dedent: 0
+
+Next, the VectorNav unit must be properly configured for the calibration data collection. This can be done by creating a :class:`~VN::Calibration::CalSensorConfig` object, and calling the :func:`~VN::Calibration::CalSensorConfig::prepareSensorForCalibration` method. This method will read and store the VectorNav unit's initial configuration and then write the required register settings for the calibration data collection. It is recommended to perform a :class:`~VN::WriteSettings` command and save the current VectorNav unit's settings by performing a :ref:`Register Scan <cppRegisterScanPage>` before calibration.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: Calibration::CalSensorConfig calSensConfig(&sensor, &hsi, Registers::System::AsyncOutputType::SerialPort::ActiveSerial, imuRate, gnssAided);
+   :end-at: EXIT_IF_ERROR("Encountered when configuring Sensor for calibration.")
+   :dedent: 4
+
+After the VectorNav unit has been properly configured, the :class:`~VN::KnownMagneticDisturbance` command must be set to :enumerator:`~VN::KnownMagneticDisturbance::State::Present` before collecting data for calibration.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: latestError = sensor.knownMagneticDisturbance(KnownMagneticDisturbance::State::Present);
+   :end-at: EXIT_IF_ERROR("Encountered when enabling KnownMagneticDisturbance")
+   :dedent: 4
+   
+To collect data when performing an HSI calibration on a connected VectorNav unit, a separate thread or loop needs to be created to get the sensor's most recent measurement and add it to the :struct:`~VN::Calibration::HsiConfig` object. In the HsiFromSensor example, this thread is started and stopped by the user pressing the ``Enter`` key. It is recommended that the user configure the thread or loop to their application as it is not required the that the measurements be added to the :struct:`~VN::Calibration::HsiConfig` object using a key press.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: Thread thread(&getStopChar, &stopFlag)
+   :end-at: thread.detach();
+   :dedent: 4
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: void getStopChar(std::atomic_bool* flag)
+   :end-at: }
+   :dedent: 0
+
+While the calibration thread or loop is running, the :class:`~VN::Sensor` object is reading the measurements that were configured when setting the :func:`~VN::Calibration::CalSensorConfig::prepareSensorForCalibration` function. These measurements are added to the HSI calibration. It is during this time that the motion requirements for the HSI calibration are performed. Once all motion requirements have been fulfilled, the thread or loop should be stopped and no more measurements should be added to the :struct:`~VN::Calibration::HsiConfig` object.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: while (!stopFlag.load())
+   :end-at: std::cout << "NumMeasKept: " << hsi.getMeasIndex() << std::endl << std::endl;
+   :dedent: 4
+
+Finally, solve and print out the HSI calibration results. To view the solution in while performing the calibration, place the following code block inside of a while loop. The :code:`hsi.solve()` computes the solution based on the measurements that were previously added to the :struct:`~VN::Calibration::HsiConfig` object while the :code:`hsi.solution` prints out the solution and figures of merit of the calibration to the user.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: calError = hsi.solve();
+   :end-at: std::cout << hsi.solution;
+   :dedent: 4
+
+After the calibration is performed, the VectorNav unit will need to be restored to its original state. The :class:`~VN::KnownMagneticDisturbance` command will be set to :enumerator:`~VN::KnownMagneticDisturbance::State::NotPresent`. By sending :func:`~VN::Calibration::CalSensorConfig::finalizeCalibrationOnSensor` with the ``saveSettings`` argument as ``false``, the previous configuration is restored to the unit and the calibration written to the Magnetometer Calibration register (Register 23). To allow the calibration results to persist over a reset or a power cycle, a :class:`~VN::WriteSettings` command should be issued to the sensor. If a :class:`~VN::WriteSettings` command is not issued to the sensor, these calibration results will be erased upon a power cycle or reset.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: latestError = sensor.knownMagneticDisturbance(KnownMagneticDisturbance::State::NotPresent);
+   :end-at: EXIT_IF_ERROR("Encountered when restoring sensor configuration and writing calibration")
+   :dedent: 4
+
+Finally, disconnect from the VectorNav unit.
+
+.. literalinclude:: ../../examples/Calibration/HsiFromSensor/main.cpp
+   :language: c++
+   :start-at: sensor.disconnect();
+   :end-at: sensor.disconnect();
+   :dedent: 4
+
+.. _bias-calibration:
+
+Bias Calibration
+=================
+
+.. note:: 
+   It is recommended to perform a bias calibration on VectorNav Industrial Series surface mount device (SMD) parts after installation and cleaning as the heat and stress from soldering the sensor will cause bias shifts.
+
+All VectorNav sensors are calibrated for bias, scale factor, misalignment, and gyro g-sensitivity errors across the full temperature range of the sensor from -40°C to +85°C. This factory calibration is effective over the life of the part. However, due to the nature of MEMS inertial sensors, accelerometer and gyroscopes biases do drift over the life of the part regardless of the quality of the factory calibration. In rare circumstances, the biases on VectorNav Industrial Series sensors may drift enough to elicit a user calibration. A bias calibration can be performed on a VectorNav sensor using this tool within the Calibration plugin.
+
+Motion Requirements
+-------------------
+
+To properly estimate the inertial sensor biases using this tool, a bias calibration must be performed about the axis that is parallel to the gravity vector. The sensor must be placed on a flat surface before performing the calibration.
+
+To perform a bias calibration, the following steps are recommended:
+
+#. Hold the sensor completely static for approximately 30 seconds.
+#. Rotate the sensor a minimum of 90 degrees about the axis parallel to the gravity vector over the course of a few seconds.
+#. Hold the sensor completely static for another 30 seconds.
+
+If this type of motion is not feasible, contact VectorNav support for feedback on other calibration options.
+
+Usage
+-----
+
+.. note::
+    Ensure that the sensor is on a flat surface before performing the bias calibration.
+
+The bias calibration can be run either by from a previously logged data file or while connected to the VectorNav unit.
+
+Performing a Bias Calibration from a Data File
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When performing a bias calibration using recorded data from a VectorNav unit, there are two different methods that can be used: the :struct:`~VN::Calibration::DynamicAccelBiasAuto` method or the :struct:`~VN::Calibration::DynamicAccelBias` method. The :struct:`~VN::Calibration::DynamicAccelBiasAuto` method will automatically detect the different dynamic and static portions of the file, while the :struct:`~VN::Calibration::DynamicAccelBias` method requires the user to manually split and add the measurements of the dynamic and static portions of their file. This is useful if a user desires more control over the static and dynamic portions of the calibration. The following example focuses on the :struct:`~VN::Calibration::DynamicAccelBiasAuto` method. 
+
+To begin, a :struct:`~VN::Calibration::DynamicAccelBiasAutoConfig` object must first be created. This allows the user to define the parameters needed for calibration.  Once the configuration is set, a :struct:`~VN::Calibration::DynamicAccelBiasAuto` object should be created, which will be used to add the calibration measurements and then solve for the estimated biases. 
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-at: Calibration::DynamicAccelBiasAutoConfig config;
+   :end-at: Calibration::DynamicAccelBiasAuto biasCalc(config);
+   :dedent: 4
+
+When processing data from a previously recorded log file, a :class:`~VN::Sensor` object must first be created and should be configured with :cpp:enumerator:`MeasQueueMode::Retry <VN::Sensor::MeasQueueMode::Retry>`.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-after: // 2. Create a Sensor object for file processing
+   :end-at: Sensor sensor(pushToCompositeData);
+   :dedent: 4
+
+Next, connect to the :class:`~VN::Sensor` object using the inputted file path.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-at: sensor.connect(filePath);
+   :end-at: sensor.connect(filePath);
+   :dedent: 4
+
+The data from the logged file is then loaded into the :class:`~VN::Calibration::CalBase` object for processing.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-at: while (auto meas = sensor.getNextMeasurement())
+   :end-before: // 4. Disconnect from the VectorNav sensor object
+   :dedent: 4
+
+To close the file, disconnect from the :class:`~VN::Sensor` object.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-at: sensor.disconnect();
+   :end-at: sensor.disconnect();
+   :dedent: 4
+
+Finally, solve and print out the bias calibration. The accelerometer bias solution should then be applied to the Accel Calibration register (Register 25) and the gyroscope bias calibration solution should be written to the Gyro Calibration register (Register 84) on the VectorNav unit. A :func:`~VN::Sensor::writeSettings` command should be issued to the sensor in order for the calibration values to persist through a reset or power cycle of the sensor.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromFile/main.cpp
+   :language: c++
+   :start-at: latestError = biasCalc.solve();
+   :end-before: // 6. Print results
+   :dedent: 4
+
+Performing a Bias Calibration on a Connected VectorNav Unit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When performing a bias calibration with a connected VectorNav unit, a :class:`~VN::Sensor` object first needs to be created. This object should then be used to connect to the VectorNav unit, such as by using the :func:`~VN::Sensor::autoConnect` method.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at: Sensor sensor;
+   :end-at: Error latestError = sensor.autoConnect(portName);
+   :dedent: 4
+
+Once the :class:`~VN::Sensor` object has been created and connected to the VectorNav unit, a :struct:`~VN::Calibration::DynamicAccelBiasConfig` object must be created. This method empowers the user to clearly separate and control the static and dynamic components of the bias calibration process. Alternatively, the user can create a :struct:`~VN::Calibration::DynamicAccelBiasAutoConfig` object that will automatically detect when the VectorNav unit is static and when the VectorNav unit is dynamic. This configuration object allows the user to define the parameters necessary for calibration. Once the configuration is set, the bias calibration object should be created which is where the calibration measurements will be added. For the manual detection method, two :class:`~VN::Calibration::DynamicAccelBias` objects must be created to allow for each static and dynamic cycle to be added to the previous cycle. If performing bias calibration using the automatic detection method, only one :class:`~VN::Calibration::DynamicAccelBiasAuto` object would be created since the automatic detection method performs the cycle saving by default.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-after: // 2. Instantiate the DynamicAccelBias object with custom configuration
+   :end-at: Calibration::DynamicAccelBias biasCalNext(config);
+   :dedent: 4
+
+Next, the VectorNav unit must be properly configured for the calibration data collection. This can be done by creating a :class:`~VN::Calibration::CalSensorConfig` object, and calling the :func:`~VN::Calibration::CalSensorConfig::prepareSensorForCalibration` method. This method will read and store the VectorNav unit's initial configuration and then write the required register settings for the calibration data collection. It is recommended to perform a :class:`~VN::WriteSettings` command and save the current VectorNav unit's settings by performing a :ref:`Register Scan <cppRegisterScanPage>` before calibration.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at: Calibration::CalSensorConfig calSensConfig(&sensor, &biasCal, Registers::System::AsyncOutputType::SerialPort::ActiveSerial, imuRate, gnssAided);
+   :end-at: EXIT_IF_ERROR("Encountered when configuring Sensor for calibration.")
+   :dedent: 4
+
+To collect data when performing a bias calibration on a connected VectorNav unit, a separate thread or loop needs to be created to obtain the unit's most recent measurement and add it to the :struct:`~VN::Calibration::DynamicAccelBiasAuto` or :struct:`~VN::Calibration::DynamicAccelBias` object. In the BiasCalculatorFromSensor example, this thread is started and stopped by the user pressing the ``Enter`` key. It is recommended that the user configure the thread or loop to their application as it is not required the that the measurements be added to the :struct:`~VN::Calibration::DynamicAccelBiasAuto`  or :struct:`~VN::Calibration::DynamicAccelBias` object using a key press.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at: VN::Thread keyPressThread{[]()
+   :end-at: }};
+   :dedent: 4
+
+While the calibration thread or loop is running, the :class:`~VN::Sensor` object is reading the measurements that were configured when setting the :func:`~VN::Calibration::CalSensorConfig::prepareSensorForCalibration` function. These measurements are added to the bias calibration. It is during this time that the motion requirements for the bias calibration would be performed. Once all motion requirements have been fulfilled, the thread or loop should be stopped and no more measurements should be added to the :struct:`~VN::Calibration::DynamicAccelBiasAuto`  or :struct:`~VN::Calibration::DynamicAccelBias` object.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-after: bool is_static = true;
+   :end-before: // 7. Restore sensor to original configuration & write solution to sensor
+   :dedent: 4
+
+Finally, solve and print out the bias calibration results. To view the solution while performing the calibration, place the following code block inside of a while loop. The :code:`biasCal.solve()` computes the solution based on the measurements that were previously added to the :struct:`~VN::Calibration::DynamicAccelBiasAuto`  or :struct:`~VN::Calibration::DynamicAccelBias` object while the :code:`biasCal.solution` prints out the solution and figures of merit of the calibration to the user.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at:  Calibration::ErrorCal calError = biasCal.solve();
+   :end-at: if (calError == Calibration::ErrorCal::None) { std::cout << biasCal.solution; }
+   :dedent: 20
+
+After the calibration is performed, the VectorNav unit will need to be restored to its original state. By sending :func:`~VN::Calibration::CalSensorConfig::finalizeCalibrationOnSensor` with the ``saveSettings`` argument as ``false``, the previous configuration is restored to the unit and the calibration written to the Accel Calibration register (Register 25) and the Gyro Calibration register (Register 84) on the VectorNav unit. To allow the calibration results to persist over a reset or a power cycle, a :class:`~VN::WriteSettings` command should be issued to the sensor. If a :class:`~VN::WriteSettings` command is not issued to the sensor, these calibration results will be erased upon a power cycle or reset.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at:  latestError = calSensConfig.finalizeCalibrationOnSensor(false);
+   :end-at: EXIT_IF_ERROR("Encountered when restoring sensor configuration and writing calibration")
+   :dedent: 4
+
+Finally, disconnect from the VectorNav unit.
+
+.. literalinclude:: ../../examples/Calibration/BiasCalculatorFromSensor/main.cpp
+   :language: c++
+   :start-at: sensor.disconnect();
+   :end-at: sensor.disconnect();
+   :dedent: 4
+
+API
+===
+
+:ref:`Calibration <namespace_VN__Calibration>`

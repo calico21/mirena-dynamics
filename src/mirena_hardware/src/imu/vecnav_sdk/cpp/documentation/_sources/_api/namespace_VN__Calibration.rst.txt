@@ -1,0 +1,159 @@
+
+.. _namespace_VN__Calibration:
+
+Namespace VN::Calibration
+=========================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+
+
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_meas`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_fom_def`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi2d_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi3d_config`
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_meas`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_imu_cal`
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_static_accel_bias_config`
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_static_gyro_bias_config`
+
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_static_rfr_and_accel_bias_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_static_rfr_and_accel_bias_meas`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_sensor_config`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_solution`
+
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_dynamic_accel_bias`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi2d`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi3d`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi_dipole`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi_patch`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_static_accel_bias`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_static_gyro_bias`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_static_rfr_and_accel_bias`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum__dynamic_accel_bias_8hpp_1a6055236dd0760288159b1213e6f0b15c`
+
+- :ref:`exhale_enum__cal_error_8hpp_1a5479e5fd4012b96adaf2bc0555406c30`
+
+- :ref:`exhale_enum__cal_solution_8hpp_1a32a97aca89a8aebf0f8cd1be4963a5f1`
+
+- :ref:`exhale_enum__hsi_patch_8hpp_1a89ac19599563f6301736b405de2ba8e0`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function__cal_solution_8hpp_1a2375a2acc5ee01188b219496e38e3e4b`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable__cal_config_8hpp_1ab42283461bdf9478927529eb96e04c52`
+
+- :ref:`exhale_variable__cal_config_8hpp_1adc5a46e46ce44ab0a2bdf14381a89b8f`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a3769a9c547d3826b342ed6bbc68e4db2`
+
+- :ref:`exhale_variable__cal_config_8hpp_1aeb166316ad453eba688f9efd265af518`
+
+- :ref:`exhale_variable__cal_config_8hpp_1aea37cec08d27dfb5dea077d0622e484f`
+
+- :ref:`exhale_variable__cal_config_8hpp_1aa6bd8227715b3167562ff5f88cf718e6`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a542cfeccbe15484b677130aa64cdfe4d`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a3a20607da44e79d644d6209b9714a0f5`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a18a38276221c29baa288352e91dd4a38`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a54ec7d90df2921c2f2d72d61d6a2c865`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a7587d93440a36affacb1ec6caba711a2`
+
+- :ref:`exhale_variable__cal_config_8hpp_1acc1cce73e96d2b6094eb67f73593c7c1`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a986ab443cad68c4153b7efff2eb299c3`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a5ad3817d95170d7fe0aae7b1c078813f`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a9d0fa5f37b3633b75f23ebbcadecaddc`
+
+- :ref:`exhale_variable__cal_config_8hpp_1afb40caf356d00d70d97c49fb2fa359c0`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a098bfb833ca937801a45e9b4fc2c5f47`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a4e736c81436046b6ecf3d46d970feb49`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a4d615f4bf49ac28ba71de3205b6cd80c`
+
+- :ref:`exhale_variable__cal_config_8hpp_1ad7da95b15eed4aca9511fcb1b1e4bb1d`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a10a8d14ca3d0990f6a45999042bf7ae3`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a391484036e27de76ef4c0d0c86f41fea`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a24f957c126eb12ba524839d1eace2e02`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a0ebe658e9190d050664a0f2f8add3248`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a20c058105b73d8866470cf358f4f3ac5`
+
+- :ref:`exhale_variable__cal_config_8hpp_1ab923d99c16dcb24ad2a82e426cc55a58`
+
+- :ref:`exhale_variable__cal_config_8hpp_1a44129dcf0feabfbf6d574b1c4487edee`

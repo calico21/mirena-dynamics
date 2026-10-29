@@ -1,0 +1,14 @@
+.. _exhale_function__registers_8hpp_1af7c414cad9a11a4ccfed692822bf6da6:
+
+Function VN::Registers::getConfigRegisterName
+=============================================
+
+- Defined in :ref:`file_include_vectornav_Interface_Registers.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Registers::getConfigRegisterName(uint8_t)
+   :project: VectorNav SDK

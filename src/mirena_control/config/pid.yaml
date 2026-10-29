@@ -1,0 +1,133 @@
+# Defaults for the PID control node (mirena_control_pid).  These mirror the
+# values compiled in as parameter defaults; override any subset from a launch
+# file.
+#
+# The PID is an alternative occupant of the control slot, not an addition to it:
+# exactly one of mirena_control_mpc, mirena_control_pid and
+# mirena_control_inspection runs per mission, all three under the node name
+# `mirena_control`, all three reporting mission_finished in their heartbeat.
+# Switching between the first two is a one-word change to `executable=` in
+# mirena_supervisor/launch/missions/<MISSION>.launch.py; nothing else in the
+# stack can tell the difference.
+#
+# Everything above the "PID gains" divider is shared with the MPC, name for name
+# and default for default -- see config/config.yaml for what those mean, since
+# the two nodes read them identically.  Below the divider is what replaces the
+# MPC's cost function, which is compiled in and has no runtime equivalent.
+#
+# Two of the MPC's parameters are deliberately absent, because they describe the
+# acados solve and nothing here solves anything: max_accepted_residual, and the
+# horizon length / shooting nodes / reference points that were never runtime
+# parameters to begin with.
+#
+# Per-mission values are NOT loaded from here at runtime -- they are the
+# parameters in mirena_supervisor/launch/missions/<MISSION>.launch.py, which the
+# supervisor starts when the AS selects that mission.  `laps` in particular
+# lives there.  The node reads every parameter once in its constructor and never
+# again, so setting one on a running node does nothing.
+mirena_control:
+  ros__parameters:
+    # ---- shared with the MPC, identical meaning --------------------------
+    laps: 0
+    stop_distance: 20.0
+    min_path_length: 5.0
+    stop_speed_eps: 0.3
+    stop_hold_time: 0.5
+
+    # For the PID this window is what the speed profile reads curvature over,
+    # rather than the horizon the solver optimises: it sets how far ahead a
+    # corner is seen, and so how early the car starts braking for it.
+    lookahead_base: 15.0        # m
+    lookahead_gain: 1.2         # m per (m/s)
+
+    robot_frame: "car/cog"
+    work_frame: "odom"
+    map_frame: "map"
+
+    # solver_period keeps its name so a launch file drives either controller,
+    # but here it paces the guidance loop: projection, TF and the speed profile.
+    # The PID loops themselves close at command_period against the freshest
+    # state estimate, with the geometry carried forward in between.
+    solver_period: 0.05         # 20 Hz  guidance
+    command_period: 0.01        # 100 Hz PID + command
+    heartbeat_period: 0.1       # 10 Hz  supervisor report
+    tf_timeout: 0.005
+
+    projection_window_back: 5.0
+    projection_window_forward: 20.0
+    projection_coarse_step: 0.25
+
+    state_timeout: 0.15
+    plan_timeout: 0.25          # s without fresh guidance before full braking
+    mission_timeout: 600.0
+    finish_confirm_count: 3
+    progress_rate_margin: 1.5
+    progress_rate_slack: 0.5
+    publish_markers: true
+
+    # ---- PID gains and limits --------------------------------------------
+
+    # Longitudinal: speed error -> gas.  Gas is unitless in [-1, 1] and the
+    # powertrain makes roughly 8 m/s^2 of it at full command (C_M / M in
+    # codegen/dbm_model.py), so kp = 0.35 answers a 1 m/s shortfall with about
+    # 2.8 m/s^2.  ki is what removes the standing error on a long straight;
+    # it is small because the loop closes at 100 Hz and winds up quickly.
+    speed_kp: 0.35
+    speed_ki: 0.15
+    speed_kd: 0.02
+    speed_tau_d: 0.05           # s, low-pass on the derivative of the estimate
+
+    # Lateral: cross-track error -> steering angle, in radians per metre.
+    # 0.20 answers a 1 m offset with 11 deg of steering before the heading and
+    # feed-forward terms are added.  Raising kp alone buys tighter tracking and
+    # then oscillation; raise heading_gain with it, which is the damping.
+    cross_track_kp: 0.20
+    cross_track_ki: 0.02
+    cross_track_kd: 0.05
+    cross_track_tau_d: 0.08
+
+    # Radians of steering per radian of heading error.  This is what damps the
+    # cross-track loop: without it the car crosses the line and comes back.
+    heading_gain: 0.8
+
+    # How much of the steering needed to hold the path's own curvature is
+    # supplied open-loop, as atan(wheelbase * kappa).  1.0 is the kinematically
+    # exact value and is what keeps a steady corner from settling at a constant
+    # offset -- the familiar failure of a purely proportional path follower.
+    # Below 1.0 the feedback makes up the difference from a non-zero error.
+    curvature_feedforward: 1.0
+    wheelbase: 1.55             # m, L_F + L_R of the model in codegen/dbm_model.py
+
+    # Cross-track error saturates here before it reaches the PID.  A car three
+    # metres off the line is not in a situation more steering fixes; past four
+    # times this the guidance pass is rejected outright and the commander brakes.
+    cross_track_limit: 3.0      # m
+
+    # The actuator envelope, matching the bounds the OCP puts on delta and g.
+    steer_limit: 0.5235987756   # rad, 30 deg
+    steer_rate: 2.617993878     # rad/s, 5 * 30 deg
+    gas_rate: 5.0               # per second
+
+    # The speed profile, which is what the MPC gets from its progress reward and
+    # its curvature cost instead.  The target is the lowest speed that satisfies
+    # every corner in the lookahead window after braking the distance to it, and
+    # that also brings the car to rest at the mission's stop point.
+    max_speed: 20.0             # m/s ceiling regardless of geometry
+    min_speed: 1.5              # m/s floor away from a stop, so the car rolls on
+    max_lateral_accel: 6.0      # m/s^2 the tyres are trusted with in a corner
+    max_decel: 4.0              # m/s^2 planned for approaching a corner or the finish
+
+    # Don't outrun the map.  On a track the planner is still discovering, the
+    # centreline ends where the map does, and the same braking law is applied to
+    # that edge as to the finish: the car may carry no more speed than it can
+    # shed inside the centreline it actually has.  The bound lifts on its own as
+    # the map grows, so on a well-mapped track it never binds -- but on a
+    # discovery lap it is what stops the car accelerating onto track that does
+    # not exist yet and then steering by a reference point it has already passed.
+    # This is a speed limit, not a finish: running out of map never arms the
+    # finish latch or ends the mission.
+    #
+    # The margin is how far short of the last mapped gate the braking curve aims,
+    # since the last gate of a partial track is the least trustworthy one.
+    # 0 disables the margin but not the limit itself.
+    track_end_margin: 3.0       # m

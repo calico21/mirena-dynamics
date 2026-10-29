@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VectorNav_Sensor>
+	<Model>VN-310E</Model>
+	<HardwareRevision>2</HardwareRevision>
+	<SerialNumber>200011275</SerialNumber>
+	<FirmwareVersion>0.8.2.211</FirmwareVersion>
+	<Register>
+		<Id>5</Id>
+		<Name>Baud Rate</Name>
+		<Values>115200;921600</Values>
+	</Register>
+	<Register>
+		<Id>6</Id>
+		<Name>AsyncOutputType</Name>
+		<Values>2,1</Values>
+	</Register>
+	<Register>
+		<Id>7</Id>
+		<Name>AsyncOutputFreq</Name>
+		<Values>40,1</Values>
+	</Register>
+    <Register>
+        <Id>82</Id>
+        <Name>Delta Theta and Delta Velocity Configuration</Name>
+        <Values>1,1,1,0,0</Values>
+    </Register>
+</VectorNav_Sensor>

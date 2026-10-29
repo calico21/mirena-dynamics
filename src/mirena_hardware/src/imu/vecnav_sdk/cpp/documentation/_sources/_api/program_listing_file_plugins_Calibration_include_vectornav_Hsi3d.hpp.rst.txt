@@ -1,0 +1,67 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_Hsi3d.hpp:
+
+Program Listing for File Hsi3d.hpp
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_Hsi3d.hpp>` (``plugins\Calibration\include\vectornav\Hsi3d.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_HSI3D_HPP_
+   #define VN_HSI3D_HPP_
+   
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Hsi.hpp"
+   #include "vectornav/HsiDipole.hpp"
+   #include "vectornav/HsiPatch.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct Hsi3dConfig : public HsiConfig
+   {
+       NumPatches numPatches = NumPatches::Patches122;  // Defines numPatches equal circular patches on the surface of a sphere.  Keeps measurement when magnetic
+                                                        // vector passes through the patch or when vector perpendicular to mag vector (east) passes through a
+                                                        // patch.  When set to 0, algorithm switches to a change in angle instead of patches.
+       uint32_t numDataPointsPerPatch =
+           10;  // Keeps the number of data points per each patch OR whenever the attitude has changed by 360/numDataPointsPerPatch degrees
+   };
+   
+   class Hsi3d : public Hsi<Hsi3dConfig, hsi3dFom.size(), hsi3dBufferSize>
+   {
+   public:
+       Hsi3d(Hsi3dConfig config) : Hsi(config, hsi3dFom), _patches(config.numPatches, config.numDataPointsPerPatch) {}
+   
+   private:
+       static constexpr float _ELLIPSE_MINEIG = 1e-4;
+       static constexpr float _GLSDC_JTHRESH = 2.0e-6;
+       static constexpr float _COND_THRESH = 1e6;
+       static constexpr uint8_t _GLSDC_MAX_ITER = 10;
+       static constexpr float _ALIGNMENT_MIN_EIG = 1e-4;
+   
+       bool _keepMeasurement(const HsiDipole& dipole, const HsiMeas& meas) noexcept override;
+   
+       ErrorCal _solve(bool updatedFlag) noexcept override;
+   
+       ErrorCal _fitEllipsoid(Mat3f& SI, Vec3f& HI, float& ellipsoidCoverage, bool updatedFlag) const noexcept;
+       ErrorCal _findRotation(Mat3f& R, float& magInc, const Mat3f& SI, const Vec3f& HI, float& alignmentCoverage, bool updatedFlag) const noexcept;
+       void _glsdcIter(const Matrix<4, 1, float>& X, const Mat3f& SI, const Vec3f& HI, Mat4f& HTH, Matrix<4, 1, float>& HTdy, float& J,
+                       bool updatedFlag) const noexcept;
+   
+       HsiPatch _patches;
+   
+       // variables for _keepMeasurement
+       bool _initFlag = false;
+       Mat3f _DCMold = Mat3f::identity();
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_HSI3D_HPP_

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosService" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Service Server for handling requests from service clients.
+	</brief_description>
+	<description>
+		[RosService] allows Godot to act as a server for ROS 2 services. It is created through [method RosNode.create_service].
+		When a client sends a request to the service, the callback provided during creation is triggered.
+		The callback signature should be: [code]func my_service_callback(request: RosMsg, response: RosMsg):[/code].
+		The [code]request[/code] argument contains the incoming data, and the [code]response[/code] argument is an empty message that should be populated by the callback before it returns.
+		The service remains active as long as this object is not freed.
+		[b]Threading warning:[/b] Unlike subscription and timer callbacks (which are deferred to the main thread), the service callback runs synchronously on the ROS executor thread, because the response must be populated before it is returned to the client. Keep service callbacks self-contained: don't touch the SceneTree or other nodes' state from them without your own synchronization (use [code]call_deferred[/code] for side effects that don't influence the response). In physics-synchronous mode ([code]use_separate_thread:=false[/code]) callbacks run on the main thread and this caveat does not apply. For long-running work, prefer an action server ([RosActionServer]), whose execute callback runs on the main thread.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

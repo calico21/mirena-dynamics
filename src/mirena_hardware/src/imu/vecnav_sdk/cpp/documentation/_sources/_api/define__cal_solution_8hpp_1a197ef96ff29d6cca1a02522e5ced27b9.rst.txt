@@ -1,0 +1,14 @@
+.. _exhale_define__cal_solution_8hpp_1a197ef96ff29d6cca1a02522e5ced27b9:
+
+Define FOMNAMEMAXLENGTH
+=======================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalSolution.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: FOMNAMEMAXLENGTH
+   :project: VectorNav SDK

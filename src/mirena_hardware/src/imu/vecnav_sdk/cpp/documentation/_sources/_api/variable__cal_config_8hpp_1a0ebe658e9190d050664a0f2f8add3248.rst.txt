@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a0ebe658e9190d050664a0f2f8add3248:
+
+Variable VN::Calibration::staticGyroBiasMeasRate
+================================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::staticGyroBiasMeasRate
+   :project: VectorNav SDK

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mirena_supervisor</name>
+  <version>0.0.0</version>
+  <description>Mission supervisor: runs one mission launch file per run</description>
+  <maintainer email="a.colmenero.fernandez@gmail.com">colmenasio</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>ament_index_python</depend>
+  <depend>mirena_common</depend>
+
+  <!-- Everything the entry-point and mission launch files start. None of it is
+       linked against; these are the packages that must be installed for a
+       mission to come up. -->
+  <exec_depend>mirena_sim</exec_depend>
+  <exec_depend>mirena_hardware</exec_depend>
+  <exec_depend>mirena_state</exec_depend>
+  <exec_depend>mirena_perception</exec_depend>
+  <exec_depend>mirena_slam</exec_depend>
+  <exec_depend>mirena_planning</exec_depend>
+  <exec_depend>mirena_control</exec_depend>
+  
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

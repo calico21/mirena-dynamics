@@ -1,0 +1,14 @@
+.. _exhale_enum__dynamic_accel_bias_8hpp_1a6055236dd0760288159b1213e6f0b15c:
+
+Enum DynamicAccelBiasState
+==========================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: VN::Calibration::DynamicAccelBiasState
+   :project: VectorNav SDK

@@ -1,0 +1,14 @@
+.. _exhale_typedef__string_8hpp_1a452772954b70f9a395179d03577f49d4:
+
+Typedef VN::ShortString
+=======================
+
+- Defined in :ref:`file_include_vectornav_TemplateLibrary_String.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::ShortString
+   :project: VectorNav SDK

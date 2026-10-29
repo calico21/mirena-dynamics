@@ -1,0 +1,36 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_cal_base:
+
+Template Class CalBase
+======================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalBase.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public VN::Calibration::Hsi< Hsi2dConfig, hsi2dFom.size(), hsi2dBufferSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi`)
+- ``public VN::Calibration::Hsi< Hsi3dConfig, hsi3dFom.size(), hsi3dBufferSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::CalBase
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

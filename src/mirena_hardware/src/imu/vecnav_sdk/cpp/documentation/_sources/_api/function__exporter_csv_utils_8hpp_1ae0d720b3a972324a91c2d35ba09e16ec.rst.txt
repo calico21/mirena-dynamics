@@ -1,0 +1,14 @@
+.. _exhale_function__exporter_csv_utils_8hpp_1ae0d720b3a972324a91c2d35ba09e16ec:
+
+Function VN::DataExport::getGnssGroup
+=====================================
+
+- Defined in :ref:`file_plugins_DataExport_include_vectornav_ExporterCsvUtils.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::DataExport::getGnssGroup(uint8_t)
+   :project: VectorNav SDK

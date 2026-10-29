@@ -1,0 +1,35 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_dynamic_accel_bias:
+
+Class DynamicAccelBias
+======================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Calibration::CalBase< DynamicAccelBiasMeas, DynamicAccelBiasConfig, dynamicAccelBiasFom.size(), 1 >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::DynamicAccelBias
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

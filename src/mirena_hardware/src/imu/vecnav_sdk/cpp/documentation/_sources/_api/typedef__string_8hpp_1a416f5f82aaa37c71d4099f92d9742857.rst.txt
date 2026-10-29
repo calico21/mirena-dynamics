@@ -1,0 +1,14 @@
+.. _exhale_typedef__string_8hpp_1a416f5f82aaa37c71d4099f92d9742857:
+
+Typedef VN::LongString
+======================
+
+- Defined in :ref:`file_include_vectornav_TemplateLibrary_String.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::LongString
+   :project: VectorNav SDK

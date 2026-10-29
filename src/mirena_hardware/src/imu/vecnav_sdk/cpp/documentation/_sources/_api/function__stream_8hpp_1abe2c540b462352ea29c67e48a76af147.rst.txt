@@ -1,0 +1,14 @@
+.. _exhale_function__stream_8hpp_1abe2c540b462352ea29c67e48a76af147:
+
+Function VN::operator<<(std::ostream&, const Registers::System::BaudRate::BaudRates&)
+=====================================================================================
+
+- Defined in :ref:`file_include_vectornav_Interface_Stream.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::operator<<(std::ostream&, const Registers::System::BaudRate::BaudRates&)
+   :project: VectorNav SDK

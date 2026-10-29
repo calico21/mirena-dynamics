@@ -1,0 +1,27 @@
+.. _exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_config:
+
+Struct HsiConfig
+================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_Hsi.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public VN::Calibration::Hsi2dConfig`` (:ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi2d_config`)
+- ``public VN::Calibration::Hsi3dConfig`` (:ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi3d_config`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Calibration::HsiConfig
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

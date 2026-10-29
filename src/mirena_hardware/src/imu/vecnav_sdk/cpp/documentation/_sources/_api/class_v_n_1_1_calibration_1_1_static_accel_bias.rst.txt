@@ -1,0 +1,35 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_static_accel_bias:
+
+Class StaticAccelBias
+=====================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Calibration::CalBase< Vec3f, StaticAccelBiasConfig, staticAccelBiasFom.size(), staticAccelBiasBufferSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::StaticAccelBias
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

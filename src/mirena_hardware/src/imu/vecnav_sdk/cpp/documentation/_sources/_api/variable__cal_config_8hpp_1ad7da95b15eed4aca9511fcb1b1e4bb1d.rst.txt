@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1ad7da95b15eed4aca9511fcb1b1e4bb1d:
+
+Variable VN::Calibration::staticAccelBiasBufferSize
+===================================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::staticAccelBiasBufferSize
+   :project: VectorNav SDK

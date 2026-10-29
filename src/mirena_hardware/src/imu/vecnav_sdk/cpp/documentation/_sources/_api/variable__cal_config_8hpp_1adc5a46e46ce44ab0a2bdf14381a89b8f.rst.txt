@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1adc5a46e46ce44ab0a2bdf14381a89b8f:
+
+Variable VN::Calibration::dipoleNorthLatitude
+=============================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::dipoleNorthLatitude
+   :project: VectorNav SDK

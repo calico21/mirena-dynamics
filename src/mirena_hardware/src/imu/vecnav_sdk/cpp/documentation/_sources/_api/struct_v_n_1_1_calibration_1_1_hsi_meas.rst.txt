@@ -1,0 +1,17 @@
+.. _exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_meas:
+
+Struct HsiMeas
+==============
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_Hsi.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Calibration::HsiMeas
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

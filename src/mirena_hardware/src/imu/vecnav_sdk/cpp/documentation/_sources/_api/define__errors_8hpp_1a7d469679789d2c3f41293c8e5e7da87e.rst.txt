@@ -1,0 +1,14 @@
+.. _exhale_define__errors_8hpp_1a7d469679789d2c3f41293c8e5e7da87e:
+
+Define __CALIBRATION__
+======================
+
+- Defined in :ref:`file_include_vectornav_Interface_Errors.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: __CALIBRATION__
+   :project: VectorNav SDK
