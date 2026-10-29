@@ -1,0 +1,26 @@
+.. _exhale_struct_struct_v_n_1_1_detail_1_1_has_buffer_print_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1decl66676b106532cd7b63f6b407102eb4a4:
+
+Template Struct HasBufferPrint< T, std::void_t< decltype(std::declval< const T & >, ().print(std::declval< char \* >, (), std::declval< uint16_t >, ())) > >
+============================================================================================================================================================
+
+- Defined in :ref:`file_include_vectornav_Implementation_MeasurementDatatypes.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public std::true_type``
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Detail::HasBufferPrint< T, std::void_t< decltype(std::declval< const T & >().print(std::declval< char * >(), std::declval< uint16_t >()))> >
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_variable__config_8hpp_1ab883470fd6bfafdb7a5d96f655b6ae54:
+
+Variable VN::Config::Sensor::commandSendTimeoutLengthSerial
+===========================================================
+
+- Defined in :ref:`file_include_vectornav_Config.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Config::Sensor::commandSendTimeoutLengthSerial
+   :project: VectorNav SDK

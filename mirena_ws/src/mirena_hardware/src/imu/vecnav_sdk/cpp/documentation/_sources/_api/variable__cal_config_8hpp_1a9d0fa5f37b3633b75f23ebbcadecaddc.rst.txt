@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a9d0fa5f37b3633b75f23ebbcadecaddc:
+
+Variable VN::Calibration::hsi2dBufferSize
+=========================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::hsi2dBufferSize
+   :project: VectorNav SDK

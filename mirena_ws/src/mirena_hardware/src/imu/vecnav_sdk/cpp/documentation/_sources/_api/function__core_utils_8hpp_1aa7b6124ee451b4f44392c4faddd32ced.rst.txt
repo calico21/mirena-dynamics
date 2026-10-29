@@ -1,0 +1,14 @@
+.. _exhale_function__core_utils_8hpp_1aa7b6124ee451b4f44392c4faddd32ced:
+
+Function VN::findIndexOfFieldSeparators
+=======================================
+
+- Defined in :ref:`file_include_vectornav_Implementation_CoreUtils.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::findIndexOfFieldSeparators(const String<Config::CommandProcessor::messageMaxLength>&)
+   :project: VectorNav SDK

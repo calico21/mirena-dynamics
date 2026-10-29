@@ -1,0 +1,14 @@
+.. _exhale_function__exporter_csv_utils_8hpp_1a114eab1d32e949aee4402e2ea5e8d1e8:
+
+Function VN::DataExport::isRawField
+===================================
+
+- Defined in :ref:`file_plugins_DataExport_include_vectornav_ExporterCsvUtils.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::DataExport::isRawField(uint8_t, uint8_t)
+   :project: VectorNav SDK

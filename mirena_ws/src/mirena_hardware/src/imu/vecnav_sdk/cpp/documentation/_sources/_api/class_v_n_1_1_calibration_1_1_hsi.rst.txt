@@ -1,0 +1,35 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_hsi:
+
+Template Class Hsi
+==================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_Hsi.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Calibration::CalBase< HsiMeas, HsiConfigType, nFom, buffSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::Hsi
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1afb40caf356d00d70d97c49fb2fa359c0:
+
+Variable VN::Calibration::hsi2dFom
+==================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::hsi2dFom
+   :project: VectorNav SDK

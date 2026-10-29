@@ -1,0 +1,278 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Program Listing for File DynamicAccelBias.hpp &#8212; VectorNav SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+    <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Program Listing for File DynamicAccelBias.hpp</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="program-listing-for-file-dynamicaccelbias-hpp">
+<span id="program-listing-file-plugins-calibration-include-vectornav-dynamicaccelbias-hpp"></span><h1>Program Listing for File DynamicAccelBias.hpp<a class="headerlink" href="#program-listing-for-file-dynamicaccelbias-hpp" title="Link to this heading">¶</a></h1>
+<p>↰ <a class="reference internal" href="file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp.html#file-plugins-calibration-include-vectornav-dynamicaccelbias-hpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">plugins\Calibration\include\vectornav\DynamicAccelBias.hpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#ifndef VN_DYNAMICACCELBIAS_HPP_</span>
+<span class="cp">#define VN_DYNAMICACCELBIAS_HPP_</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;vectornav/CalBase.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;vectornav/CalConfig.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;vectornav/Interface/Errors.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;vectornav/SampleStats.hpp&quot;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">VN</span>
+<span class="p">{</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">Calibration</span>
+<span class="p">{</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">DynamicAccelBiasMeas</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">DeltaTheta</span><span class="w"> </span><span class="n">dTheta</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Vec3f</span><span class="w"> </span><span class="n">dVel</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">DynamicAccelBiasConfig</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">gval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gref</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">DynamicAccelBiasState</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">InitStatic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Dynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">FinalStatic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicAccelBias</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">CalBase</span><span class="o">&lt;</span><span class="n">DynamicAccelBiasMeas</span><span class="p">,</span><span class="w"> </span><span class="n">DynamicAccelBiasConfig</span><span class="p">,</span><span class="w"> </span><span class="n">dynamicAccelBiasFom</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">DynamicAccelBias</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">CalBase</span><span class="p">(</span><span class="n">DynamicAccelBiasConfig</span><span class="p">{},</span><span class="w"> </span><span class="n">dynamicAccelBiasFom</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">    </span><span class="n">DynamicAccelBias</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DynamicAccelBiasConfig</span><span class="o">&amp;</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">CalBase</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">dynamicAccelBiasFom</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">CalBase</span><span class="o">::</span><span class="n">addMeasurement</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ErrorCal</span><span class="w"> </span><span class="nf">addMeasurement</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dt</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dTheta</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dVel</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">addMeasurement</span><span class="p">({{</span><span class="n">dt</span><span class="p">,</span><span class="w"> </span><span class="n">dTheta</span><span class="p">},</span><span class="w"> </span><span class="n">dVel</span><span class="p">});</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">ErrorCal</span><span class="w"> </span><span class="nf">addMeasurement</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DeltaTheta</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dTheta</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dVel</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">addMeasurement</span><span class="p">({</span><span class="n">dTheta</span><span class="p">,</span><span class="w"> </span><span class="n">dVel</span><span class="p">});</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">ErrorCal</span><span class="w"> </span><span class="nf">advanceState</span><span class="p">()</span><span class="w"> </span><span class="k">noexcept</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">_state</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">DynamicAccelBiasState</span><span class="o">::</span><span class="no">InitStatic</span><span class="p">:</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_acc0</span><span class="p">.</span><span class="n">getCount</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">InvalidOperation</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="n">_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DynamicAccelBiasState</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">DynamicAccelBiasState</span><span class="o">::</span><span class="no">Dynamic</span><span class="p">:</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_quat</span><span class="p">.</span><span class="n">scalar</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">InvalidOperation</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="n">_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DynamicAccelBiasState</span><span class="o">::</span><span class="n">FinalStatic</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">InvalidOperation</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">DynamicAccelBiasState</span><span class="w"> </span><span class="nf">getState</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">_state</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="nf">getRotationAngle</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="nf">getNumInitStatic</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">_acc0</span><span class="p">.</span><span class="n">getCount</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="nf">getNumDynamic</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">_ndynamic</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="nf">getNumFinalStatic</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">_accf</span><span class="p">.</span><span class="n">getCount</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">ErrorCal</span><span class="w"> </span><span class="nf">solve</span><span class="p">()</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">RegisterStorage</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Registers</span><span class="o">::</span><span class="n">System</span><span class="o">::</span><span class="n">BinaryOutput1</span><span class="w"> </span><span class="n">binOut1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Registers</span><span class="o">::</span><span class="n">IMU</span><span class="o">::</span><span class="n">DeltaThetaVelConfig</span><span class="w"> </span><span class="n">dtvConfig</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">NumRegisters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">ConfigurationRegister</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">NumRegisters</span><span class="o">&gt;</span><span class="w"> </span><span class="n">getRegisters</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="o">&amp;</span><span class="n">binOut1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">dtvConfig</span><span class="p">};</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">initCalRegisterValues</span><span class="p">(</span><span class="n">RegisterStorage</span><span class="o">&amp;</span><span class="w"> </span><span class="n">storage</span><span class="p">,</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">System</span><span class="o">::</span><span class="n">BinaryOutput</span><span class="o">::</span><span class="n">AsyncMode</span><span class="w"> </span><span class="n">asyncMode</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">imuRate</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">binOut1</span><span class="p">.</span><span class="n">asyncMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asyncMode</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">binOut1</span><span class="p">.</span><span class="n">common</span><span class="p">.</span><span class="n">deltas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">binOut1</span><span class="p">.</span><span class="n">rateDivisor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imuRate</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">dynamicAccelBiasMeasRate</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">dtvConfig</span><span class="p">.</span><span class="n">accelCompensation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">IMU</span><span class="o">::</span><span class="n">DeltaThetaVelConfig</span><span class="o">::</span><span class="n">AccelCompensation</span><span class="o">::</span><span class="n">None</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">dtvConfig</span><span class="p">.</span><span class="n">gyroCompensation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">IMU</span><span class="o">::</span><span class="n">DeltaThetaVelConfig</span><span class="o">::</span><span class="n">GyroCompensation</span><span class="o">::</span><span class="n">None</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">dtvConfig</span><span class="p">.</span><span class="n">earthRateCompensation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">IMU</span><span class="o">::</span><span class="n">DeltaThetaVelConfig</span><span class="o">::</span><span class="n">EarthRateCompensation</span><span class="o">::</span><span class="n">None</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">dtvConfig</span><span class="p">.</span><span class="n">integrationFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">IMU</span><span class="o">::</span><span class="n">DeltaThetaVelConfig</span><span class="o">::</span><span class="n">IntegrationFrame</span><span class="o">::</span><span class="n">Body</span><span class="p">;</span>
+<span class="w">        </span><span class="n">storage</span><span class="p">.</span><span class="n">dtvConfig</span><span class="p">.</span><span class="n">resv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">DynamicAccelBiasAuto</span><span class="p">;</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="n">ErrorCal</span><span class="w"> </span><span class="n">_addMeasurement</span><span class="p">()</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">DynamicAccelBiasMeas</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_extractMeasFromCD</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">CompositeData</span><span class="o">&amp;</span><span class="w"> </span><span class="n">cdMeas</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="k">override</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">DeltaTheta</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dTheta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cdMeas</span><span class="p">.</span><span class="n">imu</span><span class="p">.</span><span class="n">deltaTheta</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">Vec3f</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dVel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cdMeas</span><span class="p">.</span><span class="n">imu</span><span class="p">.</span><span class="n">deltaVel</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dTheta</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">dVel</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_optional</span><span class="p">(</span><span class="n">DynamicAccelBiasMeas</span><span class="p">{</span><span class="n">dTheta</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="n">dVel</span><span class="p">.</span><span class="n">value</span><span class="p">()});</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">nullopt</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">DynamicAccelBiasState</span><span class="w"> </span><span class="n">_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DynamicAccelBiasState</span><span class="o">::</span><span class="n">InitStatic</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_dt0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_dtf</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_acc0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_accf</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_gyro0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Math</span><span class="o">::</span><span class="n">SampleStats</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_gyrof</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">Quat</span><span class="w"> </span><span class="n">_quat</span><span class="p">{};</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">_ndynamic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">Matrix</span><span class="o">&lt;</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_calcMeasErr</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">acc0</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">accf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Mat3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dDCM</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">Matrix</span><span class="o">&lt;</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_calcJacobian</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">acc0</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">accf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Mat3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dDCM</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">Vec3f</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_accBiasLeastSquares</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">acc0</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Vec3f</span><span class="o">&amp;</span><span class="w"> </span><span class="n">accf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Quat</span><span class="o">&amp;</span><span class="w"> </span><span class="n">qG</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">g</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace Calibration</span>
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace VN</span>
+
+<span class="cp">#endif  </span><span class="c1">// VN_DYNAMICACCELBIAS_HPP_</span>
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MigrationGuide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/KeyFunctionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/AdvancedFunctionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MemoryConstrained.html">Memory Constrained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/NonOsUsage.html">Non-Os Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/api_index.html">VNSDK API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plugins/index.html">Plugins</a></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_api/program_listing_file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Program Listing for File DynamicAccelBias.hpp</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

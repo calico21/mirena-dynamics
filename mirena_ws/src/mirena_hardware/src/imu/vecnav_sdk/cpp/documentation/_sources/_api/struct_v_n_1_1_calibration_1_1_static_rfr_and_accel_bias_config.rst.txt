@@ -1,0 +1,17 @@
+.. _exhale_struct_struct_v_n_1_1_calibration_1_1_static_rfr_and_accel_bias_config:
+
+Struct StaticRfrAndAccelBiasConfig
+==================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Calibration::StaticRfrAndAccelBiasConfig
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

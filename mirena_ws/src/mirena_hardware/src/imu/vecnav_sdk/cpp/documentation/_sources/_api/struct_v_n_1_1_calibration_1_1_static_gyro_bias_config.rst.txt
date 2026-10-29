@@ -1,0 +1,17 @@
+.. _exhale_struct_struct_v_n_1_1_calibration_1_1_static_gyro_bias_config:
+
+Struct StaticGyroBiasConfig
+===========================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Calibration::StaticGyroBiasConfig
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

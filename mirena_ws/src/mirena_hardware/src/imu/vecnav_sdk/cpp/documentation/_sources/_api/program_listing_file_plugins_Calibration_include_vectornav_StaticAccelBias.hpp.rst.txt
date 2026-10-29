@@ -1,0 +1,154 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp:
+
+Program Listing for File StaticAccelBias.hpp
+============================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp>` (``plugins\Calibration\include\vectornav\StaticAccelBias.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_STATICACCELBIAS_HPP_
+   #define VN_STATICACCELBIAS_HPP_
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/LinearAlgebra.hpp"
+   #include "vectornav/LinearLeastSquares.hpp"
+   #include "vectornav/SampleStats.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct StaticAccelBiasConfig
+   {
+       float gval = gref;
+   };
+   
+   class StaticAccelBias : public CalBase<Vec3f, StaticAccelBiasConfig, staticAccelBiasFom.size(), staticAccelBiasBufferSize>
+   {
+   public:
+       StaticAccelBias(const StaticAccelBiasConfig& config) : CalBase(config, staticAccelBiasFom) {}
+   
+       using CalBase::addMeasurement;
+       ErrorCal addMeasurement(Vec3f uncompAccel, bool avgWithPrev)
+       {
+           if (!avgWithPrev) { return addMeasurement(uncompAccel); }
+           else if (_measIndex == 0) { return ErrorCal::IgnoredMeasurement; }
+           else
+           {
+               _accMeas.addSample(uncompAccel);
+               _measCntAdded++;
+               return ErrorCal::None;
+           }
+       }
+   
+       ErrorCal solve() noexcept override
+       {
+           if (_accMeas.getCount() > 1) { _measBuff[_measIndex - 1] = _accMeas.getMean(); }
+   
+           Vec3f X(0.0f);
+   
+           float Jthresh = 0.5 * (1e-3) * (1e-3) * (float)_measCntAdded;
+           const float dJthresh = 1e-12;
+           const uint8_t countThresh = 10;
+   
+           uint8_t count = 0;
+           float J = 3.0f * _config.gval * _config.gval * (float)_measCntAdded;
+           float Jold = 0.0f;
+   
+           while (J > Jthresh && abs(Jold - J) > dJthresh && count < countThresh)
+           {
+               Jold = J;
+               J = 0;
+   
+               Mat3f HtH(0.0f);
+               Vec3f Hty(0.0f);
+               for (uint16_t i = 0; i < _measCntAdded; ++i)
+               {
+                   Vec3f Ht;
+                   float dy;
+   
+                   Vec3f acc = _measBuff[i] + X;
+                   float h = Math::norm(acc);
+   
+                   if (h < 0.1) { return ErrorCal::IllConditioned; }
+   
+                   Ht = acc / h;
+                   dy = _config.gval - h;
+   
+                   HtH += Ht * Math::transpose(Ht);
+                   Hty += Ht * dy;
+                   J += dy * dy;
+               }
+   
+               std::optional<Vec3f> dX = Math::solveLinearSystemLU(HtH, Hty);
+               if (!dX.has_value()) { return ErrorCal::IllConditioned; }
+   
+               X += dX.value();
+               J *= 0.5;
+           }
+   
+           _setAccelBias(-X);
+   
+           // TODO: add FOM
+   
+           return ErrorCal::None;
+       }
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::IMU::ImuFilterControl imuFilter;
+   
+           static constexpr size_t NumRegisters = 2;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &imuFilter}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.imu.uncompAccel = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::staticAccelBiasMeasRate;
+   
+           storage.imuFilter.accelFilterMode.emplace();
+           storage.imuFilter.accelFilterMode->uncomp = true;
+           storage.imuFilter.accelWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.gyroFilterMode.emplace();
+           storage.imuFilter.gyroFilterMode->uncomp = true;
+           storage.imuFilter.gyroWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.magFilterMode.emplace();
+           storage.imuFilter.magFilterMode->uncomp = true;
+           storage.imuFilter.magWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.presFilterMode.emplace();
+           storage.imuFilter.presFilterMode->uncomp = true;
+           storage.imuFilter.presWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.tempFilterMode.emplace();
+           storage.imuFilter.tempFilterMode->uncomp = true;
+           storage.imuFilter.tempWindowSize = storage.binOut1.rateDivisor;
+       }
+   
+   private:
+       Math::SampleStats<3, float> _accMeas;
+   
+       ErrorCal _addMeasurement() noexcept override
+       {
+           if (_accMeas.getCount() > 1) { _measBuff[_measIndex - 2] = _accMeas.getMean(); }
+           _accMeas.reset();
+           _accMeas.addSample(_measBuff[_measIndex - 1]);
+           return ErrorCal::None;
+       }
+   
+       std::optional<Vec3f> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override { return cdMeas.imu.uncompAccel; }
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_STATICACCELBIAS_HPP_

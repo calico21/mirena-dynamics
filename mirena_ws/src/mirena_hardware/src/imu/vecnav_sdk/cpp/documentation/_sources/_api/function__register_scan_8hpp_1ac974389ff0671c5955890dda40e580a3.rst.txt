@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1ac974389ff0671c5955890dda40e580a3:
+
+Function VN::RegisterScan::getDefaultMeasRegisters
+==================================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::getDefaultMeasRegisters()
+   :project: VectorNav SDK

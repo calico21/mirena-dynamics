@@ -1,0 +1,26 @@
+.. _exhale_struct_struct_v_n_1_1_detail_1_1_has_buffer_print:
+
+Template Struct HasBufferPrint
+==============================
+
+- Defined in :ref:`file_include_vectornav_Implementation_MeasurementDatatypes.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public std::false_type``
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Detail::HasBufferPrint
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

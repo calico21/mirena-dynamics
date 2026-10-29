@@ -1,0 +1,14 @@
+.. _exhale_variable__config_8hpp_1af640a42bcef4bb211e061ca77beab52b:
+
+Variable VN::Config::CommandProcessor::commandRemovalTimeoutMultiplier
+======================================================================
+
+- Defined in :ref:`file_include_vectornav_Config.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Config::CommandProcessor::commandRemovalTimeoutMultiplier
+   :project: VectorNav SDK

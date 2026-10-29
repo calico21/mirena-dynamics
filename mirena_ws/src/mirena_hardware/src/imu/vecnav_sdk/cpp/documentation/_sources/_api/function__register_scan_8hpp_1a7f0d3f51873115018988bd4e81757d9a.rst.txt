@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1a7f0d3f51873115018988bd4e81757d9a:
+
+Function VN::RegisterScan::_isMsgEqual
+======================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::_isMsgEqual(const AsciiMessage&, const AsciiMessage&)
+   :project: VectorNav SDK

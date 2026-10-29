@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1ac70b8605ca05dd158736cb6481808e6a:
+
+Template Function VN::RegisterScan::saveNonMatchingConfiguration
+================================================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::saveNonMatchingConfiguration(Sensor&, ConfigWriter<T>&, ConfigReader<S>&)
+   :project: VectorNav SDK

@@ -1,0 +1,81 @@
+# Deployment compose for the TeR vehicle (Jetson).
+#
+#   cd mirena_ws/docker
+#   docker compose up -d          # start the stack
+#   docker compose logs -f        # watch it
+#   docker compose down           # stop it (graceful; see stop_signal below)
+#
+# This is the deployment counterpart to .devcontainer/jetson/docker-compose.yml
+# and shares its image. The differences are all consequences of there being
+# nobody at a keyboard:
+#
+#   * it runs the stack instead of `sleep infinity`;
+#   * no X11, no DISPLAY, no Vulkan -- nothing here draws;
+#   * it restarts on its own, and comes back after a reboot;
+#   * container stdout is size-capped, so a long session cannot fill the disk;
+#   * shutdown is graceful and given real time, because the CAN logger has a
+#     file to flush and the supervisor has a mission to tear down.
+#
+# The workspace is bind-mounted and built on the Jetson, exactly as in the
+# devcontainer -- the image carries the dependencies, not the code. So the
+# container expects install/ to already be there: build before you bring it up.
+
+name: mirena
+
+services:
+  mirena:
+    container_name: mirena
+    image: mirena:deploy
+    build:
+      context: .
+      dockerfile: Dockerfile.one
+
+    restart: unless-stopped
+
+    network_mode: host
+    ipc: host
+
+    # The drivers open /dev/ter_IMU and /dev/ter_camera_video (udev symlinks
+    # from mirena_hardware/config/99-mirena.rules) and a raw SocketCAN socket.
+    # privileged is the blunt instrument the devcontainer already uses; the
+    # narrow version is cap_add NET_ADMIN + explicit device: entries, but that
+    # has to be revisited every time a sensor moves.
+    privileged: true
+    group_add:
+      - "44"    # video
+      - "992"
+
+    environment:
+      # Must match every other machine on the car network.
+      - ROS_DOMAIN_ID=42
+      # Unbuffered and uncoloured: `docker logs` should be live and greppable,
+      # not a screen of escape codes arriving in 4 KB blocks.
+      - RCUTILS_LOGGING_USE_STDOUT=1
+      - RCUTILS_LOGGING_BUFFERED_STREAM=0
+      - RCUTILS_COLORIZED_OUTPUT=0
+      # The image carries CUDA/TensorRT. Nothing in the current pipeline needs
+      # a GPU -- perception is LiDAR-only and runs on PCL -- but the runtime is
+      # left reachable so adding a CUDA node does not mean editing this file.
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+    volumes:
+      # The workspace, built on the host.
+      - ..:/home/mirena/mirena_ws:rw
+      - /home/jetson/logs:/home/mirena/logs:rw
+      # Bound rather than enumerated so udev symlinks created after the
+      # container starts -- a sensor replugged mid-session -- are still visible.
+      - /dev:/dev
+
+    entrypoint: ["/home/mirena/mirena_ws/docker/entrypoint.sh"]
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+
+    # A multi-hour session at ROS log volume will fill a Jetson's eMMC if left
+    # unbounded. The CAN recordings are the artefact worth keeping; these are
+    # for the last few minutes of console.
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"

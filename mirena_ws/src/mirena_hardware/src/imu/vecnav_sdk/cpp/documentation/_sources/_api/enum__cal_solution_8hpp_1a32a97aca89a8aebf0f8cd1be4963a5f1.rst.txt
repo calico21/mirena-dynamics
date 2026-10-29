@@ -1,0 +1,14 @@
+.. _exhale_enum__cal_solution_8hpp_1a32a97aca89a8aebf0f8cd1be4963a5f1:
+
+Enum FomScore
+=============
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalSolution.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: VN::Calibration::FomScore
+   :project: VectorNav SDK

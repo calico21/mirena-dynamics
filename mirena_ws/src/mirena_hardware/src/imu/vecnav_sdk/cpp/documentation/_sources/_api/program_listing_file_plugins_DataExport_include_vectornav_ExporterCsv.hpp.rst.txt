@@ -1,0 +1,117 @@
+
+.. _program_listing_file_plugins_DataExport_include_vectornav_ExporterCsv.hpp:
+
+Program Listing for File ExporterCsv.hpp
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_DataExport_include_vectornav_ExporterCsv.hpp>` (``plugins\DataExport\include\vectornav\ExporterCsv.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_EXPORTERCSV_HPP_
+   #define VN_EXPORTERCSV_HPP_
+   
+   #include "vectornav/Exporter.hpp"
+   #include "vectornav/HAL/File.hpp"
+   #include "vectornav/Implementation/Packet.hpp"
+   
+   namespace VN
+   {
+   
+   class BinaryHeader;
+   
+   namespace DataExport
+   {
+   
+   class ExporterCsv : public Exporter
+   {
+   public:
+       ExporterCsv(const Filesystem::FilePath& outputDir, PacketQueueMode mode = PacketQueueMode::Force, bool enableSystemTimeStamps = false)
+           : Exporter(EXPORTER_PACKET_CAPACITY, mode), _filePath(outputDir), _enableSystemTimeStamps(enableSystemTimeStamps)
+       {
+           if (!_filePath.empty() && _filePath.back() != std::filesystem::path::preferred_separator)
+           {
+               _filePath = _filePath + std::filesystem::path::preferred_separator;
+           }
+       }
+   
+       // Overload 1: Enable timestamps only (defaults to current directory, Force mode)
+       explicit ExporterCsv(bool enableSystemTimeStamps) : ExporterCsv("", PacketQueueMode::Force, enableSystemTimeStamps) {}
+   
+       // Overload 2: Path + Enable timestamps (defaults to Force mode)
+       ExporterCsv(const Filesystem::FilePath& outputDir, bool enableSystemTimeStamps) : ExporterCsv(outputDir, PacketQueueMode::Force, enableSystemTimeStamps) {}
+   
+       ~ExporterCsv() = default;
+   
+       void exportToFile() override;
+   
+   private:
+       static constexpr uint8_t MAX_NUM_FILES = 4;
+       static constexpr uint16_t EXPORTER_PACKET_CAPACITY = 2048;
+       static constexpr uint16_t STRING_BUFFER_CAPACITY = 4096;
+   
+       struct CsvInfo
+       {
+           PacketDetails details;
+           OutputFile file;
+       };
+   
+       struct DynamicCsvInfo
+       {
+           uint8_t measGroupNum;
+           uint8_t measTypeNum;
+           OutputFile file;
+       };
+   
+       class CsvExtractor : public FaPacketExtractor
+       {
+       public:
+           using FaPacketExtractor::FaPacketExtractor;
+   
+           void setFile(OutputFile& file) { _file = &file; }
+   
+           template <class T>
+           Errored extract(std::optional<T>& value) noexcept
+           {
+               if (FaPacketExtractor::extract(value)) { return true; }
+   
+               int numBytes = measPrint(_buffer, BUFFER_SIZE, *value);
+               if (numBytes < 0) { return true; }
+               else if (numBytes > BUFFER_SIZE)
+               {
+                   numBytes = BUFFER_SIZE;
+                   VN_DEBUG_0("CsvExtractor Print Overflow\n");
+               }
+   
+               _file->write(_buffer, numBytes);
+   
+               return false;
+           }
+   
+           OutputFile* _file = nullptr;
+           static constexpr uint16_t BUFFER_SIZE = STRING_BUFFER_CAPACITY;
+           char _buffer[BUFFER_SIZE];
+       };
+   
+       void _initCsv(CsvInfo& csvInfo, const Packet* p);
+       void _initDynamicCsv(DynamicCsvInfo& dynamicCsvInfo, uint8_t measGroupNum, uint8_t measTypeNum);
+       void _initSatInfo(DynamicCsvInfo& dynamicCsvInfo, uint8_t measGroupNum, uint8_t measTypeNum);
+       void _initRawMeas(DynamicCsvInfo& dynamicCsvInfo, uint8_t measGroupNum, uint8_t measTypeNum);
+       void _writeTimestamp(OutputFile& file, time_point timestamp);
+       OutputFile& _getFileHandle(const Packet* p);
+       OutputFile& _getDynamicFileHandle(uint8_t measGroupNum, uint8_t measTypeNum, const BinaryHeader& header);
+       void _flushAllFiles();
+   
+       Filesystem::FilePath _filePath;
+       const bool _enableSystemTimeStamps = false;
+   
+       Vector<CsvInfo, MAX_NUM_FILES> _csvInfo;                // One entry per file created, which is per unique message type
+       Vector<DynamicCsvInfo, MAX_NUM_FILES> _dynamicCsvInfo;  // One entry per file created, which is per unique message type
+   };
+   
+   }  // namespace DataExport
+   }  // namespace VN
+   
+   #endif  // VN_EXPORTERCSV_HPP_

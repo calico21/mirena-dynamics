@@ -1,0 +1,14 @@
+.. _exhale_function__registers_8hpp_1a6645db9a5a18bc4e15fdeeeaef2eb5cb:
+
+Template Function VN::Registers::constructVnType
+================================================
+
+- Defined in :ref:`file_include_vectornav_Interface_Registers.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Registers::constructVnType(const Ts&...)
+   :project: VectorNav SDK

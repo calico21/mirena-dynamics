@@ -1,0 +1,14 @@
+.. _exhale_define__cal_config_8hpp_1a71f4054d06310a0fca1ebd48aeb8e32d:
+
+Define HSI3D_PATCHES_50
+=======================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: HSI3D_PATCHES_50
+   :project: VectorNav SDK

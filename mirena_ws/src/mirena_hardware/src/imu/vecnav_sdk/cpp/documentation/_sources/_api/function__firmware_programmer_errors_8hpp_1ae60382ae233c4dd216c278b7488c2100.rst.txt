@@ -1,0 +1,14 @@
+.. _exhale_function__firmware_programmer_errors_8hpp_1ae60382ae233c4dd216c278b7488c2100:
+
+Function VN::errorCodeToString(FirmwareProgrammer::ErrorBL)
+===========================================================
+
+- Defined in :ref:`file_plugins_FirmwareProgrammer_include_vectornav_FirmwareProgrammerErrors.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::errorCodeToString(FirmwareProgrammer::ErrorBL)
+   :project: VectorNav SDK

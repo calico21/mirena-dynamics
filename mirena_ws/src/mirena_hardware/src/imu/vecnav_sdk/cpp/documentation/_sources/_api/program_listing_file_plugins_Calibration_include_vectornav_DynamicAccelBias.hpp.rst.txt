@@ -1,0 +1,138 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp:
+
+Program Listing for File DynamicAccelBias.hpp
+=============================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp>` (``plugins\Calibration\include\vectornav\DynamicAccelBias.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_DYNAMICACCELBIAS_HPP_
+   #define VN_DYNAMICACCELBIAS_HPP_
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/SampleStats.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct DynamicAccelBiasMeas
+   {
+       DeltaTheta dTheta;
+       Vec3f dVel;
+   };
+   
+   struct DynamicAccelBiasConfig
+   {
+       float gval = gref;
+   };
+   
+   enum class DynamicAccelBiasState
+   {
+       InitStatic = 0,
+       Dynamic = 1,
+       FinalStatic = 2,
+   };
+   
+   class DynamicAccelBias : public CalBase<DynamicAccelBiasMeas, DynamicAccelBiasConfig, dynamicAccelBiasFom.size(), 1>
+   {
+   public:
+       DynamicAccelBias() : CalBase(DynamicAccelBiasConfig{}, dynamicAccelBiasFom) {}
+   
+       DynamicAccelBias(const DynamicAccelBiasConfig& config) : CalBase(config, dynamicAccelBiasFom) {}
+   
+       using CalBase::addMeasurement;
+       ErrorCal addMeasurement(const float& dt, const Vec3f& dTheta, const Vec3f& dVel) { return addMeasurement({{dt, dTheta}, dVel}); }
+       ErrorCal addMeasurement(const DeltaTheta& dTheta, const Vec3f& dVel) { return addMeasurement({dTheta, dVel}); }
+   
+       inline ErrorCal advanceState() noexcept
+       {
+           switch (_state)
+           {
+               case DynamicAccelBiasState::InitStatic:
+                   if (_acc0.getCount() < 2) { return ErrorCal::InvalidOperation; }
+                   _state = DynamicAccelBiasState::Dynamic;
+                   break;
+               case DynamicAccelBiasState::Dynamic:
+                   if (_quat.scalar == 1.0f) { return ErrorCal::InvalidOperation; }
+                   _state = DynamicAccelBiasState::FinalStatic;
+                   break;
+               default:
+                   return ErrorCal::InvalidOperation;
+           }
+           return ErrorCal::None;
+       }
+   
+       inline DynamicAccelBiasState getState() const noexcept { return _state; }
+   
+       float getRotationAngle() const noexcept;
+   
+       inline uint16_t getNumInitStatic() const noexcept { return _acc0.getCount(); }
+       inline uint16_t getNumDynamic() const noexcept { return _ndynamic; }
+       inline uint16_t getNumFinalStatic() const noexcept { return _accf.getCount(); }
+   
+       ErrorCal solve() noexcept override;
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::IMU::DeltaThetaVelConfig dtvConfig;
+   
+           static constexpr size_t NumRegisters = 2;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &dtvConfig}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.common.deltas = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::dynamicAccelBiasMeasRate;
+   
+           storage.dtvConfig.accelCompensation = Registers::IMU::DeltaThetaVelConfig::AccelCompensation::None;
+           storage.dtvConfig.gyroCompensation = Registers::IMU::DeltaThetaVelConfig::GyroCompensation::None;
+           storage.dtvConfig.earthRateCompensation = Registers::IMU::DeltaThetaVelConfig::EarthRateCompensation::None;
+           storage.dtvConfig.integrationFrame = Registers::IMU::DeltaThetaVelConfig::IntegrationFrame::Body;
+           storage.dtvConfig.resv = 0;
+       }
+   
+       friend class DynamicAccelBiasAuto;
+   
+   private:
+       ErrorCal _addMeasurement() noexcept override;
+   
+       std::optional<DynamicAccelBiasMeas> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override
+       {
+           std::optional<DeltaTheta> dTheta = cdMeas.imu.deltaTheta;
+           std::optional<Vec3f> dVel = cdMeas.imu.deltaVel;
+           if (dTheta.has_value() && dVel.has_value()) { return std::make_optional(DynamicAccelBiasMeas{dTheta.value(), dVel.value()}); }
+           else { return std::nullopt; }
+       }
+   
+       DynamicAccelBiasState _state = DynamicAccelBiasState::InitStatic;
+   
+       Math::SampleStats<1, float> _dt0;
+       Math::SampleStats<1, float> _dtf;
+       Math::SampleStats<3, float> _acc0;
+       Math::SampleStats<3, float> _accf;
+       Math::SampleStats<3, float> _gyro0;
+       Math::SampleStats<3, float> _gyrof;
+   
+       Quat _quat{};
+       uint16_t _ndynamic = 0;
+   
+       static Matrix<5, 1, float> _calcMeasErr(const Vec3f& acc0, const Vec3f& accf, const Mat3f& dDCM) noexcept;
+       static Matrix<5, 3, float> _calcJacobian(const Vec3f& acc0, const Vec3f& accf, const Mat3f& dDCM) noexcept;
+       static std::optional<Vec3f> _accBiasLeastSquares(const Vec3f& acc0, const Vec3f& accf, const Quat& qG, float g) noexcept;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_DYNAMICACCELBIAS_HPP_

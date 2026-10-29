@@ -1,0 +1,35 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_static_rfr_and_accel_bias:
+
+Class StaticRfrAndAccelBias
+===========================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Calibration::CalBase< StaticRfrAndAccelBiasMeas, StaticRfrAndAccelBiasConfig, staticRfrAndAccelBiasFom.size(), staticRfrAndAccelBiasBufferSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::StaticRfrAndAccelBias
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

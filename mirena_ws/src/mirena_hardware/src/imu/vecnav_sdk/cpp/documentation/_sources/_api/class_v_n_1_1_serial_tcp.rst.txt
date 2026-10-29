@@ -1,0 +1,26 @@
+.. _exhale_class_class_v_n_1_1_serial_tcp:
+
+Class SerialTcp
+===============
+
+- Defined in :ref:`file_include_vectornav_HAL_SerialTcp_Windows.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Serial_Base`` (:ref:`exhale_class_class_v_n_1_1_serial___base`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::SerialTcp
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

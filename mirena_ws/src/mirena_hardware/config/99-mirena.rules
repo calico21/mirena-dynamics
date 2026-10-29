@@ -1,0 +1,13 @@
+# Global Shutter Camera (32e4:0234)
+SUBSYSTEM=="usb", ATTR{idVendor}=="32e4", ATTR{idProduct}=="0234", MODE="0666", GROUP="video", SYMLINK+="ter_camera"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="32e4", ATTRS{idProduct}=="0234", MODE="0666", GROUP="video", SYMLINK+="ter_camera_video"
+
+
+# Microdia USB 2.0 Camera (0c45:636d)
+SUBSYSTEM=="usb", ATTR{idVendor}=="0c45", ATTR{idProduct}=="636d", MODE="0666", GROUP="video", SYMLINK+="ter_gss"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="636d", MODE="0666", GROUP="video", SYMLINK+="ter_gss_video"
+
+
+# Ter IMU - FTDI FT232 Serial (UART) IC (0403:6001)
+SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6001", MODE="0666", GROUP="dialout", SYMLINK+="ter_IMU_usb"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666", GROUP="dialout", SYMLINK+="ter_IMU"

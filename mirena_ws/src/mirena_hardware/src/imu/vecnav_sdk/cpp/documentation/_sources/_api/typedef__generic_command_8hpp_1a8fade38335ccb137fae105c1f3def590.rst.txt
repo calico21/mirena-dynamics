@@ -1,0 +1,14 @@
+.. _exhale_typedef__generic_command_8hpp_1a8fade38335ccb137fae105c1f3def590:
+
+Typedef VN::AsciiParameter
+==========================
+
+- Defined in :ref:`file_include_vectornav_Interface_GenericCommand.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::AsciiParameter
+   :project: VectorNav SDK

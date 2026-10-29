@@ -1,0 +1,69 @@
+
+.. _file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp:
+
+File StaticAccelBias.hpp
+========================
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_Calibration_include_vectornav>` (``plugins\Calibration\include\vectornav``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\Calibration\include\vectornav\StaticAccelBias.hpp``)
+--------------------------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``vectornav/CalBase.hpp``
+
+- ``vectornav/CalConfig.hpp``
+
+- ``vectornav/Interface/Errors.hpp``
+
+- ``vectornav/LinearAlgebra.hpp``
+
+- ``vectornav/LinearLeastSquares.hpp``
+
+- ``vectornav/SampleStats.hpp``
+
+- ``vectornav/TemplateLibrary/Matrix.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__Calibration`
+
+
+Classes
+-------
+
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_static_accel_bias_config`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_static_accel_bias`
+

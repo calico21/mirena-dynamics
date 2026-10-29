@@ -1,0 +1,188 @@
+.. _cppDataExportPage:
+
+Data Export
+###########
+
+The Data Export plugin allows the user to export data from a VectorNav unit into various file types, such as a *CSV*, *TXT*, *RINEX*, *IMR*, or *BIN* file. 
+Data can be exported from previously recorded log files as well as directly from a VectorNav unit in real time.
+Additionally, this plugin supports exporting to multiple file formats at once, including exporting any skipped byte data to a separate *BIN* file.
+
+Each of the following exporter types can be obtained from the :class:`~VN::DataExport::Exporter` class.
+
+* :class:`~VN::DataExport::ExporterAscii` - exports to a *TXT* file
+* :class:`~VN::DataExport::ExporterCsv` - exports to a *CSV* file
+* :class:`~VN::DataExport::ExporterSkippedByte` - exports to a *BIN* file
+* :class:`~VN::DataExport::ExporterRinex` - exports to a *RINEX* file
+* :class:`~VN::DataExport::ExporterImr` - exports to a *IMR* file
+
+This Data Export plugin can be used in conjunction with the Logger plugin, which allows users to log all bytes received from the VectorNav unit to a binary file without the parsing of any packets. Any files logged from the Logger plugin can then be exported into the desired file formats using this Data Export plugin. Information on how to log data from a VectorNav unit into a binary file can be found on the :ref:`cppLoggerPage` page.
+
+Usage
+=====
+
+There are two ways to use the Data Export plugin: exporting data from a previously logged file or connecting to a VectorNav unit and exporting the data in real time. 
+
+Exporting from a File
+^^^^^^^^^^^^^^^^^^^^^
+
+When exporting data from a previously recorded log file, a :class:`~VN::Sensor` object must first be created to process the logged data.
+Because the :class:`~VN::DataExport::Exporter` class works with raw packets, it does not require the use of the :class:`~VN::CompositeData` class for parsing. 
+Therefore, the :class:`~VN::Sensor` object should be configured with :cpp:enumerator:`MeasQueueMode::Off <VN::Sensor::MeasQueueMode::Off>`.
+
+.. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+   :language: c++
+   :start-at: Sensor::MeasQueueMode pushToCompositeData = Sensor::MeasQueueMode::Off;
+   :end-at: Sensor sensor(byteBufferArray, fbBufferArray, pushToCompositeData);
+   :dedent: 4
+
+The desired :class:`~VN::DataExport::Exporter` object should then be created.
+The :class:`~VN::DataExport::ExporterAscii` class can only export logged ASCII output messages from the VectorNav unit, while the :class:`~VN::DataExport::ExporterCsv` class can export both ASCII and binary output messages. 
+The :class:`~VN::DataExport::ExporterSkippedByte` class exports bytes that do not belong to any valid packet format,  which is useful for debugging communication issues and data corruption. Once the :class:`~VN::DataExport::Exporter` object is created, the :class:`~VN::Sensor` object must subscribe to the exporter's message queue.
+
+.. tab:: ASCII
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: DataExport::ExporterAscii asciiExporter
+      :end-at: sensor.subscribeToMessage(asciiExporter.getQueuePtr(), "VN");
+      :dedent: 4
+
+.. tab::  CSV
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: DataExport::ExporterCsv csvExporter(outputDirectory, PacketQueueMode::Retry);
+      :end-at: sensor.subscribeToMessage(csvExporter.getQueuePtr(), Sensor::SyncByte::FA);
+      :dedent: 4
+
+.. tab::  Skipped Bytes
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: DataExport::ExporterSkippedByte skippedByteExporter(outputDirectory, PacketQueueMode::Retry);
+      :end-at: sensor.subscribeToMessage(skippedByteExporter.getQueuePtr(), Sensor::SyncByte::None);
+      :dedent: 4
+
+Before connecting :class:`~VN::Sensor` object to the file, the :class:`~VN::DataExport::Exporter` object must be started. This will kick off a separate thread for the :class:`~VN::DataExport::Exporter` object.
+.. tab:: ASCII
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: asciiExporter.start();
+      :end-at: asciiExporter.start();
+      :dedent: 4
+
+.. tab::  CSV
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: csvExporter.start();
+      :end-at: csvExporter.start();
+      :dedent: 4
+
+.. tab::  Skipped Bytes
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: skippedByteExporter.start();
+      :end-at: skippedByteExporter.start();
+      :dedent: 4
+
+Once the different :class:`~VN::DataExport::Exporter` has been started, the :class:`~VN::Sensor` object should be used to connect to the log file, which will begin the exporting process.
+
+.. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+   :language: c++
+   :start-at: sensor.connect(filePath);
+   :end-at: sensor.connect(filePath);
+   :dedent: 4
+
+Because the file is processsed in a background thread, the AsyncError queue should be monitored to detect when the end of the file is reached.
+A :cpp:enumerator:`FileReadFailed <VN::Error::FileReadFailed>` error indicates that the end of the file has been reached and processing is complete.
+The :class:`~VN::Sensor` object can then be disconnected from the log file.
+
+.. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: sensor.disconnect();
+      :end-at: sensor.disconnect();
+      :dedent: 4
+
+After exporting the data, the exporter should be stopped to ensure all buffered data is written.
+
+.. tab:: ASCII
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: asciiExporter.stop();
+      :end-at: asciiExporter.stop();
+      :dedent: 4
+
+.. tab::  CSV
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: csvExporter.stop();
+      :end-at: csvExporter.stop();
+      :dedent: 4
+
+.. tab::  Skipped Bytes
+
+   .. literalinclude:: ../../examples/DataExport/FromFile/main.cpp
+      :language: c++
+      :start-at: skippedByteExporter.stop();
+      :end-at: skippedByteExporter.stop();
+      :dedent: 4
+
+Exporting in Real Time
+^^^^^^^^^^^^^^^^^^^^^^
+
+When using the Data Export plugin to export data in real time from a VectorNav unit, it is first necessary to create a :class:`~VN::Sensor` object and connect to the VectorNav unit, such as by using the :func:`~VN::Sensor::autoConnect` method.
+
+.. literalinclude:: ../../examples/DataExport/FromSensor/main.cpp
+   :language: c++
+   :start-at: Sensor sensor;
+   :end-at: Error latestError = sensor.autoConnect(portName);
+   :dedent: 4
+
+Once the VectorNav unit is connected, the :class:`~VN::DataExport::Exporter` object should be created.
+
+.. literalinclude:: ../../examples/DataExport/FromSensor/main.cpp
+   :language: c++
+   :start-at: DataExport::ExporterCsv csvExporter(outputDirectory);
+   :end-at: DataExport::ExporterCsv csvExporter(outputDirectory);
+   :dedent: 4
+
+In order for the :class:`~VN::DataExport::Exporter` object to export the desired messages from the sensor, the :class:`~VN::Sensor` object must subscribe to the exporter's message queue.
+In the example below, the :class:`~VN::DataExport::ExporterCsv` object is used to filter for binary packets with an "0xFA" sync byte.
+
+.. literalinclude:: ../../examples/DataExport/FromSensor/main.cpp
+   :language: c++
+   :start-at: latestError = sensor.subscribeToMessage(csvExporter.getQueuePtr(), Sensor::SyncByte::FA);
+   :end-at: latestError = sensor.subscribeToMessage(csvExporter.getQueuePtr(), Sensor::SyncByte::FA);
+   :dedent: 4
+
+The :class:`~VN::DataExport::ExporterCsv` object can subscribe to multiple message types at once.
+For example, while subscribing to the binary packets with an "0xFA" sync byte, the :class:`~VN::DataExport::ExporterCsv` object can also subscribe to ASCII messages that begin with "VN".
+
+.. literalinclude:: ../../examples/DataExport/FromSensor/main.cpp
+   :language: c++
+   :start-at: latestError = sensor.subscribeToMessage(csvExporter.getQueuePtr(), "VN", Sensor::AsciiSubscriberFilterType::StartsWith);
+   :end-at: latestError = sensor.subscribeToMessage(csvExporter.getQueuePtr(), "VN", Sensor::AsciiSubscriberFilterType::StartsWith);
+   :dedent: 4
+
+The :class:`~VN::DataExport::Exporter` object has now been set up, but has not  yet begun exporting data. 
+To begin exporting the subscribed messages, the :class:`~VN::DataExport::Exporter` object must be started.
+After all desired data has been exported from the VectorNav unit, the :class:`~VN::DataExport::Exporter` object must be stopped. This ensures all buffered data is exported to the output file.
+
+.. tip::
+   Ensure the VectorNav unit is configured to output the desired data before starting the exporter.
+
+.. literalinclude:: ../../examples/DataExport/FromSensor/main.cpp
+   :language: c++
+   :start-at: csvExporter.start();
+   :end-at: csvExporter.stop();
+   :dedent: 4
+
+API
+===
+
+:ref:`DataExport<namespace_VN__DataExport>`

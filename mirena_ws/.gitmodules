@@ -1,0 +1,3 @@
+[submodule "src/rclgd"]
+	path = src/rclgd
+	url = https://github.com/Ozuba/rclgd
