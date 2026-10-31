@@ -1,0 +1,2070 @@
+diff --git a/src/mirena_sim/Scenes/FreeCam/freecam.gd b/src/mirena_sim/Scenes/FreeCam/freecam.gd
+index 3d2233d..b34c207 100644
+--- a/src/mirena_sim/Scenes/FreeCam/freecam.gd
++++ b/src/mirena_sim/Scenes/FreeCam/freecam.gd
+@@ -40,13 +40,12 @@ func _setup_nodes() -> void:
+ func _ready() -> void:
+ 	_setup_nodes.call_deferred()
+ 	_add_keybindings()
+-	# Register in Sim
++	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+ 	Sim.register_camera.call_deferred(self)
+ 
+ 
+ 
+ func _process(delta: float) -> void:
+-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if current else Input.MOUSE_MODE_VISIBLE)
+ 	if current:
+ 		var dir = Vector3.ZERO
+ 		if Input.is_action_pressed("__debug_camera_forward"): 	dir.z -= 1
+@@ -64,28 +63,46 @@ func _process(delta: float) -> void:
+ 
+ 
+ func _input(event: InputEvent) -> void:
+-	if current:
+-		# Turn around
+-		if event is InputEventMouseMotion:
++	if not current:
++		return
++
++	# Toggle mouse capture with TAB
++	if event is InputEventKey and event.pressed and not event.echo:
++		if event.keycode == toggle_key:
++			var captured = Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
++			Input.set_mouse_mode(
++				Input.MOUSE_MODE_VISIBLE if captured
++				else Input.MOUSE_MODE_CAPTURED
++			)
++			get_viewport().set_input_as_handled()
++			return
++
++		# Always release mouse with ESC
++		if event.keycode == KEY_ESCAPE:
++			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
++			get_viewport().set_input_as_handled()
++			return
++
++	# Rotate camera only while mouse is captured
++	if event is InputEventMouseMotion:
++		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+ 			pivot.rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
+ 			rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
+ 			rotation.x = clamp(rotation.x, -PI/2, PI/2)
+-		
+-		var speed_up = func():
+-			target_speed = clamp(target_speed + 0.15, MIN_SPEED, MAX_SPEED)
+-			print("[Speed up] " + str(target_speed))
+-			
+-		var slow_down = func():
+-			target_speed = clamp(target_speed - 0.15, MIN_SPEED, MAX_SPEED)
+-			print("[Slow down] " + str(target_speed))
+-		
+-		# Speed up and down with the mouse wheel
+-		if event is InputEventMouseButton:
+-			if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+-				slow_down.call() if invert_speed_controls else speed_up.call()
+-				
+-			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+-				speed_up.call() if invert_speed_controls else slow_down.call()
++
++	var speed_up = func():
++		target_speed = clamp(target_speed + 0.15, MIN_SPEED, MAX_SPEED)
++
++	var slow_down = func():
++		target_speed = clamp(target_speed - 0.15, MIN_SPEED, MAX_SPEED)
++
++	# Speed control with mouse wheel
++	if event is InputEventMouseButton and event.pressed:
++		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
++			slow_down.call() if invert_speed_controls else speed_up.call()
++
++		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
++			speed_up.call() if invert_speed_controls else slow_down.call()
+ 
+ 
+ 
+diff --git a/src/mirena_sim/Scenes/Sim/UI/SimUI.tscn b/src/mirena_sim/Scenes/Sim/UI/SimUI.tscn
+index d6ae811..5e36193 100644
+--- a/src/mirena_sim/Scenes/Sim/UI/SimUI.tscn
++++ b/src/mirena_sim/Scenes/Sim/UI/SimUI.tscn
+@@ -6,6 +6,8 @@
+ [ext_resource type="Script" uid="uid://btpbxj5260gcn" path="res://Scenes/Sim/UI/vehicle_menu.gd" id="3_xhllv"]
+ [ext_resource type="Script" uid="uid://t2c8u12dg5bk" path="res://Scenes/Sim/track_menu.gd" id="3_xmg1i"]
+ [ext_resource type="Script" uid="uid://mvywmawpyl07" path="res://Scenes/Sim/UI/extra_menu.gd" id="6_ac68a"]
++[ext_resource type="Script" path="res://Scenes/Sim/UI/AppLauncher.gd" id="7_app_launcher"]
++[ext_resource type="Script" path="res://Scenes/Sim/UI/FloatingGraphManager.gd" id="8_floating_graphs"]
+ 
+ [sub_resource type="GDScript" id="GDScript_xhllv"]
+ script/source = "extends PanelContainer
+@@ -20,6 +22,86 @@ font_color = Color(0.744876, 0.999331, 1, 1)
+ 
+ [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_val13"]
+ 
++[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_top"]
++content_margin_left = 12.0
++content_margin_top = 4.0
++content_margin_right = 12.0
++content_margin_bottom = 4.0
++bg_color = Color(0.12, 0.12, 0.13, 0.72)
++border_width_left = 1
++border_width_top = 1
++border_width_right = 1
++border_width_bottom = 1
++border_color = Color(0.32, 0.35, 0.4, 0.6)
++corner_radius_top_left = 4
++corner_radius_top_right = 4
++corner_radius_bottom_right = 4
++corner_radius_bottom_left = 4
++
++[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_mode"]
++content_margin_left = 8.0
++content_margin_top = 2.0
++content_margin_right = 8.0
++content_margin_bottom = 2.0
++bg_color = Color(0.12, 0.22, 0.18, 0.85)
++border_width_left = 1
++border_width_top = 1
++border_width_right = 1
++border_width_bottom = 1
++border_color = Color(0.24, 0.65, 0.45, 0.75)
++corner_radius_top_left = 4
++corner_radius_top_right = 4
++corner_radius_bottom_right = 4
++corner_radius_bottom_left = 4
++
++[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_score"]
++content_margin_left = 8.0
++content_margin_top = 2.0
++content_margin_right = 8.0
++content_margin_bottom = 2.0
++bg_color = Color(0.14, 0.18, 0.24, 0.85)
++border_width_left = 1
++border_width_top = 1
++border_width_right = 1
++border_width_bottom = 1
++border_color = Color(0.3, 0.55, 0.8, 0.75)
++corner_radius_top_left = 4
++corner_radius_top_right = 4
++corner_radius_bottom_right = 4
++corner_radius_bottom_left = 4
++
++[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_app_dock"]
++content_margin_left = 4.0
++content_margin_top = 2.0
++content_margin_right = 4.0
++content_margin_bottom = 2.0
++bg_color = Color(0.12, 0.12, 0.13, 0.55)
++border_width_left = 1
++border_width_top = 1
++border_width_right = 1
++border_width_bottom = 1
++border_color = Color(0.32, 0.35, 0.4, 0.5)
++corner_radius_top_left = 4
++corner_radius_top_right = 4
++corner_radius_bottom_right = 4
++corner_radius_bottom_left = 4
++
++[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_app_btn"]
++content_margin_left = 6.0
++content_margin_top = 2.0
++content_margin_right = 6.0
++content_margin_bottom = 2.0
++bg_color = Color(0.18, 0.19, 0.22, 0.75)
++border_width_left = 1
++border_width_top = 1
++border_width_right = 1
++border_width_bottom = 1
++border_color = Color(0.35, 0.38, 0.44, 0.6)
++corner_radius_top_left = 3
++corner_radius_top_right = 3
++corner_radius_bottom_right = 3
++corner_radius_bottom_left = 3
++
+ [node name="SimUI" type="Control" unique_id=2132864431]
+ layout_mode = 3
+ anchors_preset = 15
+@@ -30,44 +112,313 @@ grow_vertical = 2
+ script = ExtResource("1_lfjlq")
+ 
+ [node name="Stats" type="PanelContainer" parent="." unique_id=1504225956]
++custom_minimum_size = Vector2(0, 78)
+ layout_mode = 1
+-anchors_preset = 1
+-anchor_left = 1.0
++anchors_preset = 10
+ anchor_right = 1.0
+-offset_left = -122.0
+-offset_bottom = 97.0
+-grow_horizontal = 0
++offset_left = 12.0
++offset_top = 8.0
++offset_right = -12.0
++offset_bottom = 86.0
++grow_horizontal = 2
++theme_override_styles/panel = SubResource("StyleBoxFlat_stats_top")
+ script = ExtResource("2_o5cjj")
+ 
+ [node name="MarginContainer" type="MarginContainer" parent="Stats" unique_id=1479226356]
+ layout_mode = 2
+-theme_override_constants/margin_left = 10
+-theme_override_constants/margin_top = 10
+-theme_override_constants/margin_right = 10
+-theme_override_constants/margin_bottom = 10
++theme_override_constants/margin_left = 6
++theme_override_constants/margin_top = 4
++theme_override_constants/margin_right = 6
++theme_override_constants/margin_bottom = 4
+ 
+ [node name="VBoxContainer" type="VBoxContainer" parent="Stats/MarginContainer" unique_id=2073894066]
+ layout_mode = 2
++theme_override_constants/separation = 4
++
++[node name="TopRow" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000001]
++layout_mode = 2
++theme_override_constants/separation = 10
++
++[node name="LeftStats" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000002]
++layout_mode = 2
++theme_override_constants/separation = 8
++
++[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1010176785]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
++theme_override_font_sizes/font_size = 12
++text = "FPS: 60"
++
++[node name="Sep1" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=3100000003]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1047921344]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
++theme_override_font_sizes/font_size = 12
++text = "Time: 0.00"
++
++[node name="Sep2" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=3100000004]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1668494678]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
++theme_override_font_sizes/font_size = 12
++text = "Cones: 0"
++
++[node name="Spacer1" type="Control" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000005]
++layout_mode = 2
++size_flags_horizontal = 3
++
++[node name="CenterBadges" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000006]
++layout_mode = 2
++theme_override_constants/separation = 8
++
++[node name="PhysicsModeBadge" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges" unique_id=3100000007]
++layout_mode = 2
++theme_override_styles/panel = SubResource("StyleBoxFlat_pill_mode")
++
++[node name="PhysicsModeLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges/PhysicsModeBadge" unique_id=3100000008]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
++theme_override_font_sizes/font_size = 11
++text = "MODULAR 6-DOF: TeR_Tire MF6.2"
++
++[node name="DatasetLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges" unique_id=3100000009]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.72, 0.77, 0.84, 1)
++theme_override_font_sizes/font_size = 11
++text = "Ref: TeR26 VN-300 Real | Sim: modular_calibrated (tau: 20..281s)"
++
++[node name="Spacer2" type="Control" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000010]
++layout_mode = 2
++size_flags_horizontal = 3
++
++[node name="RightScore" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000011]
++layout_mode = 2
++theme_override_constants/separation = 6
++
++[node name="CorrelationBadge" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/RightScore" unique_id=3100000012]
++layout_mode = 2
++theme_override_styles/panel = SubResource("StyleBoxFlat_pill_score")
++
++[node name="CorrelationLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/RightScore/CorrelationBadge" unique_id=1668494679]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.42, 0.88, 0.62, 1)
++theme_override_font_sizes/font_size = 12
++text = "CORR: 57.4% (LAST)"
++
++[node name="SepScore" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000050]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="AppLauncher" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3200000001]
++layout_mode = 2
++theme_override_styles/panel = SubResource("StyleBoxFlat_app_dock")
++script = ExtResource("7_app_launcher")
++
++[node name="HBoxContainer" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher" unique_id=3200000002]
++layout_mode = 2
++theme_override_constants/separation = 3
++
++[node name="BtnVD" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000004]
++custom_minimum_size = Vector2(32, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "VD"
++
++[node name="BtnCorr" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000005]
++custom_minimum_size = Vector2(40, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "CORR"
++
++[node name="BtnLog" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000006]
++custom_minimum_size = Vector2(34, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "LOG"
++
++[node name="BtnTire" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000007]
++custom_minimum_size = Vector2(36, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "TIRE"
++
++[node name="BtnSusp" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000008]
++custom_minimum_size = Vector2(38, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "SUSP"
++
++[node name="BtnSetup" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000009]
++custom_minimum_size = Vector2(42, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "SETUP"
++
++[node name="BtnGraphs" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000040]
++custom_minimum_size = Vector2(50, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "GRAPHS"
++
++[node name="BtnMenu" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000010]
++custom_minimum_size = Vector2(40, 22)
++layout_mode = 2
++theme_override_font_sizes/font_size = 10
++theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
++text = "MENU"
++
++[node name="BottomRow" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000013]
++layout_mode = 2
++theme_override_constants/separation = 8
++
++[node name="LiveTagLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000027]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
++theme_override_font_sizes/font_size = 11
++text = "LIVE [MODULAR]"
++
++[node name="Dot0" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000028]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="SpeedMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000029]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.745, 0.999, 1, 1)
++theme_override_font_sizes/font_size = 13
++text = "SPEED:   0.0 km/h"
++
++[node name="Dot1" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000015]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="AxMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000018]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
++theme_override_font_sizes/font_size = 13
++text = "AX:  +0.00 m/s²"
++
++[node name="Dot2" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000017]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="AyMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000016]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.4, 0.88, 0.95, 1)
++theme_override_font_sizes/font_size = 13
++text = "AY:  +0.00 m/s²"
++
++[node name="Dot3" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000019]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="AzMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000030]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++text = "AZ:  +0.00 m/s²"
++
++[node name="Dot4" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000021]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="YawMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000031]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++text = "YAW RATE:  +0.00 rad/s"
++
++[node name="Dot5" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000032]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="BetaMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000033]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++text = "SIDESLIP β:  +0.0°"
++
++[node name="Dot6" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000034]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="RollMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000035]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++text = "ROLL:  +0.0°"
++
++[node name="Dot7" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000036]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
++text = "|"
++
++[node name="PitchMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000037]
++layout_mode = 2
++theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
++theme_override_font_sizes/font_size = 12
++text = "PITCH:  +0.0°"
++
++[node name="GzMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000014]
++visible = false
++layout_mode = 2
++text = "GZ: +0.00 rad/s"
+ 
+-[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1010176785]
++[node name="UMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000020]
++visible = false
+ layout_mode = 2
+-text = "FPS:"
++text = "U: +0.0 m/s"
+ 
+-[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1047921344]
++[node name="VMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000022]
++visible = false
+ layout_mode = 2
+-text = "Timer:"
++text = "V: +0.0 m/s"
+ 
+-[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1668494678]
++[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000023]
++visible = false
++layout_mode = 2
++
++[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000024]
++visible = false
++layout_mode = 2
++
++[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000025]
++visible = false
++layout_mode = 2
++
++[node name="CorrelationLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000026]
++visible = false
+ layout_mode = 2
+-text = "Fallen Cones:"
+ 
+ [node name="MainMenu" type="PanelContainer" parent="." unique_id=527270208]
+ custom_minimum_size = Vector2(400, 500)
+ layout_mode = 0
+ offset_left = 20.0
+-offset_top = 20.0
++offset_top = 92.0
+ offset_right = 320.0
+-offset_bottom = 520.0
++offset_bottom = 592.0
+ script = SubResource("GDScript_xhllv")
+ 
+ [node name="MarginContainer" type="MarginContainer" parent="MainMenu" unique_id=1022736181]
+@@ -296,6 +647,16 @@ layout_mode = 2
+ theme_override_styles/focus = SubResource("StyleBoxEmpty_val13")
+ text = "39"
+ 
++[node name="FloatingGraphManager" type="Control" parent="." unique_id=3300000020]
++layout_mode = 1
++anchors_preset = 15
++anchor_right = 1.0
++anchor_bottom = 1.0
++grow_horizontal = 2
++grow_vertical = 2
++mouse_filter = 2
++script = ExtResource("8_floating_graphs")
++
+ [node name="ControlsLabel" type="Label" parent="." unique_id=1827473245]
+ layout_mode = 1
+ anchors_preset = 2
+diff --git a/src/mirena_sim/Scenes/Sim/UI/controls_label.gd b/src/mirena_sim/Scenes/Sim/UI/controls_label.gd
+index bc04130..a474a37 100644
+--- a/src/mirena_sim/Scenes/Sim/UI/controls_label.gd
++++ b/src/mirena_sim/Scenes/Sim/UI/controls_label.gd
+@@ -4,6 +4,8 @@ func _ready() -> void:
+ 	# Display Controls
+ 	self.text = "Press < %s > to open menu" % get_first_key_for_action(&"open_sim_menu")
+ 	self.text += "\nPress < %s > to switch camera" %get_first_key_for_action(&"alternate_camera")
++	self.text += "\nPress < F6 > to switch Physics Mode (Modular / Legacy)"
++	self.text += "\nPress < F7 > to open Dynamics & Correlation Window"
+ 	
+ func get_first_key_for_action(action: String) -> String:
+ 	var events = InputMap.action_get_events(action)
+diff --git a/src/mirena_sim/Scenes/Sim/UI/sim_ui.gd b/src/mirena_sim/Scenes/Sim/UI/sim_ui.gd
+index 81d4efe..1a91d45 100644
+--- a/src/mirena_sim/Scenes/Sim/UI/sim_ui.gd
++++ b/src/mirena_sim/Scenes/Sim/UI/sim_ui.gd
+@@ -1,11 +1,17 @@
+ extends Control
+ class_name MirenaHud
+ 
+-@onready var fps_label: Label = $Stats/MarginContainer/VBoxContainer/FpsLabel
+-@onready var timer_label: Label = $Stats/MarginContainer/VBoxContainer/TimerLabel
+-@onready var fallen_cones_label: Label = $Stats/MarginContainer/VBoxContainer/FallenConesLabel
++const FloatingGraphManager = preload("res://Scenes/Sim/UI/FloatingGraphManager.gd")
++
++@onready var fps_label: Label = find_child("FpsLabel", true, false) as Label
++@onready var timer_label: Label = find_child("TimerLabel", true, false) as Label
++@onready var fallen_cones_label: Label = find_child("FallenConesLabel", true, false) as Label
++@onready var correlation_label: Label = find_child("CorrelationLabel", true, false) as Label
++@onready var main_menu: Control = find_child("MainMenu", true, false) as Control
++@onready var app_launcher: Node = find_child("AppLauncher", true, false)
++@onready var floating_graphs: FloatingGraphManager = find_child("FloatingGraphManager", true, false) as FloatingGraphManager
+ 
+ func _input(event):
+-	# Toggle Visibility
+-	if event.is_action_pressed("open_sim_menu"):
+-		visible = !visible
++	# Toggle Options Menu visibility while keeping top-right Stats HUD (FPS, Time, Cones, CORR) always visible
++	if event.is_action_pressed("open_sim_menu") and main_menu != null:
++		main_menu.visible = !main_menu.visible
+diff --git a/src/mirena_sim/Scenes/Sim/UI/stats.gd b/src/mirena_sim/Scenes/Sim/UI/stats.gd
+index e84e5e4..fde8118 100644
+--- a/src/mirena_sim/Scenes/Sim/UI/stats.gd
++++ b/src/mirena_sim/Scenes/Sim/UI/stats.gd
+@@ -1,37 +1,298 @@
+ extends PanelContainer
+ 
++const MirenaUITheme = preload("res://Scenes/Sim/UI/MirenaUITheme.gd")
++
++## Persistent Horizontal Engineering Metrics Top Bar for MirenaSim
++## Designed in exact visual consistency with the Options Menu panel.
++## Displays:
++## - Row 1: Simulator status (FPS, Time, Cones), Active Physics Mode & Tire Model,
++##          Dataset / Evaluation Window, Quantitative Correlation badge, and
++##          Integrated Motorsport Applications Dock (VD, CORR, LOG, TIRE, SUSP, SETUP, GRAPHS, MENU).
++## - Row 2: Live Vehicle Telemetry (Speed, Ax, Ay, Az, Yaw Rate, Sideslip β, Roll, Pitch)
++##          with highest visual priority on Speed, Ax, and Ay, and explicit units on all channels.
++
+ @export var car: MirenaCar
+ 
+-@onready var fps_label: Label = $MarginContainer/VBoxContainer/FpsLabel
+-@onready var timer_label: Label = $MarginContainer/VBoxContainer/TimerLabel
+-@onready var fallen_cones_label: Label = $MarginContainer/VBoxContainer/FallenConesLabel
++# --- Row 1 Nodes ---
++@onready var fps_label: Label = find_child("FpsLabel", true, false) as Label
++@onready var timer_label: Label = find_child("TimerLabel", true, false) as Label
++@onready var fallen_cones_label: Label = find_child("FallenConesLabel", true, false) as Label
++@onready var correlation_label: Label = find_child("CorrelationLabel", true, false) as Label
++
++@onready var physics_mode_label: Label = find_child("PhysicsModeLabel", true, false) as Label
++@onready var physics_mode_badge: PanelContainer = find_child("PhysicsModeBadge", true, false) as PanelContainer
++@onready var dataset_label: Label = find_child("DatasetLabel", true, false) as Label
++@onready var correlation_badge: PanelContainer = find_child("CorrelationBadge", true, false) as PanelContainer
++
++# --- Row 2 Live Telemetry Nodes (Prioritized: Speed, Ax, Ay) ---
++@onready var live_tag_label: Label = find_child("LiveTagLabel", true, false) as Label
++@onready var speed_metric: Label = find_child("SpeedMetric", true, false) as Label
++@onready var ax_metric: Label = find_child("AxMetric", true, false) as Label
++@onready var ay_metric: Label = find_child("AyMetric", true, false) as Label
++@onready var az_metric: Label = find_child("AzMetric", true, false) as Label
++@onready var yaw_metric: Label = find_child("YawMetric", true, false) as Label
++@onready var beta_metric: Label = find_child("BetaMetric", true, false) as Label
++@onready var roll_metric: Label = find_child("RollMetric", true, false) as Label
++@onready var pitch_metric: Label = find_child("PitchMetric", true, false) as Label
++
++# Aliases for backward compatibility with tests
++@onready var gz_metric: Label = find_child("GzMetric", true, false) as Label
++@onready var u_metric: Label = find_child("UMetric", true, false) as Label
++@onready var v_metric: Label = find_child("VMetric", true, false) as Label
++
++# Legacy proxy labels for 100% backward compatibility
++@onready var _legacy_corr_lbl: Label = get_node_or_null("MarginContainer/VBoxContainer/CorrelationLabel") as Label
++@onready var _legacy_fps_lbl: Label = get_node_or_null("MarginContainer/VBoxContainer/FpsLabel") as Label
++@onready var _legacy_timer_lbl: Label = get_node_or_null("MarginContainer/VBoxContainer/TimerLabel") as Label
++@onready var _legacy_cones_lbl: Label = get_node_or_null("MarginContainer/VBoxContainer/FallenConesLabel") as Label
+ 
+ var elapsed_time: float = 0.0
++var _corr_refresh_accum: float = 0.25 # Refresh correlation at ~4 Hz
++var _live_telemetry_accum: float = 0.10 # Refresh live vehicle telemetry at 10 Hz
+ 
+ func _ready() -> void:
+-	# 1. Set default text immediately
+-	fallen_cones_label.text = "Fallen Cones: 0"
+-	timer_label.text = "Time: 0.00"
++	# Apply exact Options Menu styling: translucent dark-grey panel with subtle slate border
++	add_theme_stylebox_override("panel", MirenaUITheme.create_panel_stylebox(0.72, 0.60, 12, 6, 4))
++	
++	if fallen_cones_label != null:
++		fallen_cones_label.text = "Cones: 0"
++	if timer_label != null:
++		timer_label.text = "Time: 0.00"
++	if correlation_label != null:
++		correlation_label.text = "CORR: N/A"
++
++	_resolve_car_reference()
++	_refresh_correlation_indicator()
++	_refresh_live_telemetry()
+ 
+-	# 2. Auto-find the car if it wasn't assigned manually in the Inspector
+-	if not car:
++func _resolve_car_reference() -> void:
++	if car != null and is_instance_valid(car):
++		return
++	if get_tree() != null:
+ 		car = get_tree().get_first_node_in_group("Car") as MirenaCar
++		if car == null:
++			car = get_tree().get_first_node_in_group("vehicle") as MirenaCar
++	var sim_autoload: Node = get_node_or_null("/root/Sim")
++	if car == null and sim_autoload != null and sim_autoload.get("car") is MirenaCar:
++		car = sim_autoload.get("car") as MirenaCar
++	if car == null and get_parent() != null and get_parent().get_parent() != null:
++		car = get_parent().get_parent().get_node_or_null("Car") as MirenaCar
+ 
+-	# 3. Connect signal
+-	if car:
++	if car != null:
+ 		if not car.cone_hit.is_connected(_on_cone_hit):
+ 			car.cone_hit.connect(_on_cone_hit)
+-	else:
+-		push_warning("MirenaHud: No MirenaCar found in scene!")
+ 
+ func _process(delta: float) -> void:
+-	# Update FPS
+-	fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
++	# 1. Update FPS
++	var fps_str: String = "FPS: %d" % Engine.get_frames_per_second()
++	if fps_label != null:
++		fps_label.text = fps_str
++	if _legacy_fps_lbl != null and _legacy_fps_lbl != fps_label:
++		_legacy_fps_lbl.text = fps_str
+ 	
+-	# Update Timer
++	# 2. Update Timer
+ 	elapsed_time += delta
+-	timer_label.text = "Time: %.2f" % elapsed_time
++	var time_str: String = "Time: %.2f" % elapsed_time
++	if timer_label != null:
++		timer_label.text = time_str
++	if _legacy_timer_lbl != null and _legacy_timer_lbl != timer_label:
++		_legacy_timer_lbl.text = time_str
++
++	# 3. Update Live Vehicle Telemetry at 10 Hz (100 ms)
++	_live_telemetry_accum += delta
++	if _live_telemetry_accum >= 0.10:
++		_live_telemetry_accum = 0.0
++		_refresh_live_telemetry()
++
++	# 4. Update Correlation & Status at ~4 Hz (250 ms, independent from live telemetry)
++	_corr_refresh_accum += delta
++	if _corr_refresh_accum >= 0.25:
++		_corr_refresh_accum = 0.0
++		_refresh_correlation_indicator()
++
++## Live Telemetry Refresh (10 Hz)
++## Reads fresh values directly from car.get_live_dynamics_snapshot()
++func _refresh_live_telemetry() -> void:
++	if car == null or not is_instance_valid(car):
++		_resolve_car_reference()
++	if car == null or not car.has_method("get_live_dynamics_snapshot"):
++		return
++	
++	var snap: Dictionary = car.call("get_live_dynamics_snapshot")
++	var is_legacy: bool = bool(snap.get("is_legacy", false))
++	var is_ay_est: bool = bool(snap.get("is_ay_estimated", false))
++	var is_ax_avail: bool = bool(snap.get("is_ax_available", true))
++	var is_az_avail: bool = bool(snap.get("is_az_available", true))
++
++	# Tag pill
++	if live_tag_label != null:
++		if is_legacy:
++			live_tag_label.text = "LIVE [LEGACY]"
++			live_tag_label.add_theme_color_override("font_color", Color(0.95, 0.72, 0.20))
++			live_tag_label.tooltip_text = "Legacy Godot VehicleBody3D (continuous rigid-body kinematics)"
++		else:
++			live_tag_label.text = "LIVE [MODULAR]"
++			live_tag_label.add_theme_color_override("font_color", Color(0.30, 0.95, 0.60))
++			live_tag_label.tooltip_text = "MirenaSim Modular 6-DOF dynamic snapshot (true body-fixed kinematics and IMU acceleration)"
++
++	# 1. SPEED: sqrt(u^2 + v^2) * 3.6 [km/h] (HIGH VISUAL PRIORITY)
++	var u_mps: float = float(snap.get("chassis.u", 0.0))
++	var v_mps: float = float(snap.get("chassis.v", 0.0))
++	var speed_kmh: float = sqrt(u_mps * u_mps + v_mps * v_mps) * 3.6
++	var speed_target: Label = speed_metric if speed_metric != null else u_metric
++	if speed_target != null:
++		speed_target.text = "SPEED: %4.1f km/h" % speed_kmh
++		# Prominent Options Menu cyan styling
++		speed_target.add_theme_color_override("font_color", MirenaUITheme.ACCENT_COLOR)
++		speed_target.tooltip_text = "Total Ground Speed: %.1f km/h (%.2f m/s)\nLongitudinal Velocity u: %+.2f m/s\nLateral Velocity v: %+.2f m/s" % [
++			speed_kmh, speed_kmh / 3.6, u_mps, v_mps
++		]
++	if u_metric != null and u_metric != speed_target:
++		u_metric.text = "U: %+.1f m/s" % u_mps
++
++	# 2. AX: Longitudinal acceleration [m/s²] (HIGH VISUAL PRIORITY)
++	if ax_metric != null:
++		if is_ax_avail:
++			var ax_mps2: float = float(snap.get("imu.ax", 0.0))
++			ax_metric.text = "AX: %+5.2f m/s²" % ax_mps2
++			var col_ax: Color = MirenaUITheme.COLOR_AX_ACCEL if ax_mps2 >= 0.0 else MirenaUITheme.COLOR_AX_BRAKE
++			ax_metric.add_theme_color_override("font_color", col_ax)
++			ax_metric.tooltip_text = "Longitudinal Acceleration (Ax): %+.2f m/s² (%+.2fg)\nFrame: Vehicle Body (+X Forward)\nDefinition: Gravity-free kinematic body acceleration" % [
++				ax_mps2, ax_mps2 / 9.80665
++			]
++		else:
++			ax_metric.text = "AX: N/A"
++			ax_metric.add_theme_color_override("font_color", MirenaUITheme.TEXT_MUTED)
++			ax_metric.tooltip_text = "Longitudinal Acceleration (Ax): Not available"
++
++	# 3. AY: Lateral acceleration [m/s²] (HIGH VISUAL PRIORITY)
++	if ay_metric != null:
++		var ay_mps2: float = float(snap.get("imu.ay", 0.0))
++		if is_ay_est:
++			ay_metric.text = "AY: %+5.2f [EST]" % ay_mps2
++			ay_metric.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
++			ay_metric.tooltip_text = "Lateral Acceleration (Ay): %+.2f m/s²\nSource: Kinematic Estimate (u * r) in Legacy mode" % ay_mps2
++		else:
++			ay_metric.text = "AY: %+5.2f m/s²" % ay_mps2
++			var abs_ay: float = absf(ay_mps2)
++			var col_ay: Color = Color(0.35, 0.90, 0.55) if abs_ay < 4.0 else (Color(0.40, 0.85, 0.95) if abs_ay < 8.0 else Color(0.95, 0.70, 0.25))
++			ay_metric.add_theme_color_override("font_color", col_ay)
++			ay_metric.tooltip_text = "Lateral Acceleration (Ay): %+.2f m/s² (%+.2fg)\nFrame: Vehicle Body (+Y Left)\nDefinition: Gravity-free kinematic body acceleration" % [
++				ay_mps2, ay_mps2 / 9.80665
++			]
++
++	# 4. AZ: Vertical acceleration [m/s²]
++	if az_metric != null:
++		if is_az_avail:
++			var az_mps2: float = float(snap.get("imu.az", 0.0))
++			az_metric.text = "AZ: %+4.2f m/s²" % az_mps2
++			az_metric.add_theme_color_override("font_color", MirenaUITheme.COLOR_AZ)
++			az_metric.tooltip_text = "Vertical Kinematic Acceleration (Az): %+.2f m/s²\nFrame: Vehicle Body (+Z Up)\nDefinition: Gravity-free kinematic body acceleration (0 at rest on level ground)" % az_mps2
++		else:
++			az_metric.text = "AZ: N/A"
++			az_metric.add_theme_color_override("font_color", MirenaUITheme.TEXT_MUTED)
++			az_metric.tooltip_text = "Vertical Acceleration (Az): Not available"
++
++	# 5. YAW RATE: [rad/s]
++	var gz_target: Label = yaw_metric if yaw_metric != null else gz_metric
++	if gz_target != null:
++		var gz_rads: float = float(snap.get("imu.gz", snap.get("chassis.r", 0.0)))
++		gz_target.text = "YAW RATE: %+5.2f rad/s" % gz_rads
++		gz_target.add_theme_color_override("font_color", MirenaUITheme.TEXT_SECONDARY)
++		gz_target.tooltip_text = "Chassis Yaw Rate (r / gz): %+.2f rad/s (%+.1f deg/s)\nPositive Leftward (+Z axis)" % [
++			gz_rads, rad_to_deg(gz_rads)
++		]
++	if gz_metric != null and gz_metric != gz_target:
++		var gz_rads: float = float(snap.get("imu.gz", snap.get("chassis.r", 0.0)))
++		gz_metric.text = "GZ: %+5.2f rad/s" % gz_rads
++
++	# 6. SIDESLIP: beta [deg]
++	var beta_target: Label = beta_metric if beta_metric != null else v_metric
++	if beta_target != null:
++		var beta_deg: float = float(snap.get("chassis.beta_deg", 0.0))
++		if is_legacy and is_ay_est:
++			beta_target.text = "SIDESLIP β: %+4.1f° [EST]" % beta_deg
++			beta_target.add_theme_color_override("font_color", Color(0.95, 0.72, 0.25))
++			beta_target.tooltip_text = "Vehicle Sideslip Angle (β): %+.1f°\nSource: Kinematic atan2(v, u)" % beta_deg
++		else:
++			beta_target.text = "SIDESLIP β: %+4.1f°" % beta_deg
++			var col_beta: Color = MirenaUITheme.TEXT_SECONDARY if absf(beta_deg) < 4.0 else Color(0.95, 0.65, 0.25)
++			beta_target.add_theme_color_override("font_color", col_beta)
++			beta_target.tooltip_text = "Vehicle CoG Sideslip Angle (β): %+.1f°\nSource: Modular Kinematics atan2(v, u)" % beta_deg
++	if v_metric != null and v_metric != beta_target:
++		v_metric.text = "V: %+.2f m/s" % v_mps
++
++	# 7. ROLL: [deg]
++	if roll_metric != null:
++		var roll_deg: float = float(snap.get("chassis.roll_deg", 0.0))
++		roll_metric.text = "ROLL: %+4.1f°" % roll_deg
++		roll_metric.add_theme_color_override("font_color", MirenaUITheme.TEXT_SECONDARY)
++		roll_metric.tooltip_text = "Sprung Mass Roll Angle (φ): %+.1f°\nUnits: degrees (Right-down positive)" % roll_deg
++
++	# 8. PITCH: [deg]
++	if pitch_metric != null:
++		var pitch_deg: float = float(snap.get("chassis.pitch_deg", 0.0))
++		pitch_metric.text = "PITCH: %+4.1f°" % pitch_deg
++		pitch_metric.add_theme_color_override("font_color", MirenaUITheme.TEXT_SECONDARY)
++		pitch_metric.tooltip_text = "Sprung Mass Pitch Angle (θ): %+.1f°\nUnits: degrees (Nose-up positive)" % pitch_deg
++
++## Correlation Status Refresh (~4 Hz)
++## Updates Row 1 indicators independently from live telemetry
++func _refresh_correlation_indicator() -> void:
++	if car == null or not is_instance_valid(car):
++		_resolve_car_reference()
++	
++	var summary: Dictionary = {}
++	if car != null and car.has_method("get_hud_correlation_summary"):
++		summary = car.call("get_hud_correlation_summary")
++	
++	var corr_text: String = str(summary.get("hud_text", "CORR: N/A"))
++	var corr_col: Color = summary.get("hud_color", Color(0.68, 0.72, 0.78))
++	var details_str: String = str(summary.get("details", ""))
++	
++	if correlation_label != null:
++		correlation_label.text = corr_text
++		correlation_label.add_theme_color_override("font_color", corr_col)
++		correlation_label.tooltip_text = details_str
++	if _legacy_corr_lbl != null and _legacy_corr_lbl != correlation_label:
++		_legacy_corr_lbl.text = corr_text
++		_legacy_corr_lbl.add_theme_color_override("font_color", corr_col)
++
++	# 1. Physics Mode Badge
++	var p_mode_text: String = str(summary.get("physics_mode_label", "MODULAR 6-DOF: TeR_Tire MF6.2"))
++	var p_mode_col: Color = summary.get("physics_mode_color", Color(0.30, 0.95, 0.60))
++	if physics_mode_label != null:
++		physics_mode_label.text = p_mode_text
++		physics_mode_label.add_theme_color_override("font_color", p_mode_col)
++		physics_mode_label.tooltip_text = "Physics Authority: %s\nTire Model: %s" % [
++			p_mode_text, str(summary.get("tire_model_label", "TeR_Tire"))
++		]
++	
++	if physics_mode_badge != null:
++		var is_modular: bool = p_mode_text.begins_with("MODULAR")
++		physics_mode_badge.add_theme_stylebox_override("panel", MirenaUITheme.create_pill_badge_stylebox(is_modular, not is_modular))
++
++	# 2. Correlation Score Badge
++	if correlation_badge != null:
++		correlation_badge.add_theme_stylebox_override("panel", MirenaUITheme.create_pill_badge_stylebox(true, false))
++
++	# 3. Dataset & Evaluation Window Info
++	var ref_name: String = str(summary.get("ref_dataset_name", "TeR26 VN-300 Real"))
++	var sim_name: String = str(summary.get("sim_dataset_name", "modular_calibrated"))
++	var win_label: String = str(summary.get("eval_window_label", "tau: 20..281s"))
++	if dataset_label != null:
++		if ref_name == "None" or sim_name == "None":
++			dataset_label.text = "Ref: No Dataset Loaded | Sim: Live Standby"
++			dataset_label.tooltip_text = "No reference dataset loaded for correlation."
++		else:
++			dataset_label.text = "Ref: %s | Sim: %s (%s)" % [ref_name, sim_name, win_label]
++			dataset_label.tooltip_text = "Real Reference: %s\nSimulation Run: %s\nEvaluation Window: %s\nPress F7 for Multi-Channel Correlation Dashboard" % [
++				ref_name, sim_name, win_label
++			]
+ 
+ func _on_cone_hit(count: int) -> void:
+-	# Update Fallen Cones when a collision occurs
+-	fallen_cones_label.text = "Fallen Cones: %d" % count
++	var cones_str: String = "Cones: %d" % count
++	if fallen_cones_label != null:
++		fallen_cones_label.text = cones_str
++	if _legacy_cones_lbl != null and _legacy_cones_lbl != fallen_cones_label:
++		_legacy_cones_lbl.text = cones_str
+diff --git a/src/mirena_sim/Scenes/Sim/UI/vehicle_menu.gd b/src/mirena_sim/Scenes/Sim/UI/vehicle_menu.gd
+index 2425f69..0334b09 100644
+--- a/src/mirena_sim/Scenes/Sim/UI/vehicle_menu.gd
++++ b/src/mirena_sim/Scenes/Sim/UI/vehicle_menu.gd
+@@ -4,14 +4,83 @@ extends MarginContainer
+ const MISSION_STATUS_NAMES := ["INACTIVE", "CONFIGURING", "READY", "RUNNING", "FINISHED", "FAILED"]
+ 
+ 
++var _physics_mode_select: OptionButton = null
++var _tire_model_select: OptionButton = null
++
+ # Called when the node enters the scene tree for the first time.
+ func _ready() -> void:
+-	pass # Replace with function body.
++	_build_dynamics_controls()
++
++func _build_dynamics_controls() -> void:
++	var vbox: VBoxContainer = get_node_or_null("Vehicle") as VBoxContainer
++	if vbox == null:
++		return
++
++	var sep := HSeparator.new()
++	vbox.add_child(sep)
++
++	var phys_row := HBoxContainer.new()
++	phys_row.add_theme_constant_override("separation", 10)
++	var phys_lbl := Label.new()
++	phys_lbl.text = "PHYSICS:"
++	phys_row.add_child(phys_lbl)
++
++	_physics_mode_select = OptionButton.new()
++	_physics_mode_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
++	_physics_mode_select.add_item("Modular VehicleDynamics (6-DOF)", 1)
++	_physics_mode_select.add_item("Legacy VehicleBody3D (Raycast)", 0)
++	_physics_mode_select.selected = 0
++	_physics_mode_select.item_selected.connect(_on_physics_engine_selected)
++	phys_row.add_child(_physics_mode_select)
++	vbox.add_child(phys_row)
++
++	var tire_row := HBoxContainer.new()
++	tire_row.add_theme_constant_override("separation", 10)
++	var tire_lbl := Label.new()
++	tire_lbl.text = "TIRE:"
++	tire_row.add_child(tire_lbl)
++
++	_tire_model_select = OptionButton.new()
++	_tire_model_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
++	_tire_model_select.add_item("TeR_Tire Grey-Box (MF6.2 + PINN)", 0)
++	_tire_model_select.add_item("Pacejka MF6.2 Analytical", 1)
++	_tire_model_select.add_item("Linear Reference Stub", 2)
++	_tire_model_select.selected = 0
++	_tire_model_select.item_selected.connect(_on_tire_model_selected)
++	tire_row.add_child(_tire_model_select)
++	vbox.add_child(tire_row)
++
++	var dash_btn := Button.new()
++	dash_btn.text = "Open Dynamics & Correlation Window (F7)"
++	dash_btn.pressed.connect(func():
++		if Sim.car != null and Sim.car.has_method("toggle_dynamics_dashboard_window"):
++			Sim.car.toggle_dynamics_dashboard_window()
++	)
++	vbox.add_child(dash_btn)
++
++func _on_physics_engine_selected(index: int) -> void:
++	if Sim.car != null and Sim.car.has_method("set_physics_engine_mode"):
++		var mode_id: int = _physics_mode_select.get_item_id(index)
++		Sim.car.set_physics_engine_mode(mode_id)
++
++func _on_tire_model_selected(index: int) -> void:
++	if Sim.car != null and Sim.car.has_method("set_active_tire_model_type"):
++		match index:
++			0:
++				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN)
++			1:
++				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.PACEJKA_MF62)
++			2:
++				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB)
+ 
+ func _process(delta):
+ 	var ms_idx: int = Sim.car._mission_info.status
+ 	var ms_text: String = MISSION_STATUS_NAMES[ms_idx] if ms_idx >= 0 and ms_idx < MISSION_STATUS_NAMES.size() else "UNKNOWN"
+ 	$Vehicle/MissionStatus/Label.text = "MISSION_STATUS: " + ms_text
++	if _physics_mode_select != null and Sim.car != null:
++		var target_idx: int = 0 if Sim.car.physics_engine_mode == MirenaCar.PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS else 1
++		if _physics_mode_select.selected != target_idx:
++			_physics_mode_select.selected = target_idx
+ 
+ func _on_pilot_mode_item_selected(index: int) -> void:
+ 	match index:
+diff --git a/src/mirena_sim/Scenes/Vehicle/vehicleMotion.gd b/src/mirena_sim/Scenes/Vehicle/vehicleMotion.gd
+index f4e9b92..7362fda 100644
+--- a/src/mirena_sim/Scenes/Vehicle/vehicleMotion.gd
++++ b/src/mirena_sim/Scenes/Vehicle/vehicleMotion.gd
+@@ -3,6 +3,37 @@ class_name MirenaCar
+ 
+ signal cone_hit(count: int)
+ enum PilotMode { NO_PILOT, MANUAL, ROS, TRACK_RAIL }
++enum PhysicsEngineMode {
++	LEGACY_GODOT_VEHICLE_BODY = 0,
++	MODULAR_VEHICLE_DYNAMICS = 1,
++}
++
++# --- Physics Engine Authority Selection ---
++@export var physics_engine_mode: PhysicsEngineMode = PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS
++var dynamics_controller: VehicleDynamicsController = null
++var dashboard_window: VehicleDynamicsDashboardWindow = null
++var _modular_wheel_holder: Node3D = null
++var _fl_wheel_node: VehicleWheel3D = null
++var _fr_wheel_node: VehicleWheel3D = null
++var _rl_wheel_node: VehicleWheel3D = null
++var _rr_wheel_node: VehicleWheel3D = null
++var _wheel_rest_transforms: Array[Transform3D] = []
++var _hud_layer: CanvasLayer = null
++var _hud_status_panel: PanelContainer = null
++var _hud_status_label: Label = null
++var _hud_refresh_accum: float = 0.0
++
++# --- Open-Loop Telemetry Control Replay & Persistent Correlation Cache ---
++var is_replaying_controls: bool = false
++var _replay_recording: TelemetryRecording = null
++var _replay_cursor_s: float = 0.0
++var _replay_end_s: float = 0.0
++var _hud_corr_ref_rec: TelemetryRecording = null
++var _hud_corr_sim_rec: TelemetryRecording = null
++var _hud_corr_loaded: bool = false
++var _hud_corr_eval_accum: float = 0.0
++var _hud_corr_summary: Dictionary = {}
++var _hud_corr_active_mode: int = -1
+ 
+ # --- Configuration ---
+ const POWER_LIM = 80000 # W
+@@ -93,23 +124,31 @@ var hit_cones: Array = [] # Unique struck cones
+ var _as_info : RosMirenaCommonAsInfo
+ var _mission_info
+ 
++# Continuous kinematic body acceleration tracking (gravity-free body frame: +X fwd, +Y left, +Z up)
++var _prev_linear_vel: Vector3 = Vector3.ZERO
++var _has_prev_linear_vel: bool = false
++var _kin_accel_body_lpf: Vector3 = Vector3.ZERO
++
+ var initial_gate_crossings: int = 0
+ var lap_start_ticks: float = 0.0
+ 
+ @onready var car_state : RosMirenaCommonCar = RosMirenaCommonCar.new()
+ @onready var wheel_speeds : RosMirenaCommonWheelSpeeds = RosMirenaCommonWheelSpeeds.new()
+ @onready var lap_status_msg : RosMirenaCommonLapStatus = RosMirenaCommonLapStatus.new()
++var enable_ros_node: bool = true
+ 
+ func _ready():
+ 	# Enable collision contact reporting
+ 	
+ 	cone_collision_set(true)
+ 
+-	# Add to vehicle group so gates can detect us
++	# Add to vehicle and Car groups so gates and HUD Stats panel can detect us
+ 	add_to_group("vehicle")
++	add_to_group("Car")
+ 	contact_monitor = true
+ 	max_contacts_reported = 10
+-	body_entered.connect(_on_body_entered)
++	if not body_entered.is_connected(_on_body_entered):
++		body_entered.connect(_on_body_entered)
+ 
+ 	# Enable cone collisions by default
+ 	
+@@ -117,54 +156,49 @@ func _ready():
+ 	# Connect to InitialGate's vehicle_passed signal for lap timing
+ 	_connect_to_initial_gate()
+ 
+-	## ROS — no namespace: all topic names below are absolute
+-	_node = RosNode.new()
+-	_node.init("mirena_car", "")
+-	
+-	## Publishers (absolute topic names from topic contract)
+-	_as_info_pub          = _node.create_publisher("/as_status",        "mirena_common/msg/AsInfo")
+-	_state_pub            = _node.create_publisher("/debug/state/car", "mirena_common/msg/Car")
+-	_perception_pub       = _node.create_publisher("/debug/perception",  "mirena_common/msg/EntityList")
+-	_slam_pub             = _node.create_publisher("/debug/slam",        "mirena_common/msg/EntityList")
+-	_inferred_control_pub = _node.create_publisher("/inferred_control",  "mirena_common/msg/CarControl")
+-	_lap_status_pub       = _node.create_publisher("/lap_status",        "mirena_common/msg/LapStatus")
+-	
+-	var wheel_qos := RosQoS.new()
+-	wheel_qos.history = RosQoS.KEEP_LAST
+-	# depth 5 / BEST_EFFORT mirrors rclcpp::SensorDataQoS(), which is what the
+-	# real CAN bridge publishes /sensors/wheel_speeds on. Deliberately not
+-	# widened: a sim that queues more than the car does hides its own hitches.
+-	wheel_qos.depth = 5
+-	wheel_qos.reliability = RosQoS.BEST_EFFORT
+-	wheel_qos.durability = RosQoS.VOLATILE
+-	_wheel_speeds_pub = _node.create_publisher(
+-		"/sensors/wheel_speeds", "mirena_common/msg/WheelSpeeds", wheel_qos)
+-
+ 	# State setup
+ 	_as_info = RosMirenaCommonAsInfo.new()
+ 	_as_info.status = 0
+ 	_mission_info = RosMirenaCommonMissionInfo.new()
+ 	_mission_info.status = 0
+-	
+-	## Publisher timers
+-	#
+-	# Wheel speeds are deliberately NOT on a RosTimer. RosTimer callbacks are
+-	# handed to the Godot main thread with call_deferred (see
+-	# rclgd/src/rclgd/ros_timer.cpp), so a "100 Hz" timer actually fires on a
+-	# render-frame boundary -- with vsync off that frame rate floats with load,
+-	# and the published intervals jitter even though the stamps come from
+-	# /clock. The encoder is driven off _physics_process instead, which lands
+-	# exactly on the requested tick.
+-	_debug_tim = _node.create_timer(0.1, _debug_publish)
+-	
+-	# Subscribers
+-	_control_sub = _node.create_subscription("/control", "mirena_common/msg/CarControl", _on_control)
+-	_mission_info_sub = _node.create_subscription("/system/mission_status", "mirena_common/msg/MissionInfo", _on_mission_info)
+-	_as_status_sub = _node.create_subscription("/as_status", "mirena_common/msg/AsInfo", _on_as_status)
++
++	## ROS — no namespace: all topic names below are absolute
++	if enable_ros_node and is_inside_tree() and get_node_or_null("/root/rclgd_init") != null:
++		_node = RosNode.new()
++		_node.init("mirena_car", "")
++		
++		## Publishers (absolute topic names from topic contract)
++		_as_info_pub          = _node.create_publisher("/as_status",        "mirena_common/msg/AsInfo")
++		_state_pub            = _node.create_publisher("/debug/state/car", "mirena_common/msg/Car")
++		_perception_pub       = _node.create_publisher("/debug/perception",  "mirena_common/msg/EntityList")
++		_slam_pub             = _node.create_publisher("/debug/slam",        "mirena_common/msg/EntityList")
++		_inferred_control_pub = _node.create_publisher("/inferred_control",  "mirena_common/msg/CarControl")
++		_lap_status_pub       = _node.create_publisher("/lap_status",        "mirena_common/msg/LapStatus")
++		
++		var wheel_qos := RosQoS.new()
++		wheel_qos.history = RosQoS.KEEP_LAST
++		wheel_qos.depth = 5
++		wheel_qos.reliability = RosQoS.BEST_EFFORT
++		wheel_qos.durability = RosQoS.VOLATILE
++		_wheel_speeds_pub = _node.create_publisher(
++			"/sensors/wheel_speeds", "mirena_common/msg/WheelSpeeds", wheel_qos)
++		
++		_debug_tim = _node.create_timer(0.1, _debug_publish)
++		
++		# Subscribers
++		_control_sub = _node.create_subscription("/control", "mirena_common/msg/CarControl", _on_control)
++		_mission_info_sub = _node.create_subscription("/system/mission_status", "mirena_common/msg/MissionInfo", _on_mission_info)
++		_as_status_sub = _node.create_subscription("/as_status", "mirena_common/msg/AsInfo", _on_as_status)
+ 
+ 	# Camera Registration
+-	Sim.register_camera($TPCam)
+-	Sim.register_camera($FPCam)
++	var sim_autoload: Node = get_node_or_null("/root/Sim") if is_inside_tree() else null
++	if has_node("TPCam") and sim_autoload != null and sim_autoload.has_method("register_camera"):
++		sim_autoload.call("register_camera", $TPCam)
++	if has_node("FPCam") and sim_autoload != null and sim_autoload.has_method("register_camera"):
++		sim_autoload.call("register_camera", $FPCam)
++
++	# Initialize Modular VehicleDynamics Framework
++	_setup_modular_vehicle_dynamics()
+ 
+ func _on_body_entered(body: Node) -> void:
+ 	if body.is_in_group("Cones"):
+@@ -184,13 +218,15 @@ func _on_body_entered(body: Node) -> void:
+ 		print("CONE Hit")
+ 		
+ 
+-func _connect_to_initial_gate():
++var _gate_connected: bool = false
++
++func _connect_to_initial_gate() -> void:
++	if _gate_connected or not is_inside_tree() or get_tree() == null:
++		return
+ 	var gate = get_tree().get_first_node_in_group("InitialGate")
+-	if gate:
++	if gate != null and not gate.vehicle_passed.is_connected(_on_initial_gate_passed):
+ 		gate.vehicle_passed.connect(_on_initial_gate_passed)
+-	else:
+-		# Gate not ready yet, try again next frame
+-		call_deferred("_connect_to_initial_gate")
++		_gate_connected = true
+ 
+ func _on_initial_gate_passed():
+ 	initial_gate_crossings += 1
+@@ -232,25 +268,72 @@ func _on_mission_info(msg):
+ 	_mission_info = msg
+ 	
+ func _physics_process(delta: float) -> void:
+-	# Process driving commands
+-	match pilot:
+-		PilotMode.NO_PILOT:
+-			_process_no_pilot()
+-			_apply_vehicle_physics(delta)
+-		PilotMode.MANUAL:
+-			_process_manual_pilot(delta)
+-			_apply_vehicle_physics(delta)
+-		PilotMode.ROS:
+-			_process_ros_pilot()
+-			_apply_vehicle_physics(delta)
+-		PilotMode.TRACK_RAIL:
+-			_process_track_rail(delta)
++	if not _gate_connected:
++		_connect_to_initial_gate()
++	# Process driving commands (or open-loop telemetry control replay)
++	if is_replaying_controls and _replay_recording != null:
++		_process_telemetry_replay_pilot(delta)
++		_apply_vehicle_physics(delta)
++	else:
++		match pilot:
++			PilotMode.NO_PILOT:
++				_process_no_pilot()
++				_apply_vehicle_physics(delta)
++			PilotMode.MANUAL:
++				_process_manual_pilot(delta)
++				_apply_vehicle_physics(delta)
++			PilotMode.ROS:
++				_process_ros_pilot()
++				_apply_vehicle_physics(delta)
++			PilotMode.TRACK_RAIL:
++				_process_track_rail(delta)
+ 	
+ 	if global_position.y < -1:
+ 		reset_position()
+ 
++	# Continuous kinematic body acceleration tracking (gravity-free body frame: +X fwd, +Y left, +Z up)
++	if delta > 0.0:
++		if not _has_prev_linear_vel:
++			_prev_linear_vel = linear_velocity
++			_has_prev_linear_vel = true
++		else:
++			var accel_world: Vector3 = (linear_velocity - _prev_linear_vel) / delta
++			_prev_linear_vel = linear_velocity
++			var local_accel: Vector3 = global_basis.inverse() * accel_world
++			var kin_ax: float = -local_accel.z
++			var kin_ay: float = -local_accel.x
++			var kin_az: float = local_accel.y
++			var tau: float = 0.035
++			var alpha: float = clampf(delta / (tau + delta), 0.0, 1.0)
++			_kin_accel_body_lpf.x = lerpf(_kin_accel_body_lpf.x, kin_ax, alpha)
++			_kin_accel_body_lpf.y = lerpf(_kin_accel_body_lpf.y, kin_ay, alpha)
++			_kin_accel_body_lpf.z = lerpf(_kin_accel_body_lpf.z, kin_az, alpha)
++
+ 	_update_wheel_speeds()
+ 	_publish_car_state()
++
++func _process(delta: float) -> void:
++	_hud_refresh_accum += delta
++	_hud_corr_eval_accum += delta
++	if _hud_refresh_accum >= 0.08:
++		_hud_refresh_accum = 0.0
++		_refresh_dynamics_hud_overlay()
++
++func _unhandled_key_input(event: InputEvent) -> void:
++	if not (event is InputEventKey):
++		return
++	var kev := event as InputEventKey
++	if not kev.pressed or kev.echo:
++		return
++	if kev.keycode == KEY_F6 or kev.physical_keycode == KEY_F6:
++		var next_mode: int = PhysicsEngineMode.LEGACY_GODOT_VEHICLE_BODY \
++			if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS \
++			else PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS
++		set_physics_engine_mode(next_mode)
++		get_viewport().set_input_as_handled()
++	elif kev.keycode == KEY_F7 or kev.physical_keycode == KEY_F7:
++		toggle_dynamics_dashboard_window()
++		get_viewport().set_input_as_handled()
+ 		
+ # Publish Debug Info
+ func _debug_publish():
+@@ -263,6 +346,8 @@ func _on_as_status(msg):
+ 	_as_info.mission = msg.mission
+ 
+ func _publish_car_state():
++	if _node == null or _state_pub == null:
++		return
+ 	var now = _node.now()
+ 	car_state.header.stamp = now
+ 	car_state.header.frame_id = "odom"
+@@ -305,9 +390,17 @@ func _publish_car_state():
+ ## jitter that made this topic unusable, instead of merely hiding it behind a
+ ## filter. The previous code published one held sample per output period.
+ func _update_wheel_speeds() -> void:
+-	# Godot's convention: forward drive makes get_rpm() negative.
+-	_wheel_rpm_acc[0] += -$RL_WHEEL.get_rpm()
+-	_wheel_rpm_acc[1] += -$RR_WHEEL.get_rpm()
++	if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS and dynamics_controller != null and dynamics_controller.model != null:
++		var st: VehicleState = dynamics_controller.model.state
++		_wheel_rpm_acc[0] += st.wheels[VehicleDynamicsTypes.WheelCorner.RL].get_rpm()
++		_wheel_rpm_acc[1] += st.wheels[VehicleDynamicsTypes.WheelCorner.RR].get_rpm()
++	else:
++		# Godot's convention: forward drive makes get_rpm() negative.
++		var rl_node: VehicleWheel3D = _rl_wheel_node if _rl_wheel_node != null else get_node_or_null("RL_WHEEL") as VehicleWheel3D
++		var rr_node: VehicleWheel3D = _rr_wheel_node if _rr_wheel_node != null else get_node_or_null("RR_WHEEL") as VehicleWheel3D
++		if rl_node != null and rr_node != null:
++			_wheel_rpm_acc[0] += -rl_node.get_rpm()
++			_wheel_rpm_acc[1] += -rr_node.get_rpm()
+ 	_wheel_decim_n += 1
+ 
+ 	var window: int = maxi(1, int(round(Engine.physics_ticks_per_second / wheel_speed_rate)))
+@@ -324,6 +417,8 @@ func _update_wheel_speeds() -> void:
+ 	_wheel_rpm_acc[1] = 0.0
+ 	_wheel_decim_n = 0
+ 
++	if _node == null or _wheel_speeds_pub == null:
++		return
+ 	wheel_speeds.header.stamp = _node.now()
+ 	wheel_speeds.header.frame_id = frame_id  # "car/cog"
+ 	# Low-pass filter: Godot vehicle physics produces jittery RPM values.
+@@ -396,7 +491,10 @@ func _process_no_pilot() -> void:
+ 
+ func _process_manual_pilot(delta: float) -> void:
+ 	var steer_input = Input.get_action_strength("manual_steer_l") - Input.get_action_strength("manual_steer_r")
+-	_steer_smoothed = _smooth_steer(_steer_smoothed, steer_input, delta, 2.0)
++	var smooth_spd: float = 7.5
++	if dynamics_controller != null and dynamics_controller.config != null and dynamics_controller.config.steering_config != null:
++		smooth_spd = dynamics_controller.config.steering_config.manual_steer_smooth_speed
++	_steer_smoothed = _smooth_steer(_steer_smoothed, steer_input, delta, smooth_spd)
+ 	
+ 	self.gas = Input.get_action_strength("manual_gas_pos") - Input.get_action_strength("manual_gas_neg")
+ 	self.steering = _steer_smoothed * MAX_STEER
+@@ -437,7 +535,18 @@ func _process_track_rail(delta: float) -> void:
+ func _body_velocity() -> Vector3:
+ 	return global_basis.inverse() * linear_velocity
+ 
+-func _apply_vehicle_physics(_delta: float) -> void:
++func _apply_vehicle_physics(delta: float) -> void:
++	if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS and dynamics_controller != null:
++		var ebs_triggered: bool = (pilot == PilotMode.NO_PILOT) or (self.brake > 0.5)
++		var steer_cmd_rad: float = self.steering
++		# Ensure VehicleBody3D native properties are zeroed while Modular VehicleDynamics is sole force authority
++		self.engine_force = 0.0
++		dynamics_controller.step_from_host(delta, self.gas, steer_cmd_rad, ebs_triggered, self.origin)
++		return
++
++	_apply_legacy_vehicle_physics(delta)
++
++func _apply_legacy_vehicle_physics(_delta: float) -> void:
+ 	var u = -_body_velocity().z
+ 	var max_fx_motor = MOTOR_PEAK_TRQ * GEAR_RATIO / WHEEL_RADIUS
+ 
+@@ -458,40 +567,39 @@ func _apply_vehicle_physics(_delta: float) -> void:
+ 	var front_share = brake_budget * BRAKE_BIAS_F * 0.5
+ 	var rear_share = brake_budget * (1.0 - BRAKE_BIAS_F)
+ 
+-	# No separate regen term. Scaling one by the motor's drive torque made it
+-	# saturate the rear axle's share at 6% of the brake command -- a light
+-	# pedal touch was shedding 1.3 m/s^2, and the recorded car shows a coast
+-	# of only 1.9 m/s^2 including gradient. The tyre-limited friction brake
+-	# carries the whole budget instead, and it also holds the car at rest,
+-	# which is what bounding the braking at zero needed the regen for.
+-	# Real drivetrain is power-limited (80 kW) as well as torque-limited. The
+-	# constant was declared but never used, so the car pulled full torque at any
+-	# speed. Keep the torque cap but also cap by P/v.
+ 	var fx = minf(throttle * max_fx_motor,
+ 		POWER_LIM * DRIVETRAIN_EFF / maxf(u, 1.0))
+ 
+-	# Rear left and right. max_fx_motor is the total tractive force, so each
+-	# driven wheel gets half of it -- otherwise the pair asks for twice the
+-	# motor's output.
+-	$RL_WHEEL.engine_force = fx / 2.0
+-	$RR_WHEEL.engine_force = fx / 2.0
++	var fl_w: VehicleWheel3D = _fl_wheel_node if _fl_wheel_node != null else get_node_or_null("FL_WHEEL") as VehicleWheel3D
++	var fr_w: VehicleWheel3D = _fr_wheel_node if _fr_wheel_node != null else get_node_or_null("FR_WHEEL") as VehicleWheel3D
++	var rl_w: VehicleWheel3D = _rl_wheel_node if _rl_wheel_node != null else get_node_or_null("RL_WHEEL") as VehicleWheel3D
++	var rr_w: VehicleWheel3D = _rr_wheel_node if _rr_wheel_node != null else get_node_or_null("RR_WHEEL") as VehicleWheel3D
++
++	if rl_w != null:
++		rl_w.engine_force = fx / 2.0
++	if rr_w != null:
++		rr_w.engine_force = fx / 2.0
+ 
+-	# The front axle carries 60% of the budget -- which the old code never
+-	# applied at all, it braked the rear wheels only. Both axles scale with
+-	# the brake command, so a light pedal touch stays a light brake.
+ 	var ebs = min(brake, 1.0) * BRAKE_F
+-	$FL_WHEEL.brake = front_share * braking + ebs
+-	$FR_WHEEL.brake = front_share * braking + ebs
+-	$RL_WHEEL.brake = rear_share * 0.5 * braking + ebs
+-	$RR_WHEEL.brake = rear_share * 0.5 * braking + ebs
++	if fl_w != null:
++		fl_w.brake = front_share * braking + ebs
++	if fr_w != null:
++		fr_w.brake = front_share * braking + ebs
++	if rl_w != null:
++		rl_w.brake = rear_share * 0.5 * braking + ebs
++	if rr_w != null:
++		rr_w.brake = rear_share * 0.5 * braking + ebs
+ 
+ func _smooth_steer(current: float, target: float, delta: float, speed: float) -> float:
+ 	var diff = target - current
+-	var t = clamp(abs(diff), 0.0, 1.0)
+-	var _ease = t * t * (3.0 - 2.0 * t) 
+-	current += sign(diff) * _ease * speed * delta
+-	if sign(target - current) != sign(diff): current = target
+-	return clamp(current, -1.0, 1.0)
++	if absf(diff) < 1e-4:
++		return clampf(target, -1.0, 1.0)
++	var t = clampf(absf(diff), 0.0, 1.0)
++	var _ease = maxf(t * t * (3.0 - 2.0 * t), 0.35)
++	current += signf(diff) * _ease * speed * delta
++	if signf(target - current) != signf(diff):
++		current = target
++	return clampf(current, -1.0, 1.0)
+ 
+ # --- Interface & Utility ---
+ 
+@@ -500,11 +608,17 @@ func set_origin(transform, reset_vel: bool = false) -> void:
+ 	if reset_vel:
+ 		linear_velocity = Vector3.ZERO
+ 		angular_velocity = Vector3.ZERO
++		_has_prev_linear_vel = false
++		_kin_accel_body_lpf = Vector3.ZERO
+ 	await get_tree().process_frame
+ 	set_deferred("global_transform", origin)
+ 
+ func reset_position() -> void:
+-	set_origin(Sim.track.origin, true)
++	var sim_autoload: Node = get_node_or_null("/root/Sim")
++	if sim_autoload != null and sim_autoload.get("track") != null:
++		set_origin(sim_autoload.get("track").origin, true)
++	else:
++		set_origin(origin, true)
+ 	self.gas = 0
+ 	self.steering = 0
+ 	self.brake = 0
+@@ -530,8 +644,10 @@ func reset_position() -> void:
+ 	# it, stopping reset_position before it ever reached the wheel speeds above.
+ 	# The INS carrying state across a teleport is bad; the car not respawning at
+ 	# all is worse.
+-	if $INS.has_method("reset"):
++	if has_node("INS") and $INS.has_method("reset"):
+ 		$INS.reset()
++	if dynamics_controller != null:
++		dynamics_controller.reset_vehicle(origin)
+ 
+ func cone_collision_set(enable: bool) -> void:
+ 	self.collision_layer = (self.collision_layer & ~2) | (2 * int(enable))
+@@ -539,6 +655,8 @@ func cone_collision_set(enable: bool) -> void:
+ 	
+ func get_cones_in_sight(max_dist: float = 10.0) -> Array:
+ 	var visible_cones: Array = []
++	if not has_node("Camera"):
++		return []
+ 	var camera = $Camera._camera
+ 	if not camera: return []
+ 	for cone in get_tree().get_nodes_in_group("Cones"):
+@@ -546,3 +664,622 @@ func get_cones_in_sight(max_dist: float = 10.0) -> Array:
+ 			if camera.is_position_in_frustum(cone.global_position):
+ 				visible_cones.append(cone)
+ 	return visible_cones
++
++# --- Modular VehicleDynamics Integration & Single-Authority Mode Switching ---
++
++func _setup_modular_vehicle_dynamics() -> void:
++	_fl_wheel_node = get_node_or_null("FL_WHEEL") as VehicleWheel3D
++	_fr_wheel_node = get_node_or_null("FR_WHEEL") as VehicleWheel3D
++	_rl_wheel_node = get_node_or_null("RL_WHEEL") as VehicleWheel3D
++	_rr_wheel_node = get_node_or_null("RR_WHEEL") as VehicleWheel3D
++
++	_wheel_rest_transforms.clear()
++	for w in [_fl_wheel_node, _fr_wheel_node, _rl_wheel_node, _rr_wheel_node]:
++		_wheel_rest_transforms.append(w.transform if w != null else Transform3D.IDENTITY)
++
++	_modular_wheel_holder = Node3D.new()
++	_modular_wheel_holder.name = "ModularWheelHolder"
++	add_child(_modular_wheel_holder)
++
++	dynamics_controller = VehicleDynamicsController.new()
++	dynamics_controller.name = "VehicleDynamicsController"
++	dynamics_controller.managed_by_host_script = true
++	add_child(dynamics_controller)
++	if dynamics_controller.model == null:
++		dynamics_controller._ready()
++
++	var explicit_wheels: Array[Node3D] = [
++		_fl_wheel_node as Node3D,
++		_fr_wheel_node as Node3D,
++		_rl_wheel_node as Node3D,
++		_rr_wheel_node as Node3D,
++	]
++	dynamics_controller.bind_to_host_vehicle(self, explicit_wheels)
++	dynamics_controller.logger.logging_enabled = true
++
++	# Apply configured initial physics engine mode with strict single-authority enforcement
++	set_physics_engine_mode(physics_engine_mode)
++
++## Switch between `LEGACY_GODOT_VEHICLE_BODY` (0) and `MODULAR_VEHICLE_DYNAMICS` (1) at runtime.
++## Guarantees strict mutual exclusion:
++## - In `MODULAR_VEHICLE_DYNAMICS`, the 4 `VehicleWheel3D` nodes are reparented under `ModularWheelHolder`
++##   so `VehicleBody3D` has 0 direct `VehicleWheel3D` children and applies ZERO native wheel/suspension forces.
++## - In `LEGACY_GODOT_VEHICLE_BODY`, the 4 `VehicleWheel3D` nodes are reparented back as direct children of `self`
++##   at their exact rest transforms, and `VehicleDynamicsController` is set to `INACTIVE_LEGACY_PASSTHROUGH`.
++func set_physics_engine_mode(mode: int) -> void:
++	physics_engine_mode = PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS if mode == 1 else PhysicsEngineMode.LEGACY_GODOT_VEHICLE_BODY
++	var wheel_list: Array[VehicleWheel3D] = [_fl_wheel_node, _fr_wheel_node, _rl_wheel_node, _rr_wheel_node]
++
++	if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS:
++		self.engine_force = 0.0
++		self.brake = 0.0
++		for i in range(wheel_list.size()):
++			var w: VehicleWheel3D = wheel_list[i]
++			if w == null:
++				continue
++			w.engine_force = 0.0
++			w.brake = 0.0
++			w.steering = 0.0
++			if w.get_parent() != _modular_wheel_holder and _modular_wheel_holder != null:
++				w.owner = null
++				w.reparent(_modular_wheel_holder, false)
++		if dynamics_controller != null and dynamics_controller.config != null:
++			dynamics_controller.config.integration_mode = VehicleDynamicsTypes.IntegrationMode.CUSTOM_RIGID_BODY_3D
++			GodotPhysicsAdapter.configure_rigid_body(self, dynamics_controller.config.vehicle_parameters)
++			if dynamics_controller.model != null and is_inside_tree():
++				GodotPhysicsAdapter.sync_state_from_body(self, dynamics_controller.model.state, dynamics_controller.model.contact_query)
++	else:
++		if dynamics_controller != null and dynamics_controller.config != null:
++			dynamics_controller.config.integration_mode = VehicleDynamicsTypes.IntegrationMode.INACTIVE_LEGACY_PASSTHROUGH
++		self.mass = MASS_KG
++		for i in range(wheel_list.size()):
++			var w: VehicleWheel3D = wheel_list[i]
++			if w == null:
++				continue
++			if w.get_parent() != self:
++				w.owner = null
++				w.reparent(self, false)
++			if i < _wheel_rest_transforms.size():
++				w.transform = _wheel_rest_transforms[i]
++
++	_hud_corr_loaded = false
++	_hud_corr_summary.clear()
++	_refresh_dynamics_hud_overlay()
++
++## Return true if any `VehicleWheel3D` is currently a direct child of `self` (`VehicleBody3D`).
++## Used by tests and diagnostics to verify single-authority mutual exclusion.
++func has_legacy_direct_wheel_children() -> bool:
++	for child in get_children():
++		if child is VehicleWheel3D:
++			return true
++	return false
++
++## Select the active tire model implementation inside `VehicleDynamicsController`.
++func set_active_tire_model_type(model_type: int) -> void:
++	if dynamics_controller == null or dynamics_controller.config == null or dynamics_controller.model == null:
++		return
++	dynamics_controller.config.tire_config.model_type = model_type as VehicleDynamicsTypes.TireModelType
++	dynamics_controller.model.tire_model.set_model_type(dynamics_controller.config.tire_config.model_type)
++	dynamics_controller.model.tire_model.reset_all(dynamics_controller.model.state.wheels, dynamics_controller.config.tire_config)
++	_refresh_dynamics_hud_overlay()
++
++## Open or toggle the dedicated resizable `VehicleDynamicsDashboardWindow`.
++func toggle_dynamics_dashboard_window() -> VehicleDynamicsDashboardWindow:
++	if dashboard_window == null or not is_instance_valid(dashboard_window):
++		return open_dynamics_dashboard_window()
++	if dashboard_window.visible:
++		dashboard_window.hide()
++	else:
++		dashboard_window.show()
++		dashboard_window.grab_focus()
++	return dashboard_window
++
++func open_dynamics_dashboard_window() -> VehicleDynamicsDashboardWindow:
++	if dashboard_window == null or not is_instance_valid(dashboard_window):
++		dashboard_window = VehicleDynamicsDashboardWindow.new()
++		dashboard_window.name = "VehicleDynamicsDashboardWindow"
++		dashboard_window.target_car = self
++		get_tree().root.add_child(dashboard_window)
++		if dashboard_window._mode_select == null:
++			dashboard_window._ready()
++	dashboard_window.target_car = self
++	dashboard_window.show()
++	dashboard_window.grab_focus()
++	return dashboard_window
++
++## Start open-loop control replay from a loaded `TelemetryRecording` (`control.gas`, `control.steer_rad`).
++func start_telemetry_control_replay(rec: TelemetryRecording, start_at_onset: bool = true) -> void:
++	if rec == null or not rec.has_usable_channel("control.gas"):
++		return
++	_replay_recording = rec
++	var trng: Vector2 = rec.get_time_range_s()
++	_replay_cursor_s = rec.maneuver_onset_time_s if start_at_onset else trng.x
++	_replay_end_s = trng.y
++	is_replaying_controls = true
++
++func stop_telemetry_control_replay() -> void:
++	is_replaying_controls = false
++	_replay_recording = null
++
++func _process_telemetry_replay_pilot(delta: float) -> void:
++	if _replay_recording == null or _replay_cursor_s > _replay_end_s:
++		stop_telemetry_control_replay()
++		_process_no_pilot()
++		return
++	var gas_ch: TelemetryChannel = _replay_recording.get_channel("control.gas")
++	var steer_ch: TelemetryChannel = _replay_recording.get_channel("control.steer_rad")
++	self.gas = clampf(gas_ch.sample_linear(_replay_cursor_s) if gas_ch != null else 0.0, -1.0, 1.0)
++	var st_val: float = steer_ch.sample_linear(_replay_cursor_s) if steer_ch != null else 0.0
++	self.steering = clampf(st_val, -MAX_STEER, MAX_STEER)
++	self.brake = 0.0
++	_replay_cursor_s += delta
++
++## Export buffered 30-column `DynamicsLogger` CSV to `path`.
++func save_dynamics_csv_log(path: String) -> bool:
++	if dynamics_controller == null or dynamics_controller.logger == null:
++		return false
++	if dynamics_controller.logger.get_sample_count() == 0:
++		return false
++	return dynamics_controller.logger.export_csv(path)
++
++## Return a comprehensive dictionary of live vehicle-dynamics quantities for `VehicleDynamicsDashboardWindow`.
++func get_live_dynamics_snapshot() -> Dictionary:
++	var is_mod: bool = (physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
++	var mode_name: String = "MODULAR 6-DOF (VehicleDynamics)" if is_mod else "LEGACY (Godot VehicleBody3D)"
++	var tire_name: String = "Legacy VehicleWheel3D Raycast"
++	if is_mod and dynamics_controller != null and dynamics_controller.model != null:
++		tire_name = dynamics_controller.model.tire_model.get_active_model_name()
++
++	if is_mod and dynamics_controller != null and dynamics_controller.model != null:
++		var st: VehicleState = dynamics_controller.model.state
++		var fl: WheelState = st.wheels[VehicleDynamicsTypes.WheelCorner.FL]
++		var fr: WheelState = st.wheels[VehicleDynamicsTypes.WheelCorner.FR]
++		var rl: WheelState = st.wheels[VehicleDynamicsTypes.WheelCorner.RL]
++		var rr: WheelState = st.wheels[VehicleDynamicsTypes.WheelCorner.RR]
++		var contacts: int = 0
++		for w in st.wheels:
++			if w.contact_state.in_contact:
++				contacts += 1
++		var beta_rad: float = atan2(st.v_mps, maxf(absf(st.u_mps), 0.25)) if (absf(st.u_mps) > 0.05 or absf(st.v_mps) > 0.05) else 0.0
++		var fy_front_veh: float = fl.force_vehicle.y + fr.force_vehicle.y
++		var fy_rear_veh: float = rl.force_vehicle.y + rr.force_vehicle.y
++		var rear_fy_reserve: float = rl.tire_state.lateral_force_reserve_n + rr.tire_state.lateral_force_reserve_n
++		var ack_diff_deg: float = rad_to_deg(absf(fl.steering_angle_rad) - absf(fr.steering_angle_rad))
++		return {
++			"physics_mode": int(physics_engine_mode),
++			"physics_mode_name": mode_name,
++			"tire_model_name": tire_name,
++			"modular_sole_authority": not has_legacy_direct_wheel_children(),
++			"is_legacy": false,
++			"is_ay_estimated": false,
++			"is_ax_available": true,
++			"is_az_available": true,
++			"imu.ax": st.ax_mps2,
++			"imu.ay": st.ay_mps2,
++			"imu.az": st.az_mps2,
++			"imu.gx": st.p_rad_s,
++			"imu.gy": st.q_rad_s,
++			"imu.gz": st.r_rad_s,
++			"chassis.u": st.u_mps,
++			"chassis.v": st.v_mps,
++			"chassis.r": st.r_rad_s,
++			"chassis.x": st.x_odom_m,
++			"chassis.y": st.y_odom_m,
++			"chassis.psi": st.psi_odom_rad,
++			"chassis.roll_deg": rad_to_deg(st.roll_rad),
++			"chassis.pitch_deg": rad_to_deg(st.pitch_rad),
++			"chassis.beta_rad": beta_rad,
++			"chassis.beta_deg": rad_to_deg(beta_rad),
++			"chassis.fy_net_n": st.total_force_vehicle.y,
++			"chassis.fx_net_n": st.total_force_vehicle.x,
++			"chassis.mz_net_nm": st.total_moment_vehicle.z,
++			"axle.fy_front_n": fy_front_veh,
++			"axle.fy_rear_n": fy_rear_veh,
++			"axle.fy_reserve_rear_n": rear_fy_reserve,
++			"control.gas": self.gas,
++			"control.steer_rad": self.steering,
++			"steer.fl_rad": fl.steering_angle_rad,
++			"steer.fr_rad": fr.steering_angle_rad,
++			"steer.rl_rad": rl.steering_angle_rad,
++			"steer.rr_rad": rr.steering_angle_rad,
++			"steer.ackermann_diff_deg": ack_diff_deg,
++			"wheel.fl_rpm": fl.get_rpm(),
++			"wheel.fr_rpm": fr.get_rpm(),
++			"wheel.rl_rpm": rl.get_rpm(),
++			"wheel.rr_rpm": rr.get_rpm(),
++			"tire.alpha_fl": fl.slip_angle_alpha_rad,
++			"tire.alpha_fr": fr.slip_angle_alpha_rad,
++			"tire.alpha_rl": rl.slip_angle_alpha_rad,
++			"tire.alpha_rr": rr.slip_angle_alpha_rad,
++			"tire.alpha_dot_fl": fl.tire_state.slip_angle_rate_rad_s,
++			"tire.alpha_dot_fr": fr.tire_state.slip_angle_rate_rad_s,
++			"tire.alpha_dot_rl": rl.tire_state.slip_angle_rate_rad_s,
++			"tire.alpha_dot_rr": rr.tire_state.slip_angle_rate_rad_s,
++			"tire.camber_setup_fl": fl.camber_angle_rad,
++			"tire.camber_setup_fr": fr.camber_angle_rad,
++			"tire.camber_setup_rl": rl.camber_angle_rad,
++			"tire.camber_setup_rr": rr.camber_angle_rad,
++			"tire.gamma_fl": fl.tire_state.iso_camber_gamma_rad,
++			"tire.gamma_fr": fr.tire_state.iso_camber_gamma_rad,
++			"tire.gamma_rl": rl.tire_state.iso_camber_gamma_rad,
++			"tire.gamma_rr": rr.tire_state.iso_camber_gamma_rad,
++			"tire.kappa_fl": fl.slip_ratio_kappa,
++			"tire.kappa_fr": fr.slip_ratio_kappa,
++			"tire.kappa_rl": rl.slip_ratio_kappa,
++			"tire.kappa_rr": rr.slip_ratio_kappa,
++			"tire.static_fy_fl": fl.tire_state.static_camber_fy_n,
++			"tire.static_fy_fr": fr.tire_state.static_camber_fy_n,
++			"tire.static_fy_rl": rl.tire_state.static_camber_fy_n,
++			"tire.static_fy_rr": rr.tire_state.static_camber_fy_n,
++			"tire.fy0_fl": fl.tire_state.fy_pure_mf62_n,
++			"tire.fy0_fr": fr.tire_state.fy_pure_mf62_n,
++			"tire.fy0_rl": rl.tire_state.fy_pure_mf62_n,
++			"tire.fy0_rr": rr.tire_state.fy_pure_mf62_n,
++			"tire.fy_fl": fl.tire_forces.fy_n,
++			"tire.fy_fr": fr.tire_forces.fy_n,
++			"tire.fy_rl": rl.tire_forces.fy_n,
++			"tire.fy_rr": rr.tire_forces.fy_n,
++			"tire.fx_fl": fl.tire_forces.fx_n,
++			"tire.fx_fr": fr.tire_forces.fx_n,
++			"tire.fx_rl": rl.tire_forces.fx_n,
++			"tire.fx_rr": rr.tire_forces.fx_n,
++			"tire.mz_fl": fl.tire_forces.mz_nm,
++			"tire.mz_fr": fr.tire_forces.mz_nm,
++			"tire.mz_rl": rl.tire_forces.mz_nm,
++			"tire.mz_rr": rr.tire_forces.mz_nm,
++			"tire.pinn_dfy_fl": fl.tire_state.delta_fy_pinn_n,
++			"tire.pinn_dfy_fr": fr.tire_state.delta_fy_pinn_n,
++			"tire.pinn_dfy_rl": rl.tire_state.delta_fy_pinn_n,
++			"tire.pinn_dfy_rr": rr.tire_state.delta_fy_pinn_n,
++			"tire.util_fl": fl.tire_state.combined_slip_utilization,
++			"tire.util_fr": fr.tire_state.combined_slip_utilization,
++			"tire.util_rl": rl.tire_state.combined_slip_utilization,
++			"tire.util_rr": rr.tire_state.combined_slip_utilization,
++			"tire.gyx_fl": fl.tire_state.combined_slip_factor_gyx,
++			"tire.gyx_fr": fr.tire_state.combined_slip_factor_gyx,
++			"tire.gyx_rl": rl.tire_state.combined_slip_factor_gyx,
++			"tire.gyx_rr": rr.tire_state.combined_slip_factor_gyx,
++			"tire.reserve_fl": fl.tire_state.lateral_force_reserve_n,
++			"tire.reserve_fr": fr.tire_state.lateral_force_reserve_n,
++			"tire.reserve_rl": rl.tire_state.lateral_force_reserve_n,
++			"tire.reserve_rr": rr.tire_state.lateral_force_reserve_n,
++			"tire.fz_fl": fl.suspension_state.normal_load_fz_n,
++			"tire.fz_fr": fr.suspension_state.normal_load_fz_n,
++			"tire.fz_rl": rl.suspension_state.normal_load_fz_n,
++			"tire.fz_rr": rr.suspension_state.normal_load_fz_n,
++			"susp.heave_fl": fl.suspension_state.compression_m,
++			"susp.heave_fr": fr.suspension_state.compression_m,
++			"susp.heave_rl": rl.suspension_state.compression_m,
++			"susp.heave_rr": rr.suspension_state.compression_m,
++			"susp.f_spring_fl": fl.suspension_state.spring_force_n,
++			"susp.f_damper_fl": fl.suspension_state.damper_force_n,
++			"susp.f_arb_fl": fl.suspension_state.arb_force_n,
++			"powertrain.drive_torque_rl": rl.drive_torque_nm,
++			"powertrain.drive_torque_rr": rr.drive_torque_nm,
++			"aero.drag_n": st.aero_drag_force_n,
++			"aero.downforce_front_n": st.aero_downforce_front_n,
++			"aero.downforce_rear_n": st.aero_downforce_rear_n,
++			"health.dt_ms": 1000.0 / float(maxi(1, Engine.physics_ticks_per_second)),
++			"health.contact_count": contacts,
++			"health.fault_flags": st.fault_flags,
++		}
++
++	# Legacy fallback snapshot when running LEGACY_GODOT_VEHICLE_BODY
++	var bvel: Vector3 = _body_velocity()
++	var u_leg: float = -bvel.z
++	var v_leg: float = -bvel.x
++	var r_leg: float = angular_velocity.y
++	var odom_tf: Transform3D = origin.inverse() * global_transform
++	var rl_rpm_leg: float = -_rl_wheel_node.get_rpm() if _rl_wheel_node != null else 0.0
++	var rr_rpm_leg: float = -_rr_wheel_node.get_rpm() if _rr_wheel_node != null else 0.0
++	var beta_leg_deg: float = rad_to_deg(atan2(v_leg, maxf(absf(u_leg), 0.25))) if (absf(u_leg) > 0.05 or absf(v_leg) > 0.05) else 0.0
++	return {
++		"physics_mode": int(physics_engine_mode),
++		"physics_mode_name": mode_name,
++		"tire_model_name": tire_name,
++		"modular_sole_authority": false,
++		"is_legacy": true,
++		"is_ay_estimated": false,
++		"is_ax_available": true,
++		"is_az_available": true,
++		"imu.ax": _kin_accel_body_lpf.x,
++		"imu.ay": _kin_accel_body_lpf.y,
++		"imu.az": _kin_accel_body_lpf.z,
++		"kinematic.ay_steady_state": u_leg * r_leg,
++		"imu.gx": angular_velocity.z,
++		"imu.gy": angular_velocity.x,
++		"imu.gz": r_leg,
++		"chassis.u": u_leg,
++		"chassis.v": v_leg,
++		"chassis.r": r_leg,
++		"chassis.x": -odom_tf.origin.z,
++		"chassis.y": -odom_tf.origin.x,
++		"chassis.psi": odom_tf.basis.get_euler().y,
++		"chassis.roll_deg": rad_to_deg(odom_tf.basis.get_euler().z),
++		"chassis.pitch_deg": rad_to_deg(odom_tf.basis.get_euler().x),
++		"chassis.beta_deg": beta_leg_deg,
++		"chassis.beta_rad": deg_to_rad(beta_leg_deg),
++		"control.gas": self.gas,
++		"control.steer_rad": self.steering,
++		"wheel.rl_rpm": rl_rpm_leg,
++		"wheel.rr_rpm": rr_rpm_leg,
++		"health.dt_ms": 1000.0 / float(maxi(1, Engine.physics_ticks_per_second)),
++		"health.contact_count": 4,
++		"health.fault_flags": 0,
++	}
++
++func _setup_dynamics_hud_overlay() -> void:
++	_hud_layer = CanvasLayer.new()
++	_hud_layer.name = "VehicleDynamicsHudLayer"
++	_hud_layer.layer = 5
++	add_child(_hud_layer)
++
++	_hud_status_panel = PanelContainer.new()
++	_hud_status_panel.anchor_left = 0.5
++	_hud_status_panel.anchor_right = 0.5
++	_hud_status_panel.offset_left = -380
++	_hud_status_panel.offset_right = 380
++	_hud_status_panel.offset_top = 8
++	_hud_status_panel.offset_bottom = 62
++
++	var style := StyleBoxFlat.new()
++	style.bg_color = Color(0.06, 0.14, 0.11, 0.88)
++	style.border_color = Color(0.24, 0.85, 0.52, 0.95)
++	style.set_border_width_all(1)
++	style.set_corner_radius_all(6)
++	style.content_margin_left = 12
++	style.content_margin_right = 12
++	style.content_margin_top = 6
++	style.content_margin_bottom = 6
++	_hud_status_panel.add_theme_stylebox_override("panel", style)
++	_hud_layer.add_child(_hud_status_panel)
++
++	var hbox := HBoxContainer.new()
++	hbox.add_theme_constant_override("separation", 12)
++	_hud_status_panel.add_child(hbox)
++
++	_hud_status_label = Label.new()
++	_hud_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
++	_hud_status_label.add_theme_font_size_override("font_size", 12)
++	_hud_status_label.add_theme_color_override("font_color", Color(0.92, 0.97, 1.0))
++	hbox.add_child(_hud_status_label)
++
++	var switch_btn := Button.new()
++	switch_btn.text = "Switch Mode (F6)"
++	switch_btn.pressed.connect(func():
++		var next_m: int = PhysicsEngineMode.LEGACY_GODOT_VEHICLE_BODY \
++			if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS \
++			else PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS
++		set_physics_engine_mode(next_m)
++	)
++	hbox.add_child(switch_btn)
++
++	var dash_btn := Button.new()
++	dash_btn.text = "Diagnostics & Correlation (F7)"
++	dash_btn.pressed.connect(func(): toggle_dynamics_dashboard_window())
++	hbox.add_child(dash_btn)
++
++	_refresh_dynamics_hud_overlay()
++
++func _refresh_dynamics_hud_overlay() -> void:
++	if _hud_status_label == null or _hud_status_panel == null:
++		return
++	var snap: Dictionary = get_live_dynamics_snapshot()
++	var is_mod: bool = (physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
++	var style := _hud_status_panel.get_theme_stylebox("panel") as StyleBoxFlat
++	if style != null:
++		if is_mod:
++			style.bg_color = Color(0.06, 0.16, 0.12, 0.88)
++			style.border_color = Color(0.25, 0.88, 0.55, 0.95)
++		else:
++			style.bg_color = Color(0.18, 0.12, 0.06, 0.88)
++			style.border_color = Color(0.95, 0.65, 0.22, 0.95)
++
++	var u_mps: float = float(snap.get("chassis.u", 0.0))
++	var ay_mps2: float = float(snap.get("imu.ay", 0.0))
++	var r_rads: float = float(snap.get("chassis.r", 0.0))
++	var corr_info: Dictionary = get_hud_correlation_summary()
++	var corr_str: String = str(corr_info.get("hud_text", "CORR: N/A"))
++	if is_mod:
++		var fz_rl: float = float(snap.get("tire.fz_rl", 0.0))
++		var fy_fl: float = float(snap.get("tire.fy_fl", 0.0))
++		var beta_deg: float = float(snap.get("chassis.beta_deg", 0.0))
++		_hud_status_label.text = "PHYSICS: MODULAR 6-DOF [%s] | %s\nu=%+.1f m/s (%.0f km/h) | ay=%+.1f m/s² | r=%+.2f rad/s | beta=%+.1f° | Fy_FL=%+.0f N | Fz_RL=%.0f N" % [
++			str(snap.get("tire_model_name", "TeR_Tire")),
++			corr_str,
++			u_mps, u_mps * 3.6, ay_mps2, r_rads, beta_deg, fy_fl, fz_rl
++		]
++	else:
++		_hud_status_label.text = "PHYSICS: LEGACY GODOT VehicleBody3D [Raycast Wheels] | %s\nu=%+.1f m/s (%.0f km/h) | ay_kin=%+.1f m/s² | r=%+.2f rad/s | RL_RPM=%.0f" % [
++			corr_str,
++			u_mps, u_mps * 3.6, ay_mps2, r_rads, float(snap.get("wheel.rl_rpm", 0.0))
++		]
++
++## Explicitly configure or clear the reference/comparison telemetry recordings used by the HUD correlation indicator.
++func set_correlation_reference_data(ref_rec: TelemetryRecording, sim_rec: TelemetryRecording, context_mode: String = "LAST") -> void:
++	_hud_corr_loaded = true
++	_hud_corr_ref_rec = ref_rec
++	_hud_corr_sim_rec = sim_rec
++	if dashboard_window != null and is_instance_valid(dashboard_window):
++		dashboard_window.real_reference_recording = ref_rec
++		dashboard_window.sim_comparison_recording = sim_rec
++		dashboard_window._recompute_correlation()
++	if ref_rec == null:
++		_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation({}, "N/A")
++		return
++	if sim_rec == null:
++		_hud_corr_summary = {
++			"state": "STANDBY",
++			"correlation_pct": NAN,
++			"hud_text": "CORR: STANDBY",
++			"hud_color": Color(0.45, 0.74, 0.96),
++			"details": "Reference data loaded — awaiting simulation comparison run.",
++		}
++		return
++	var metrics: Dictionary = CorrelationEngine.evaluate_all_channels(ref_rec, sim_rec, 20.0, 95.0, 0.05, 0.0)
++	_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation(metrics, context_mode)
++
++## Return the persistent correlation indicator dictionary (`hud_text`, `hud_color`, `state`, `correlation_pct`, `details`)
++## for display in the main simulator HUD (`Stats` panel) and top overlay.
++## Uses the exact same `CorrelationEngine` as the `F7` dashboard window and updates at low rate without per-frame overhead.
++func get_hud_correlation_summary() -> Dictionary:
++	var is_modular: bool = (physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
++	var mode_label: String = "MODULAR 6-DOF: TeR_Tire MF6.2" if is_modular else "LEGACY RAYCAST: Godot Wheel"
++	var mode_color: Color = Color(0.20, 0.85, 0.45) if is_modular else Color(0.95, 0.72, 0.20)
++	var tire_label: String = "TeR_Tire (MF6.2 + PINN)" if is_modular else "Pacejka Raycast"
++	var ref_name: String = "TeR26 VN-300 Real"
++	var sim_name: String = "modular_calibrated" if is_modular else "front10_rear12"
++	var win_label: String = "tau: 20.0 - 281.0 s"
++
++	# 1. If the F7 dashboard window is instantiated, synchronize directly with its active correlation state
++	if dashboard_window != null and is_instance_valid(dashboard_window):
++		if dashboard_window.real_reference_recording == null:
++			var na_sum := CorrelationEngine.compute_aggregate_vehicle_correlation({}, "N/A")
++			na_sum["physics_mode_label"] = mode_label
++			na_sum["physics_mode_color"] = mode_color
++			na_sum["tire_model_label"] = tire_label
++			na_sum["ref_dataset_name"] = "None"
++			na_sum["sim_dataset_name"] = "None"
++			na_sum["eval_window_label"] = "N/A"
++			na_sum["channel_metrics"] = {}
++			return na_sum
++		if (is_replaying_controls or dashboard_window.is_recording_live) and dashboard_window.live_session_recording != null:
++			var live_rec: TelemetryRecording = dashboard_window.live_session_recording
++			var ax_ch: TelemetryChannel = live_rec.get_channel("imu.ax")
++			if ax_ch == null or ax_ch.get_sample_count() < CorrelationEngine.MIN_AGGREGATE_SAMPLES:
++				return {
++					"state": "STANDBY",
++					"correlation_pct": NAN,
++					"overall_score": NAN,
++					"hud_text": "CORR: STANDBY",
++					"hud_color": Color(0.45, 0.74, 0.96),
++					"physics_mode_label": mode_label,
++					"physics_mode_color": mode_color,
++					"tire_model_label": tire_label,
++					"ref_dataset_name": ref_name,
++					"sim_dataset_name": "live_session",
++					"eval_window_label": "acquiring...",
++					"channel_metrics": {},
++					"details": "Live recording/replay started — collecting initial samples (%d/%d)." % [
++						ax_ch.get_sample_count() if ax_ch != null else 0,
++						CorrelationEngine.MIN_AGGREGATE_SAMPLES
++					],
++				}
++			if _hud_corr_eval_accum >= 0.50 or _hud_corr_summary.is_empty():
++				_hud_corr_eval_accum = 0.0
++				live_rec.detect_maneuver_onset()
++				var trng: Vector2 = live_rec.get_time_range_s()
++				var t_end: float = maxf(2.0, trng.y - live_rec.maneuver_onset_time_s)
++				var live_metrics: Dictionary = CorrelationEngine.evaluate_all_channels(
++					dashboard_window.real_reference_recording, live_rec, 0.0, t_end, 0.05, 0.0
++				)
++				_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation(live_metrics, "LIVE")
++				_hud_corr_summary["physics_mode_label"] = mode_label
++				_hud_corr_summary["physics_mode_color"] = mode_color
++				_hud_corr_summary["tire_model_label"] = tire_label
++				_hud_corr_summary["ref_dataset_name"] = ref_name
++				_hud_corr_summary["sim_dataset_name"] = "live_session"
++				_hud_corr_summary["eval_window_label"] = "tau: 0.0 - %.1f s" % t_end
++				_hud_corr_summary["channel_metrics"] = live_metrics
++				_hud_corr_summary["overall_score"] = _hud_corr_summary.get("correlation_pct", NAN)
++			return _hud_corr_summary
++		if not dashboard_window.cached_correlation_metrics.is_empty():
++			var mode_tag: String = "LIVE" if is_replaying_controls else "LAST"
++			var dash_summary: Dictionary = CorrelationEngine.compute_aggregate_vehicle_correlation(
++				dashboard_window.cached_correlation_metrics, mode_tag
++			)
++			dash_summary["physics_mode_label"] = mode_label
++			dash_summary["physics_mode_color"] = mode_color
++			dash_summary["tire_model_label"] = tire_label
++			dash_summary["ref_dataset_name"] = ref_name
++			dash_summary["sim_dataset_name"] = sim_name
++			dash_summary["eval_window_label"] = "tau: %.1f - %.1f s" % [dashboard_window.corr_tau_start_s, dashboard_window.corr_tau_end_s]
++			dash_summary["channel_metrics"] = dashboard_window.cached_correlation_metrics
++			dash_summary["overall_score"] = dash_summary.get("correlation_pct", NAN)
++			return dash_summary
++
++	# 2. Check if reference data was explicitly cleared
++	if _hud_corr_loaded and _hud_corr_ref_rec == null and not _hud_corr_summary.is_empty() and _hud_corr_summary.get("state") == "N/A":
++		var na_res: Dictionary = _hud_corr_summary.duplicate()
++		na_res["physics_mode_label"] = mode_label
++		na_res["physics_mode_color"] = mode_color
++		na_res["tire_model_label"] = tire_label
++		na_res["ref_dataset_name"] = "None"
++		na_res["sim_dataset_name"] = "None"
++		na_res["eval_window_label"] = "N/A"
++		na_res["channel_metrics"] = {}
++		na_res["overall_score"] = NAN
++		return na_res
++
++	# 3. Dynamic loading based on current physics mode
++	if not _hud_corr_loaded or _hud_corr_summary.is_empty() or _hud_corr_active_mode != int(physics_engine_mode):
++		_hud_corr_loaded = true
++		_hud_corr_active_mode = int(physics_engine_mode)
++		var imu_dir: String = ProjectSettings.globalize_path("res://").get_base_dir().get_base_dir().path_join("imu_compare")
++		if not DirAccess.dir_exists_absolute(imu_dir):
++			imu_dir = "/home/alexr/eRacing/mirena_ws-SIM/imu_compare"
++		
++		var json_prefix: String = "modular_calibrated" if is_modular else "grip10"
++		var json_path: String = imu_dir.path_join("reports/correlation_%s.json" % json_prefix)
++		if not FileAccess.file_exists(json_path) and is_modular:
++			json_path = imu_dir.path_join("reports/correlation_modular_baseline.json")
++			json_prefix = "modular_baseline"
++
++		var loaded_from_json: bool = false
++		if FileAccess.file_exists(json_path):
++			var json_str: String = FileAccess.get_file_as_string(json_path)
++			json_str = json_str.replace(": NaN", ": null").replace(": -NaN", ": null").replace(": Infinity", ": null").replace(": -Infinity", ": null")
++			var parsed = JSON.parse_string(json_str)
++			if parsed is Dictionary and parsed.has("full_drive_20_281"):
++				var win_data: Dictionary = parsed["full_drive_20_281"]
++				var score: float = float(win_data.get("aggregate_score_pct", 0.0))
++				var chs: Dictionary = win_data.get("channels", {})
++				_hud_corr_summary = {
++					"state": "LAST",
++					"correlation_pct": score,
++					"overall_score": score,
++					"hud_text": "CORR: %.1f%% (LAST)" % score,
++					"hud_color": Color(0.42, 0.88, 0.62) if score >= 50.0 else Color(0.96, 0.68, 0.20),
++					"details": "Full drive benchmark [20..281s] | %s" % json_prefix,
++					"physics_mode_label": mode_label,
++					"physics_mode_color": mode_color,
++					"tire_model_label": tire_label,
++					"ref_dataset_name": ref_name,
++					"sim_dataset_name": json_prefix,
++					"eval_window_label": "tau: 20.0 - 281.0 s",
++					"channel_metrics": chs,
++				}
++				loaded_from_json = true
++
++		if not loaded_from_json and DirAccess.dir_exists_absolute(imu_dir):
++			_hud_corr_ref_rec = TelemetryImporter.load_imu_compare_real_bundle(imu_dir, 25000)
++			var sim_tag: String = "modular_calibrated" if is_modular else "front10_rear12"
++			_hud_corr_sim_rec = TelemetryImporter.load_imu_compare_sim_bundle(imu_dir, sim_tag, 25000)
++			if _hud_corr_ref_rec != null and _hud_corr_sim_rec != null:
++				var init_metrics: Dictionary = CorrelationEngine.evaluate_all_channels(
++					_hud_corr_ref_rec, _hud_corr_sim_rec, 20.0, 95.0, 0.05, 0.0
++				)
++				_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation(init_metrics, "LAST")
++				_hud_corr_summary["channel_metrics"] = init_metrics
++				_hud_corr_summary["sim_dataset_name"] = sim_tag
++			else:
++				_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation({}, "N/A")
++		elif not loaded_from_json:
++			_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation({}, "N/A")
++
++	if _hud_corr_summary.is_empty():
++		_hud_corr_summary = CorrelationEngine.compute_aggregate_vehicle_correlation({}, "N/A")
++
++	_hud_corr_summary["physics_mode_label"] = mode_label
++	_hud_corr_summary["physics_mode_color"] = mode_color
++	_hud_corr_summary["tire_model_label"] = tire_label
++	if not _hud_corr_summary.has("ref_dataset_name"):
++		_hud_corr_summary["ref_dataset_name"] = ref_name
++	if not _hud_corr_summary.has("sim_dataset_name"):
++		_hud_corr_summary["sim_dataset_name"] = sim_name
++	if not _hud_corr_summary.has("eval_window_label"):
++		_hud_corr_summary["eval_window_label"] = win_label
++	if not _hud_corr_summary.has("channel_metrics"):
++		_hud_corr_summary["channel_metrics"] = {}
++	_hud_corr_summary["overall_score"] = _hud_corr_summary.get("correlation_pct", NAN)
++	return _hud_corr_summary
+diff --git a/src/mirena_sim/project.godot b/src/mirena_sim/project.godot
+index 6b9b991..c044a48 100644
+--- a/src/mirena_sim/project.godot
++++ b/src/mirena_sim/project.godot
+@@ -33,6 +33,7 @@ Sim="*res://Scenes/Sim/sim.gd"
+ window/size/viewport_width=800
+ window/size/viewport_height=600
+ window/size/mode=2
++window/subwindows/embed_subwindows=false
+ window/vsync/vsync_mode=0
+ 
+ [editor_plugins]

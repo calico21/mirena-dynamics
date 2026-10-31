@@ -1,0 +1,11 @@
+ M src/mirena_sim/Scenes/FreeCam/freecam.gd
+ M src/mirena_sim/Scenes/Sim/UI/SimUI.tscn
+ M src/mirena_sim/Scenes/Sim/UI/controls_label.gd
+ M src/mirena_sim/Scenes/Sim/UI/sim_ui.gd
+ M src/mirena_sim/Scenes/Sim/UI/stats.gd
+ M src/mirena_sim/Scenes/Sim/UI/vehicle_menu.gd
+ M src/mirena_sim/Scenes/Vehicle/vehicleMotion.gd
+ M src/mirena_sim/project.godot
+?? imu_compare/baselines/
+?? imu_compare/incoming/
+?? src/mirena_sim/Scenes/Vehicle/VehicleDynamics/

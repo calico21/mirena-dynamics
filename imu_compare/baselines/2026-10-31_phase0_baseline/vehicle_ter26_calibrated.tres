@@ -1,0 +1,76 @@
+[gd_resource type="Resource" script_class="VehicleDynamicsConfig" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/VehicleDynamicsConfig.gd" id="1_vd_cfg"]
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Core/VehicleParameters.gd" id="2_veh_params"]
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Steering/SteeringConfiguration.gd" id="3_steer_cfg"]
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Brakes/BrakeConfiguration.gd" id="4_brake_cfg"]
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Aerodynamics/AerodynamicConfiguration.gd" id="5_aero_cfg"]
+[ext_resource type="Resource" path="res://Scenes/Vehicle/VehicleDynamics/Config/suspension_ter26_calibrated.tres" id="6_susp_res"]
+[ext_resource type="Resource" path="res://Scenes/Vehicle/VehicleDynamics/Config/powertrain_ter26_calibrated.tres" id="7_pt_res"]
+[ext_resource type="Resource" path="res://Scenes/Vehicle/VehicleDynamics/Config/tire_ter26_calibrated.tres" id="8_tire_res"]
+
+[sub_resource type="Resource" id="Resource_veh_params"]
+script = ExtResource("2_veh_params")
+total_mass_kg = 300.0
+unsprung_mass_front_kg = 7.74
+unsprung_mass_rear_kg = 7.76
+gravity_mps2 = 9.81
+center_of_mass_godot = Vector3(0, 0.33, -0.117)
+ixx_kgm2 = 45.0
+iyy_kgm2 = 85.0
+izz_kgm2 = 135.0
+lf_m = 0.876
+lr_m = 0.717
+track_front_m = 1.174
+track_rear_m = 1.174
+wheel_hub_height_godot_m = 0.208
+wheel_unloaded_radius_m = 0.2032
+wheel_inertia_kgm2 = 0.32
+
+[sub_resource type="Resource" id="Resource_steer_cfg"]
+script = ExtResource("3_steer_cfg")
+max_steer_angle_rad = 0.35
+max_steer_rate_rad_s = 0.0
+manual_steer_smooth_speed = 7.5
+ackermann_factor = 0.60
+static_toe_front_rad = 0.0015
+static_toe_rear_rad = -0.0020
+bump_steer_front_radpm = 0.0
+bump_steer_rear_radpm = 0.0
+compliance_steer_front_radpn = 0.000015
+compliance_steer_rear_radpn = 0.0
+
+[sub_resource type="Resource" id="Resource_brake_cfg"]
+script = ExtResource("4_brake_cfg")
+brake_bias_front = 0.60
+brake_mu = 0.40
+derive_budget_from_mu = true
+max_total_brake_torque_nm = 235.44
+ebs_per_wheel_torque_nm = 100.0
+standstill_omega_eps_rad_s = 0.05
+
+[sub_resource type="Resource" id="Resource_aero_cfg"]
+script = ExtResource("5_aero_cfg")
+air_density_kgpm3 = 1.225
+frontal_area_m2 = 1.10
+cd_ref = 2.50
+cl_ref = 4.14
+min_airspeed_mps = 0.1
+aero_split_front = 0.45
+enable_ground_effect = false
+h_aero_ref_m = 0.04
+k_ground_front = 0.30
+k_ground_rear = 0.45
+
+[resource]
+script = ExtResource("1_vd_cfg")
+integration_mode = 0
+physics_substeps = 1
+enable_diagnostics = true
+vehicle_parameters = SubResource("Resource_veh_params")
+tire_config = ExtResource("8_tire_res")
+suspension_config = ExtResource("6_susp_res")
+steering_config = SubResource("Resource_steer_cfg")
+powertrain_config = ExtResource("7_pt_res")
+brake_config = SubResource("Resource_brake_cfg")
+aerodynamics_config = SubResource("Resource_aero_cfg")

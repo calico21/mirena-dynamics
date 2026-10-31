@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="TireConfiguration" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Tires/TireConfiguration.gd" id="1_tire_cfg"]
+
+[resource]
+script = ExtResource("1_tire_cfg")
+model_type = 3
+external_params_path = ""
+unloaded_radius_m = 0.2032
+width_m = 0.1905
+fz_nominal_n = 700.0
+fz_max_n = 4000.0
+nominal_pressure_kpa = 82.7
+nominal_temperature_c = 62.0
+vertical_stiffness_npm = 110000.0
+vx_min_regularization_mps = 0.25
+enable_relaxation = false
+relaxation_length_long_m = 0.12
+relaxation_length_lat_m = 0.12
+ter_lateral_grip_scale = 1.0
+enable_ply_steer_asymmetry = false
+enable_pinn_residual = true
+nominal_delta_temp_c = 1.5
+companion_longitudinal_peak_mu = 1.45
+companion_longitudinal_kx_per_fz = 18.0
+stub_kx_per_fz = 15.0
+stub_cornering_stiffness_n_rad = 25000.0
+stub_peak_mu = 1.2
+stub_pneumatic_trail_m = 0.015
+rolling_resistance_coeff = 0.015

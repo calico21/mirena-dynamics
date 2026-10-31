@@ -73,3 +73,4 @@ core.*
 *.tar.gz
 *.pdf
 rosbag2_*/
+imu_compare/baselines/2026-10-30_pre_calibration/VehicleDynamics_untracked_snapshot.tgz

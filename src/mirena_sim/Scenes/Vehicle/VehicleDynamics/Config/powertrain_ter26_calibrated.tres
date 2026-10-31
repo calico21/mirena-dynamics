@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PowertrainConfiguration" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Powertrain/PowertrainConfiguration.gd" id="1_pt_cfg"]
+
+[resource]
+script = ExtResource("1_pt_cfg")
+architecture = 0
+allow_reverse = false
+regen_enabled = false
+motor_peak_torque_nm = 100.0
+power_limit_w = 80000.0
+motor_max_rpm = 6000.0
+power_limit_min_speed_mps = 1.0
+gear_ratio = 5.0
+drivetrain_efficiency = 0.94
+drive_bias_front = 0.0
+diff_lock_ratio = 0.60
+diff_preload_viscous_nm_s_rad = 35.0

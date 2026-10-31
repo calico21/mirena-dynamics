@@ -40,13 +40,12 @@ func _setup_nodes() -> void:
 func _ready() -> void:
 	_setup_nodes.call_deferred()
 	_add_keybindings()
-	# Register in Sim
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	Sim.register_camera.call_deferred(self)
 
 
 
 func _process(delta: float) -> void:
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if current else Input.MOUSE_MODE_VISIBLE)
 	if current:
 		var dir = Vector3.ZERO
 		if Input.is_action_pressed("__debug_camera_forward"): 	dir.z -= 1
@@ -64,28 +63,46 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if current:
-		# Turn around
-		if event is InputEventMouseMotion:
+	if not current:
+		return
+
+	# Toggle mouse capture with TAB
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == toggle_key:
+			var captured = Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
+			Input.set_mouse_mode(
+				Input.MOUSE_MODE_VISIBLE if captured
+				else Input.MOUSE_MODE_CAPTURED
+			)
+			get_viewport().set_input_as_handled()
+			return
+
+		# Always release mouse with ESC
+		if event.keycode == KEY_ESCAPE:
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+			get_viewport().set_input_as_handled()
+			return
+
+	# Rotate camera only while mouse is captured
+	if event is InputEventMouseMotion:
+		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			pivot.rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
 			rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
 			rotation.x = clamp(rotation.x, -PI/2, PI/2)
-		
-		var speed_up = func():
-			target_speed = clamp(target_speed + 0.15, MIN_SPEED, MAX_SPEED)
-			print("[Speed up] " + str(target_speed))
-			
-		var slow_down = func():
-			target_speed = clamp(target_speed - 0.15, MIN_SPEED, MAX_SPEED)
-			print("[Slow down] " + str(target_speed))
-		
-		# Speed up and down with the mouse wheel
-		if event is InputEventMouseButton:
-			if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-				slow_down.call() if invert_speed_controls else speed_up.call()
-				
-			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-				speed_up.call() if invert_speed_controls else slow_down.call()
+
+	var speed_up = func():
+		target_speed = clamp(target_speed + 0.15, MIN_SPEED, MAX_SPEED)
+
+	var slow_down = func():
+		target_speed = clamp(target_speed - 0.15, MIN_SPEED, MAX_SPEED)
+
+	# Speed control with mouse wheel
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			slow_down.call() if invert_speed_controls else speed_up.call()
+
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			speed_up.call() if invert_speed_controls else slow_down.call()
 
 
 

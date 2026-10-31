@@ -6,6 +6,8 @@
 [ext_resource type="Script" uid="uid://btpbxj5260gcn" path="res://Scenes/Sim/UI/vehicle_menu.gd" id="3_xhllv"]
 [ext_resource type="Script" uid="uid://t2c8u12dg5bk" path="res://Scenes/Sim/track_menu.gd" id="3_xmg1i"]
 [ext_resource type="Script" uid="uid://mvywmawpyl07" path="res://Scenes/Sim/UI/extra_menu.gd" id="6_ac68a"]
+[ext_resource type="Script" path="res://Scenes/Sim/UI/AppLauncher.gd" id="7_app_launcher"]
+[ext_resource type="Script" path="res://Scenes/Sim/UI/FloatingGraphManager.gd" id="8_floating_graphs"]
 
 [sub_resource type="GDScript" id="GDScript_xhllv"]
 script/source = "extends PanelContainer
@@ -20,6 +22,86 @@ font_color = Color(0.744876, 0.999331, 1, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_val13"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_top"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12, 0.12, 0.13, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.35, 0.4, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_mode"]
+content_margin_left = 8.0
+content_margin_top = 2.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+bg_color = Color(0.12, 0.22, 0.18, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.65, 0.45, 0.75)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_score"]
+content_margin_left = 8.0
+content_margin_top = 2.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+bg_color = Color(0.14, 0.18, 0.24, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.55, 0.8, 0.75)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_app_dock"]
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+bg_color = Color(0.12, 0.12, 0.13, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.35, 0.4, 0.5)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_app_btn"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.18, 0.19, 0.22, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.38, 0.44, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="SimUI" type="Control" unique_id=2132864431]
 layout_mode = 3
 anchors_preset = 15
@@ -30,44 +112,313 @@ grow_vertical = 2
 script = ExtResource("1_lfjlq")
 
 [node name="Stats" type="PanelContainer" parent="." unique_id=1504225956]
+custom_minimum_size = Vector2(0, 78)
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
+anchors_preset = 10
 anchor_right = 1.0
-offset_left = -122.0
-offset_bottom = 97.0
-grow_horizontal = 0
+offset_left = 12.0
+offset_top = 8.0
+offset_right = -12.0
+offset_bottom = 86.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stats_top")
 script = ExtResource("2_o5cjj")
 
 [node name="MarginContainer" type="MarginContainer" parent="Stats" unique_id=1479226356]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 4
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Stats/MarginContainer" unique_id=2073894066]
 layout_mode = 2
+theme_override_constants/separation = 4
 
-[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1010176785]
+[node name="TopRow" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000001]
 layout_mode = 2
-text = "FPS:"
+theme_override_constants/separation = 10
 
-[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1047921344]
+[node name="LeftStats" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000002]
 layout_mode = 2
-text = "Timer:"
+theme_override_constants/separation = 8
 
-[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=1668494678]
+[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1010176785]
 layout_mode = 2
-text = "Fallen Cones:"
+theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 12
+text = "FPS: 60"
+
+[node name="Sep1" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=3100000003]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1047921344]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 12
+text = "Time: 0.00"
+
+[node name="Sep2" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=3100000004]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/LeftStats" unique_id=1668494678]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 12
+text = "Cones: 0"
+
+[node name="Spacer1" type="Control" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000005]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CenterBadges" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000006]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PhysicsModeBadge" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges" unique_id=3100000007]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill_mode")
+
+[node name="PhysicsModeLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges/PhysicsModeBadge" unique_id=3100000008]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "MODULAR 6-DOF: TeR_Tire MF6.2"
+
+[node name="DatasetLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/CenterBadges" unique_id=3100000009]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.77, 0.84, 1)
+theme_override_font_sizes/font_size = 11
+text = "Ref: TeR26 VN-300 Real | Sim: modular_calibrated (tau: 20..281s)"
+
+[node name="Spacer2" type="Control" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000010]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightScore" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000011]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CorrelationBadge" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/RightScore" unique_id=3100000012]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill_score")
+
+[node name="CorrelationLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow/RightScore/CorrelationBadge" unique_id=1668494679]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.88, 0.62, 1)
+theme_override_font_sizes/font_size = 12
+text = "CORR: 57.4% (LAST)"
+
+[node name="SepScore" type="Label" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3100000050]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="AppLauncher" type="PanelContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow" unique_id=3200000001]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_app_dock")
+script = ExtResource("7_app_launcher")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher" unique_id=3200000002]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="BtnVD" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000004]
+custom_minimum_size = Vector2(32, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "VD"
+
+[node name="BtnCorr" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000005]
+custom_minimum_size = Vector2(40, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "CORR"
+
+[node name="BtnLog" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000006]
+custom_minimum_size = Vector2(34, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "LOG"
+
+[node name="BtnTire" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000007]
+custom_minimum_size = Vector2(36, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "TIRE"
+
+[node name="BtnSusp" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000008]
+custom_minimum_size = Vector2(38, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "SUSP"
+
+[node name="BtnSetup" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000009]
+custom_minimum_size = Vector2(42, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "SETUP"
+
+[node name="BtnGraphs" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000040]
+custom_minimum_size = Vector2(50, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "GRAPHS"
+
+[node name="BtnMenu" type="Button" parent="Stats/MarginContainer/VBoxContainer/TopRow/AppLauncher/HBoxContainer" unique_id=3200000010]
+custom_minimum_size = Vector2(40, 22)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_app_btn")
+text = "MENU"
+
+[node name="BottomRow" type="HBoxContainer" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000013]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LiveTagLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000027]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "LIVE [MODULAR]"
+
+[node name="Dot0" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000028]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="SpeedMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000029]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.745, 0.999, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "SPEED:   0.0 km/h"
+
+[node name="Dot1" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000015]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="AxMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000018]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.92, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "AX:  +0.00 m/s²"
+
+[node name="Dot2" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000017]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="AyMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000016]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "AY:  +0.00 m/s²"
+
+[node name="Dot3" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000019]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="AzMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000030]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "AZ:  +0.00 m/s²"
+
+[node name="Dot4" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000021]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="YawMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000031]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "YAW RATE:  +0.00 rad/s"
+
+[node name="Dot5" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000032]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="BetaMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000033]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "SIDESLIP β:  +0.0°"
+
+[node name="Dot6" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000034]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="RollMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000035]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "ROLL:  +0.0°"
+
+[node name="Dot7" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000036]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.42, 0.48, 0.55)
+text = "|"
+
+[node name="PitchMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer/BottomRow" unique_id=3100000037]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "PITCH:  +0.0°"
+
+[node name="GzMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000014]
+visible = false
+layout_mode = 2
+text = "GZ: +0.00 rad/s"
+
+[node name="UMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000020]
+visible = false
+layout_mode = 2
+text = "U: +0.0 m/s"
+
+[node name="VMetric" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000022]
+visible = false
+layout_mode = 2
+text = "V: +0.0 m/s"
+
+[node name="FpsLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000023]
+visible = false
+layout_mode = 2
+
+[node name="TimerLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000024]
+visible = false
+layout_mode = 2
+
+[node name="FallenConesLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000025]
+visible = false
+layout_mode = 2
+
+[node name="CorrelationLabel" type="Label" parent="Stats/MarginContainer/VBoxContainer" unique_id=3100000026]
+visible = false
+layout_mode = 2
 
 [node name="MainMenu" type="PanelContainer" parent="." unique_id=527270208]
 custom_minimum_size = Vector2(400, 500)
 layout_mode = 0
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 92.0
 offset_right = 320.0
-offset_bottom = 520.0
+offset_bottom = 592.0
 script = SubResource("GDScript_xhllv")
 
 [node name="MarginContainer" type="MarginContainer" parent="MainMenu" unique_id=1022736181]
@@ -295,6 +646,16 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_val13")
 text = "39"
+
+[node name="FloatingGraphManager" type="Control" parent="." unique_id=3300000020]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("8_floating_graphs")
 
 [node name="ControlsLabel" type="Label" parent="." unique_id=1827473245]
 layout_mode = 1

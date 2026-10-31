@@ -1,3 +1,6 @@
 [submodule "src/rclgd"]
 	path = src/rclgd
 	url = https://github.com/Ozuba/rclgd
+[submodule "src/mirena_sim/Scenes/Vehicle/VehicleDynamics/Tires/TeR_Tire"]
+	path = src/mirena_sim/Scenes/Vehicle/VehicleDynamics/Tires/TeR_Tire
+	url = https://github.com/calico21/TeR-Tire

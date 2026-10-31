@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="SuspensionConfiguration" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scenes/Vehicle/VehicleDynamics/Suspension/SuspensionConfiguration.gd" id="1_susp_cfg"]
+
+[resource]
+script = ExtResource("1_susp_cfg")
+spring_rate_front_npm = 35030.0
+spring_rate_rear_npm = 52540.0
+motion_ratio_front = 1.14
+motion_ratio_rear = 1.16
+rest_length_front_m = 0.05
+rest_length_rear_m = 0.05
+max_compression_travel_m = 0.080
+max_droop_travel_m = 0.060
+bump_stop_engage_m = 0.025
+bump_stop_rate_npm = 50000.0
+damper_gas_preload_front_n = 120.0
+damper_gas_preload_rear_n = 120.0
+auto_static_preload = true
+manual_preload_front_n = 650.0
+manual_preload_rear_n = 800.0
+damper_c_low_front_nspm = 1800.0
+damper_c_low_rear_nspm = 1600.0
+damper_c_high_front_nspm = 720.0
+damper_c_high_rear_nspm = 640.0
+damper_v_knee_front_mps = 0.10
+damper_v_knee_rear_mps = 0.10
+rebound_ratio_front = 1.60
+rebound_ratio_rear = 1.60
+arb_rate_front_npm = 16000.0
+arb_rate_rear_npm = 1500.0
+static_camber_front_rad = -0.0349066
+static_camber_rear_rad = -0.0261799
+camber_per_m_travel_front_radpm = -0.436332
+camber_per_m_travel_rear_radpm = -0.349066
+camber_gain_roll_front = -0.80
+camber_gain_roll_rear = -0.65
+roll_center_height_front_m = 0.04
+roll_center_height_rear_m = 0.06

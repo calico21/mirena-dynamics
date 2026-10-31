@@ -112,10 +112,11 @@ namespace mirena::IMU
 
         inline tf2::Vector3 transfer_acceleration(const tf2::Transform &frame_from_imu,
                                                   const tf2::Vector3 &acceleration,
-                                                  const tf2::Vector3 &angular_rate)
+                                                  const tf2::Vector3 &angular_rate,
+                                                  const tf2::Vector3 &angular_accel = tf2::Vector3(0, 0, 0))
         {
             const tf2::Vector3 arm = frame_from_imu.getOrigin();
-            return acceleration - angular_rate.cross(angular_rate.cross(arm));
+            return acceleration - angular_accel.cross(arm) - angular_rate.cross(angular_rate.cross(arm));
         }
 
         inline void set(geometry_msgs::msg::Vector3 &out, const tf2::Vector3 &v)

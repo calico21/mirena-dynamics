@@ -4,6 +4,8 @@ func _ready() -> void:
 	# Display Controls
 	self.text = "Press < %s > to open menu" % get_first_key_for_action(&"open_sim_menu")
 	self.text += "\nPress < %s > to switch camera" %get_first_key_for_action(&"alternate_camera")
+	self.text += "\nPress < F6 > to switch Physics Mode (Modular / Legacy)"
+	self.text += "\nPress < F7 > to open Dynamics & Correlation Window"
 	
 func get_first_key_for_action(action: String) -> String:
 	var events = InputMap.action_get_events(action)
