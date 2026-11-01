@@ -1,0 +1,29 @@
+parameter_name,si_unit,config_file,status,mathematical_symbol,physical_interpretation,audit_classification
+total_mass_kg,kg,VehicleParameters.gd,ACTIVE,m,Total vehicle curb mass including driver,PASS
+izz_kgm2,kg*m^2,VehicleParameters.gd,ACTIVE,I_{zz},Chassis yaw mass moment of inertia about vertical Z-axis,PASS
+wheelbase_m,m,VehicleParameters.gd,ACTIVE,-,Longitudinal distance between front and rear axle centerlines,PASS
+track_front_m,m,VehicleParameters.gd,ACTIVE,-,Front axle center-to-center wheel track width,PASS
+track_rear_m,m,VehicleParameters.gd,ACTIVE,-,Rear axle center-to-center wheel track width,PASS
+cg_height_m,m,VehicleParameters.gd,ACTIVE,-,Height of vehicle center of gravity above ground plane,PASS
+wheel_unloaded_radius_m,m,VehicleParameters.gd,ACTIVE_PRIMARY,R_0,Primary undeflected physical tire radius measured on setup stand (0.2012m),PASS
+wheel_inertia_kgm2,kg*m^2,VehicleParameters.gd,ACTIVE,-,Rotational mass moment of inertia of single wheel assembly and rotor,PASS
+motor_peak_torque_nm,N*m,PowertrainConfiguration.gd,ACTIVE,-,Peak EMRAX 208 motor shaft torque under inverter phase current limit,PASS
+power_limit_w,W,PowertrainConfiguration.gd,ACTIVE,-,Formula Student EV accumulator electrical/mechanical power rule ceiling (80 kW),PASS
+gear_ratio,-,PowertrainConfiguration.gd,ACTIVE,-,Final drive chain/sprocket speed reduction ratio (5.0),PASS
+drivetrain_efficiency,-,PowertrainConfiguration.gd,ACTIVE,-,Mechanical chain drive and bearing power transmission efficiency,PASS
+diff_lock_ratio,-,PowertrainConfiguration.gd,ACTIVE,-,Differential locking torque scaling multiplier (0.65),PASS
+diff_viscous_damping_nm_s_per_rad,N*m*s/rad,PowertrainConfiguration.gd,ACTIVE_RECONCILED,K_{visc},Rear differential viscous damping coefficient (renamed from diff_preload_viscous_nm_s_rad),PASS
+diff_preload_viscous_nm_s_rad,N*m*s/rad,PowertrainConfiguration.gd,DEPRECATED_ALIAS,K_{visc},Deprecated legacy alias for diff_viscous_damping_nm_s_per_rad,WARNING
+companion_longitudinal_peak_mu,-,TireConfiguration.gd,ACTIVE,-,Peak longitudinal friction coefficient derived from TTC flat-belt data (1.88),PASS
+companion_longitudinal_kx_per_fz,rad^-1,TireConfiguration.gd,ACTIVE,-,Normalized longitudinal slip stiffness per unit vertical load (38.0),PASS
+rolling_resistance_coeff,-,TireConfiguration.gd,ACTIVE,-,Dimensionless rolling resistance coefficient calibrated from coastdown (0.018),PASS
+ter_lateral_grip_scale,-,TireConfiguration.gd,ACTIVE,-,Global lateral grip multiplier for TeR26 Hoosier compound (1.00),PASS
+unloaded_radius_m,m,TireConfiguration.gd,ACTIVE_SECONDARY,R_0,Nominal 16.0-inch catalog casing radius (0.2032m) in tire configuration,PASS
+max_steer_angle_rad,rad,SteeringConfiguration.gd,ACTIVE,-,Maximum physical road-wheel steering angle limit,PASS
+ackermann_factor,-,SteeringConfiguration.gd,ACTIVE,-,Ackermann geometry percentage (0.60 = 60% pro-Ackermann),PASS
+static_toe_front_rad,rad,SteeringConfiguration.gd,ACTIVE,-,Front axle static toe angle,PASS
+compliance_steer_front_radpn,rad/N,SteeringConfiguration.gd,INACTIVE_UNSUPPORTED,-,Unsupported front steering elastokinematic compliance (Option B audit closure),PASS
+spring_rate_front_npm,N/m,SuspensionConfiguration.gd,ACTIVE,-,"Front suspension spring stiffness rate (42,000 N/m)",PASS
+spring_rate_rear_npm,N/m,SuspensionConfiguration.gd,ACTIVE,-,"Rear suspension spring stiffness rate (48,000 N/m)",PASS
+arb_rate_front_npm,N/m,SuspensionConfiguration.gd,ACTIVE,-,"Front anti-roll bar stiffness (15,000 N/m)",PASS
+damper_gas_preload_front_n,N,SuspensionConfiguration.gd,ACTIVE,-,Front damper mono-tube internal gas pressure preload,PASS

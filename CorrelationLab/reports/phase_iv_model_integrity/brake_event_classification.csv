@@ -1,0 +1,52 @@
+event_id,t_start_s,t_end_s,duration_s,min_ax_mps2,mean_ax_mps2,mean_abs_ay_mps2,mean_gas,min_gas,speed_start_mps,speed_end_mps,delta_speed_mps,event_classification,classification_confidence,physical_mechanism
+DECEL_001,20.0,20.51,0.51,-1.71,-1.37,0.15,-0.7,-1.0,1.36,0.66,-0.7,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_002,23.26,27.18,3.92,-1.68,-0.95,0.35,0.0,0.0,6.81,2.73,-4.08,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_003,27.52,27.71,0.19,-0.86,-0.71,0.34,0.0,0.0,2.4,2.13,-0.27,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_004,27.78,28.24,0.46,-0.85,-0.65,0.21,0.0,0.0,2.16,1.66,-0.5,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_005,28.35,28.69,0.34,-0.68,-0.59,0.33,0.0,0.0,1.52,1.19,-0.33,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_006,80.18,80.87,0.69,-0.79,-0.69,0.31,0.0,0.0,1.45,1.05,-0.4,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_007,80.94,81.27,0.33,-0.72,-0.61,0.09,0.0,0.0,1.0,0.81,-0.19,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_008,81.36,81.61,0.25,-0.7,-0.62,0.22,0.0,0.0,0.74,0.63,-0.11,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_009,96.82,97.83,1.01,-2.76,-1.54,0.71,-0.277,-0.99,8.3,7.11,-1.19,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_010,97.88,98.07,0.19,-1.5,-1.07,0.37,0.0,0.0,7.05,6.86,-0.19,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_011,98.16,100.0,1.84,-2.88,-1.78,3.41,-0.271,-1.0,6.78,4.73,-2.05,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_012,102.57,103.28,0.71,-2.48,-1.46,2.66,0.016,0.0,7.71,7.06,-0.65,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_013,107.11,107.43,0.32,-1.23,-0.85,3.64,0.039,0.02,9.45,9.38,-0.07,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_014,107.57,107.79,0.22,-2.93,-1.87,2.9,0.042,0.027,9.16,9.14,-0.02,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_015,107.91,108.18,0.27,-1.54,-1.0,5.82,0.125,0.055,9.09,9.12,0.03,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_016,112.0,112.39,0.39,-1.87,-1.47,0.68,0.069,0.043,9.47,9.05,-0.42,AMBIGUOUS_TRANSIENT_DECEL,LOW,"Mixed throttle release, tire scrub, and partial brake drag."
+DECEL_017,112.74,116.41,3.67,-4.45,-2.29,4.72,-0.039,-0.76,8.52,2.9,-5.62,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_018,124.62,127.35,2.73,-6.24,-3.42,3.32,-0.782,-1.0,12.42,4.69,-7.73,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_019,130.42,130.61,0.19,-1.89,-1.28,4.37,0.079,0.067,8.15,8.08,-0.07,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_020,130.96,131.15,0.19,-1.04,-0.93,5.69,0.132,0.11,7.93,8.04,0.11,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_021,138.99,140.86,1.87,-4.63,-2.68,2.35,-0.326,-1.0,9.73,5.52,-4.21,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_022,140.89,142.16,1.27,-3.14,-2.06,4.6,0.022,0.0,5.42,3.83,-1.59,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_023,142.84,143.11,0.27,-2.07,-1.31,5.41,0.036,0.02,3.89,3.8,-0.09,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_024,151.14,154.42,3.28,-6.36,-2.88,3.26,-0.47,-1.0,12.55,5.46,-7.09,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_025,156.64,157.09,0.45,-1.58,-1.13,1.47,0.003,0.0,8.43,8.13,-0.3,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_026,157.15,157.73,0.58,-2.22,-1.62,4.94,0.043,0.0,7.99,7.42,-0.57,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_027,161.18,161.41,0.23,-2.17,-1.41,4.92,0.068,0.051,9.89,9.74,-0.15,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_028,161.57,161.95,0.38,-1.83,-1.08,5.3,0.083,0.012,9.61,9.5,-0.11,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_029,165.7,168.55,2.85,-6.12,-2.82,2.98,-0.326,-1.0,10.65,3.51,-7.14,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_030,169.34,169.53,0.19,-1.95,-1.42,10.05,0.207,0.169,9.01,8.4,-0.61,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_031,170.0,170.55,0.55,-3.6,-2.07,9.77,0.069,0.0,6.5,5.59,-0.91,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_032,177.16,180.75,3.59,-5.75,-2.82,2.99,-0.356,-1.0,13.26,5.52,-7.74,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_033,183.29,183.64,0.35,-1.62,-1.13,2.27,0.063,0.0,8.08,7.87,-0.21,AMBIGUOUS_TRANSIENT_DECEL,LOW,"Mixed throttle release, tire scrub, and partial brake drag."
+DECEL_034,187.5,187.73,0.23,-2.55,-1.79,5.75,0.047,0.039,10.26,10.04,-0.22,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_035,192.08,195.39,3.31,-5.46,-2.79,3.11,-0.272,-1.0,10.73,2.67,-8.06,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_036,196.3,196.75,0.45,-4.14,-2.34,8.01,0.081,0.0,5.23,4.75,-0.48,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_037,204.16,207.17,3.01,-6.56,-3.29,3.28,-0.507,-1.0,13.17,5.29,-7.88,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_038,213.63,213.96,0.33,-2.7,-1.56,5.78,0.023,0.0,10.78,10.42,-0.36,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_039,217.93,220.22,2.29,-5.01,-3.4,4.64,-0.528,-1.0,11.25,4.65,-6.6,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_040,228.75,231.74,2.99,-6.04,-3.43,3.59,-0.718,-1.0,13.71,5.94,-7.77,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_041,237.52,237.73,0.21,-1.29,-1.11,1.53,0.023,0.016,11.01,10.89,-0.12,NATURAL_COASTDOWN,MEDIUM,Moderate deceleration consistent with aerodynamic drag and rolling resistance with throttle released.
+DECEL_042,237.8,238.07,0.27,-1.7,-1.19,4.84,0.075,0.047,10.77,10.55,-0.22,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_043,238.23,238.47,0.24,-2.11,-1.19,6.94,0.099,0.086,10.5,10.43,-0.07,CORNERING_SCRUB_DECELERATION,HIGH,Driver maintaining throttle but severe lateral tire scrub drag induces deceleration.
+DECEL_044,241.77,244.27,2.5,-6.35,-3.06,4.44,-0.488,-1.0,11.6,5.03,-6.57,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_045,245.49,245.95,0.46,-5.88,-3.25,8.77,-0.086,-0.62,5.94,4.24,-1.7,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_046,250.21,250.46,0.25,-1.96,-1.16,3.4,0.133,0.125,11.22,11.47,0.25,AMBIGUOUS_TRANSIENT_DECEL,LOW,"Mixed throttle release, tire scrub, and partial brake drag."
+DECEL_047,253.37,256.48,3.11,-5.21,-3.1,3.27,-0.658,-1.0,13.53,6.02,-7.51,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_048,261.89,262.57,0.68,-4.11,-1.7,4.96,0.019,0.0,11.54,10.88,-0.66,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_049,266.54,269.17,2.63,-4.83,-3.01,4.47,-0.492,-1.0,10.99,4.23,-6.76,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.
+DECEL_050,270.0,270.42,0.42,-2.02,-1.6,8.97,0.047,0.0,8.88,4.67,-4.21,UNLOGGED_HYDRAULIC_BRAKING,HIGH,Heavy deceleration exceeding aero/rolling drag while gas=0; unlogged mechanical hydraulic brake pedal pressed.
+DECEL_051,273.81,276.87,3.06,-6.31,-3.75,1.16,-0.833,-1.0,10.58,0.1,-10.48,LOGGED_CONTROL_BRAKING,HIGH,Active negative control gas/brake command logged in telemetry.

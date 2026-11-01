@@ -1,0 +1,69 @@
+{
+  "phase": "Phase IV — Physical Model Integrity, Audit Closure & Telemetry Observability",
+  "execution_timestamp": "2026-11-01T14:07:00+01:00",
+  "branch": "phase-iv-model-integrity",
+  "base_commit": "d1febde0cc760384d85273a7f09942afc3be8409",
+  "overall_verification_status": "PASS",
+  "summary": {
+    "total_test_suites": 4,
+    "total_test_cases": 115,
+    "passed": 115,
+    "failed": 0,
+    "regressions_detected": 0
+  },
+  "test_suites": [
+    {
+      "suite_id": "PYTHON_CORRELATION_LAB",
+      "command": "python3 -m unittest discover CorrelationLab/tests/",
+      "exit_code": 0,
+      "tests_run": 43,
+      "passed": 43,
+      "failed": 0,
+      "status": "PASS",
+      "description": "Core signal processing, time synchronization, metrics catalogue, and Phase IV integrity tests"
+    },
+    {
+      "suite_id": "GODOT_VEHICLE_DYNAMICS_CONTRACT",
+      "command": "/home/alexr/.gemini/antigravity/bin/godot --headless --path src/mirena_sim -s res://Scenes/Vehicle/VehicleDynamics/Tests/test_vehicle_dynamics.gd",
+      "exit_code": 0,
+      "tests_run": 52,
+      "passed": 52,
+      "failed": 0,
+      "status": "PASS",
+      "description": "13-step vehicle dynamics contract, Pacejka MF6.2 tire forces, suspension heave/roll, powertrain torque limits, and UI dashboard chips"
+    },
+    {
+      "suite_id": "GODOT_VALIDATION_MANEUVERS",
+      "command": "/home/alexr/.gemini/antigravity/bin/godot --headless --path src/mirena_sim -s res://Scenes/Vehicle/VehicleDynamics/Tests/run_validation_maneuvers.gd",
+      "exit_code": 0,
+      "tests_run": 13,
+      "passed": 13,
+      "failed": 0,
+      "status": "PASS",
+      "description": "Standard automotive validation maneuvers (equilibrium, step steer, ramp steer, skidpad, corner braking, slalom)"
+    },
+    {
+      "suite_id": "GODOT_PHASE_IV_INTEGRITY",
+      "command": "/home/alexr/.gemini/antigravity/bin/godot --headless --path src/mirena_sim -s res://Scenes/Vehicle/VehicleDynamics/Tests/test_phase_iv_model_integrity.gd",
+      "exit_code": 0,
+      "tests_run": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "PASS",
+      "description": "Steering compliance Option B unsupported check, Ackermann symmetry, differential viscous damping equations, and radius provenance"
+    }
+  ],
+  "regression_analysis": {
+    "opt_run5_reference_candidate": {
+      "status": "PRESERVED_EXACT",
+      "chassis_u_reconciled_5hz_rmse": 1.8579,
+      "chassis_u_reconciled_raw_rmse": 1.8590,
+      "imu_ax_5hz_gain": 0.7215,
+      "imu_ay_5hz_gain": 1.0966,
+      "imu_gz_5hz_gain": 1.0918,
+      "aggregate_5hz_score_pct": 72.48,
+      "aggregate_raw_score_pct": 59.83,
+      "notes": "100% numerically identical to Phase II published results under unified axle-average speed reconstruction"
+    }
+  }
+}

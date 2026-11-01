@@ -33,9 +33,17 @@ class_name SteeringConfiguration
 ## Linear bump steer coefficient (rad of steer per m of suspension compression).
 @export var bump_steer_front_radpm: float = 0.0
 @export var bump_steer_rear_radpm: float = 0.0
-## Lateral force compliance steer coefficient (rad of steer per N of lateral force Fy).
+## [UNSUPPORTED / INACTIVE] Lateral force compliance steer coefficient (rad of steer per N of lateral force Fy).
+## AUDIT STATUS (Phase IV Priority 2 - Option B): INACTIVE in physics solver.
+## Physical investigation confirmed that no steering arm geometry, kingpin inclination, tie-rod axial stiffness,
+## rack bushing deflection, or upright K&C bench measurements exist for TeR26.
+## Retained strictly for .tres resource schema backward-compatibility; not consumed in SteeringModel.gd.
 @export var compliance_steer_front_radpn: float = 0.0
 @export var compliance_steer_rear_radpn: float = 0.0
+
+## Check whether elastokinematic compliance steer is supported by available vehicle physics data.
+func is_compliance_steer_supported() -> bool:
+	return false
 
 ## Validate steering configuration.
 func is_valid() -> bool:

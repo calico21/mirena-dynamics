@@ -38,10 +38,22 @@ class_name PowertrainConfiguration
 ## Front axle drive torque fraction (0.0 = 100% RWD, 1.0 = 100% FWD, 0.35 = TeR27 AWD baseline).
 @export var drive_bias_front: float = 0.0
 ## Differential locking coefficient on driven axle (0.0 = open equal-torque split, 1.0 = spool).
-## Default 0.35 (35% LSD / viscous locking) prevents unloaded inside rear wheelspin during cornering.
+## Calibrated value 0.65 (65% LSD / viscous locking) prevents unloaded inside rear wheelspin during cornering.
 @export var diff_lock_ratio: float = 0.65
-## Viscous locking stiffness (N*m / (rad/s) wheel speed difference) when diff_lock_ratio > 0.
-@export var diff_preload_viscous_nm_s_rad: float = 40.0
+
+## Viscous differential damping coefficient (N*m*s/rad = N*m / (rad/s) rear wheel speed difference).
+## NOTE (Phase IV Priority 3 Audit Closure): Renamed from `diff_preload_viscous_nm_s_rad` to resolve
+## semantic confusion. This parameter represents a phenomenological viscous damping model:
+##   T_diff = diff_lock_ratio * diff_viscous_damping_nm_s_per_rad * (omega_RL - omega_RR)
+## It is NOT a static Coulomb clutch-pack preload torque (which would be measured in N*m).
+@export var diff_viscous_damping_nm_s_per_rad: float = 40.0
+
+## Legacy alias retained for backward compatibility when loading candidate .tres resources.
+@export var diff_preload_viscous_nm_s_rad: float:
+	get:
+		return diff_viscous_damping_nm_s_per_rad
+	set(val):
+		diff_viscous_damping_nm_s_per_rad = val
 
 ## Return maximum total tractive wheel torque (N*m) at zero speed before power limiting.
 func get_peak_wheel_torque_nm() -> float:
