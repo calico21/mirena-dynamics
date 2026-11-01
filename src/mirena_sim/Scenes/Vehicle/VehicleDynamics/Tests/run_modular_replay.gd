@@ -1,7 +1,7 @@
 extends SceneTree
 
-const DT_SIM: float = 0.0025 # 400 Hz
-const DECIMATION: int = 4   # Output at 100 Hz
+const DT_SIM: float = 0.0025
+const DECIMATION: int = 4
 
 func _init() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -37,7 +37,6 @@ func _init() -> void:
 	if not DirAccess.dir_exists_absolute(base_dir):
 		base_dir = "/home/alexr/eRacing/mirena_ws-SIM/imu_compare"
 
-	# 1. Load real_control.csv
 	var ctl_file_path: String = base_dir.path_join("real_control.csv")
 	var ctl_file := FileAccess.open(ctl_file_path, FileAccess.READ)
 	if ctl_file == null:
@@ -78,7 +77,6 @@ func _init() -> void:
 	ctl_file.close()
 	print("  Loaded %d control samples. Onset at t_rel=%.3f s" % [ctl_t_rel.size(), onset_t_rel])
 
-	# 2. Setup VehicleDynamicsModel
 	var cfg_res: VehicleDynamicsConfig = load(config_path)
 	if cfg_res == null:
 		printerr("Failed to load config: %s" % config_path)
@@ -89,7 +87,6 @@ func _init() -> void:
 	model.contact_query.use_analytic_plane = true
 	model.reset()
 
-	# 3. Open output CSV files
 	var imu_out_path := base_dir.path_join("sim_imu_%s.csv" % out_prefix)
 	var ctl_out_path := base_dir.path_join("sim_control_%s.csv" % out_prefix)
 	var state_out_path := base_dir.path_join("sim_state_%s.csv" % out_prefix)
@@ -107,12 +104,10 @@ func _init() -> void:
 	logger.logging_enabled = true
 	logger.max_buffered_samples = 120000
 
-	# 4. Step through replay continuously
 	var total_steps: int = int(duration_s / DT_SIM)
 	var ctl_idx: int = 0
 	var n_ctl: int = ctl_t_rel.size()
 
-	# Low-pass filter matching VN-300 sensor response (tau = 0.02 s, fc ~ 8.0 Hz)
 	var lpf_tau: float = 0.02
 	var lpf_alpha: float = 1.0 - exp(-DT_SIM / lpf_tau)
 	var filt_ax: float = 0.0
@@ -127,7 +122,6 @@ func _init() -> void:
 		var t_rel_target: float = onset_t_rel + tau + offset_s
 		var t_unix_target: float = onset_t_unix + tau + offset_s
 
-		# Linear interpolation of control inputs
 		while ctl_idx + 1 < n_ctl and ctl_t_rel[ctl_idx + 1] < t_rel_target:
 			ctl_idx += 1
 
@@ -146,7 +140,6 @@ func _init() -> void:
 		model.set_control_commands(cur_gas, cur_steer, false)
 		model.step(DT_SIM, true, false)
 
-		# Apply IMU sensor filter
 		filt_ax = lerpf(filt_ax, model.state.ax_mps2, lpf_alpha)
 		filt_ay = lerpf(filt_ay, model.state.ay_mps2, lpf_alpha)
 		filt_az = lerpf(filt_az, model.state.az_mps2, lpf_alpha)
@@ -154,7 +147,6 @@ func _init() -> void:
 		filt_gy = lerpf(filt_gy, model.state.q_rad_s, lpf_alpha)
 		filt_gz = lerpf(filt_gz, model.state.r_rad_s, lpf_alpha)
 
-		# Output decimated samples at 100 Hz
 		if (step_idx % DECIMATION) == 0:
 			logger.record_sample(model.diagnostics)
 			var q: Quaternion = model.state.global_transform_godot.basis.get_rotation_quaternion()

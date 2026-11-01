@@ -1,25 +1,6 @@
 extends PacejkaMF62TireModel
 class_name TeRTireGreyBoxModel
 
-## Hybrid Grey-Box Tire Model (`TireModelType.TER_GREYBOX_PINN`):
-## Calibrated Pacejka MF6.2 Analytical Baseline + 7-Input Physics-Informed Neural Network (PINN) Residual.
-##
-## Directly ports `TeR_Tire/models/grey_box_tire.py` and `TeR_Tire/models/network.py` (`ResidualTireMLP`)
-## using the trained weights from `TeR_Tire/export/weights/pinn_residual_best.pth`.
-##
-## Architecture of `ResidualTireMLP`:
-## - 7 Inputs: `[alpha, alpha_dot, gamma, Fz, P, T_avg, Delta_T]`
-## - Input normalization: `x_norm = (x - x_mean) / (x_std + 1e-6)`
-## - Hidden Layer 0: `Linear(7 -> 64) + SiLU`
-## - Hidden Layer 2: `Linear(64 -> 64) + SiLU`
-## - Output Layer 4: `Linear(64 -> 2)`
-## - Bounded Output Scaling:
-##   - `raw_delta_fy = 600.0 * tanh(raw_out[0] * 250.0 / 600.0)`
-##   - `raw_delta_mz = 30.0 * tanh(raw_out[1] * 10.0 / 30.0)`
-## - Zero-Slip Physics Gate:
-##   - `gate = tanh(15.0 * |alpha| + 5.0 * |gamma| + 2.0 * |alpha_dot|)`
-##   - Ensures exact zero residual at `alpha = gamma = alpha_dot = 0`.
-
 const IN_DIM: int = 7
 const HIDDEN_DIM: int = 64
 const OUT_SCALE_FY: float = 250.0
@@ -63,8 +44,6 @@ func get_provenance_metadata() -> Dictionary:
 		"combined_slip_provenance": "FRICTION_ELLIPSE_COMPANION",
 	}
 
-## Exact port of `TeR_Tire/models/network.py::ResidualTireMLP.forward`.
-## Directly callable by unit tests to verify 1:1 agreement with PyTorch.
 func eval_ter_pinn_residual_raw(
 	alpha_ter_rad: float,
 	alpha_dot_rad_s: float,
@@ -82,7 +61,6 @@ func eval_ter_pinn_residual_raw(
 	var x5: float = (temp_avg_c - _x_mean[5]) / (_x_std[5] + EPS)
 	var x6: float = (delta_temp_c - _x_mean[6]) / (_x_std[6] + EPS)
 
-	# Layer 0: Linear(7 -> 64) + SiLU
 	for i in range(HIDDEN_DIM):
 		var row_off: int = i * IN_DIM
 		var z: float = _b0[i] \
@@ -95,7 +73,6 @@ func eval_ter_pinn_residual_raw(
 			+ _w0[row_off + 6] * x6
 		_h0_buf[i] = z / (1.0 + exp(-clampf(z, -40.0, 40.0)))
 
-	# Layer 2: Linear(64 -> 64) + SiLU
 	for i in range(HIDDEN_DIM):
 		var row_off: int = i * HIDDEN_DIM
 		var z: float = _b2[i]
@@ -103,7 +80,6 @@ func eval_ter_pinn_residual_raw(
 			z += _w2[row_off + j] * _h0_buf[j]
 		_h1_buf[i] = z / (1.0 + exp(-clampf(z, -40.0, 40.0)))
 
-	# Layer 4: Linear(64 -> 2)
 	var raw_0: float = _b4[0]
 	var raw_1: float = _b4[1]
 	for j in range(HIDDEN_DIM):
@@ -130,14 +106,9 @@ func _evaluate_residual_hook(
 		state.delta_mz_pinn_nm = 0.0
 		return Vector2.ZERO
 
-	# Convert ISO slip-angle rate to TeR convention (-alpha_dot_iso) and clamp to physical range
 	var alpha_dot_ter: float = clampf(-inputs.slip_angle_rate_rad_s, -2.5, 2.5)
 	var gamma_clamped: float = clampf(inputs.camber_gamma_rad, -0.25, 0.25)
 
-	# Evaluate odd-symmetrized PINN residual with respect to lateral kinematic inputs (alpha, alpha_dot, gamma)
-	# when enable_ply_steer_asymmetry is false so single-tire rig MLP bias offsets do not create a unilateral
-	# lateral pull at zero slip angle on a 4-wheel vehicle, while preserving exact raw evaluation in
-	# eval_ter_pinn_residual_raw() and when ply-steer rig asymmetry is enabled.
 	var res_pos: Vector2 = eval_ter_pinn_residual_raw(
 		alpha_ter,
 		alpha_dot_ter,
@@ -160,8 +131,6 @@ func _evaluate_residual_hook(
 		)
 		res = 0.5 * (res_pos - res_neg)
 
-	# Smoothly gate dynamic PINN residual by rolling speed so transient neural network corrections
-	# are active when rolling and vanish cleanly at zero wheel rolling velocity.
 	var vx_eps: float = maxf(config.vx_min_regularization_mps, 0.25)
 	var rolling_gate: float = clampf(absf(inputs.vx_contact_mps) / vx_eps, 0.0, 1.0)
 	var dfy: float = res.x * grip_scale * rolling_gate

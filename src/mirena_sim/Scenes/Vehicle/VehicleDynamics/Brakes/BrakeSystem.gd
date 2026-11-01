@@ -1,15 +1,6 @@
 extends RefCounted
 class_name BrakeSystem
 
-## Evaluates front and rear hydraulic friction brake and EBS torque demand [FL, FR, RL, RR] (N*m).
-##
-## Physical Semantics & Sign Conventions:
-## - `brake_cmd` is normalized in `[0.0, 1.0]` (extracted from `max(-gas, 0.0)` in `/control` or manual brake).
-## - Available brake torque magnitudes are always non-negative (`>= 0.0 N*m`).
-## - Front/rear distribution strictly obeys `config.brake_bias_front` (60% front / 40% rear in Mirena baseline),
-##   split equally between left and right wheels on each axle (30% FL, 30% FR, 20% RL, 20% RR).
-## - Actual signed resistive torque opposing wheel rotation is applied in `WheelRotationalDynamics`.
-
 func evaluate_brake_torques(
 	brake_cmd: float,
 	ebs_active: bool,

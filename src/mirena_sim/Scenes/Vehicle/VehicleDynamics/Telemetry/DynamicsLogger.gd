@@ -1,13 +1,6 @@
 extends RefCounted
 class_name DynamicsLogger
 
-## Optional offline buffered CSV logger for `DynamicsDiagnostics` snapshots.
-##
-## Designed so that:
-## - Production simulation runs have zero file-I/O overhead (`logging_enabled = false` by default).
-## - Offline validation runs can buffer samples in memory and flush once at the end of a maneuver
-##   to avoid per-frame disk I/O jitter.
-
 var logging_enabled: bool = false
 var max_buffered_samples: int = 40000
 var _buffer: Array[Dictionary] = []
@@ -26,7 +19,6 @@ func clear() -> void:
 func get_sample_count() -> int:
 	return _buffer.size()
 
-## Append a diagnostic sample to the in-memory ring/linear buffer if `logging_enabled == true`.
 func record_sample(diagnostics: DynamicsDiagnostics) -> void:
 	if not logging_enabled or diagnostics == null:
 		return
@@ -34,7 +26,6 @@ func record_sample(diagnostics: DynamicsDiagnostics) -> void:
 		return
 	_buffer.append(diagnostics.to_dictionary())
 
-## Return CSV header string matching either the legacy 30 columns or the expanded 47-column schema.
 static func get_csv_header(expanded: bool = false) -> String:
 	if not expanded:
 		return ",".join([
@@ -63,7 +54,6 @@ static func get_csv_header(expanded: bool = false) -> String:
 		"fault_flags"
 	])
 
-## Export buffered samples to a CSV file on disk. Returns true on success.
 func export_csv(file_path: String, expanded: bool = false) -> bool:
 	var file := FileAccess.open(file_path, FileAccess.WRITE)
 	if file == null:

@@ -1,8 +1,5 @@
 extends SceneTree
 
-## Headless test harness for all 13 Controlled Validation Maneuvers (Phase 2).
-## Compares Modular Baseline vs Calibrated Modular configuration.
-
 const DT: float = 0.0025
 
 func _init() -> void:
@@ -17,14 +14,12 @@ func _init() -> void:
 	var total_passed: int = 0
 	var total_tests: int = 13
 
-	# Helper to create model
 	var make_model = func(cfg: VehicleDynamicsConfig) -> VehicleDynamicsModel:
 		var m := VehicleDynamicsModel.new(cfg.duplicate(true))
 		m.contact_query.use_analytic_plane = true
 		m.reset()
 		return m
 
-	# 1. Static level-ground equilibrium
 	var m1_b: VehicleDynamicsModel = make_model.call(cfg_baseline)
 	var m1_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	for _s in range(400):
@@ -36,7 +31,6 @@ func _init() -> void:
 	])
 	if p1: total_passed += 1
 
-	# 2. Constant-speed straight-line driving (u = 10 m/s)
 	var m2_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m2_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m2_c.state.wheels: w.omega_rad_s = 50.0
@@ -48,7 +42,6 @@ func _init() -> void:
 	])
 	if p2: total_passed += 1
 
-	# 3. Straight-line acceleration (from 5 m/s, gas = 1.0)
 	var m3_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m3_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -5.0)
 	for w in m3_c.state.wheels: w.omega_rad_s = 25.0
@@ -60,7 +53,6 @@ func _init() -> void:
 	])
 	if p3: total_passed += 1
 
-	# 4. Straight-line braking (from 15 m/s, gas = -1.0)
 	var m4_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m4_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -15.0)
 	for w in m4_c.state.wheels: w.omega_rad_s = 75.0
@@ -72,7 +64,6 @@ func _init() -> void:
 	])
 	if p4: total_passed += 1
 
-	# 5. Steering step response (u = 10 m/s, steer step = +0.15 rad)
 	var m5_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m5_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m5_c.state.wheels: w.omega_rad_s = 50.0
@@ -87,7 +78,6 @@ func _init() -> void:
 	])
 	if p5: total_passed += 1
 
-	# 6. Steering ramp response (u = 10 m/s, ramp steer to 0.25 rad)
 	var m6_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m6_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m6_c.state.wheels: w.omega_rad_s = 50.0
@@ -101,7 +91,6 @@ func _init() -> void:
 	])
 	if p6: total_passed += 1
 
-	# 7. Constant-radius left cornering
 	var m7_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m7_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m7_c.state.wheels: w.omega_rad_s = 50.0
@@ -117,7 +106,6 @@ func _init() -> void:
 	])
 	if p7: total_passed += 1
 
-	# 8. Constant-radius right cornering (symmetry test against left)
 	var m8_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m8_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m8_c.state.wheels: w.omega_rad_s = 50.0
@@ -129,7 +117,6 @@ func _init() -> void:
 	])
 	if p8: total_passed += 1
 
-	# 9. Progressive skidpad (increasing speed from 5 to 15 m/s at delta = 0.08 rad)
 	var m9_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m9_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -5.0)
 	for w in m9_c.state.wheels: w.omega_rad_s = 25.0
@@ -145,13 +132,12 @@ func _init() -> void:
 	])
 	if p9: total_passed += 1
 
-	# 10. Acceleration while cornering (throttle step in corner)
 	var m10_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m10_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -8.0)
 	for w in m10_c.state.wheels: w.omega_rad_s = 40.0
 	m10_c.set_control_commands(0.1, 0.12, false)
 	for _s in range(200): m10_c.step(DT, true, false)
-	# Throttle step to 0.75
+
 	m10_c.set_control_commands(0.75, 0.12, false)
 	var max_beta_10: float = 0.0
 	for _s in range(200):
@@ -163,13 +149,12 @@ func _init() -> void:
 	])
 	if p10: total_passed += 1
 
-	# 11. Throttle release while cornering (lift-off oversteer check)
 	var m11_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m11_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -12.0)
 	for w in m11_c.state.wheels: w.omega_rad_s = 60.0
 	m11_c.set_control_commands(0.40, 0.10, false)
 	for _s in range(200): m11_c.step(DT, true, false)
-	# Release throttle to 0.0
+
 	m11_c.set_control_commands(0.0, 0.10, false)
 	for _s in range(200): m11_c.step(DT, true, false)
 	var p11: bool = (m11_c.state.fault_flags & VehicleDynamicsTypes.FaultFlag.NON_FINITE_FORCE) == 0 and absf(atan2(m11_c.state.v_mps, m11_c.state.u_mps)) < deg_to_rad(8.0)
@@ -178,13 +163,12 @@ func _init() -> void:
 	])
 	if p11: total_passed += 1
 
-	# 12. Braking while cornering
 	var m12_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m12_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m12_c.state.wheels: w.omega_rad_s = 50.0
 	m12_c.set_control_commands(0.10, 0.10, false)
 	for _s in range(200): m12_c.step(DT, true, false)
-	# Brake step
+
 	m12_c.set_control_commands(-0.40, 0.10, false)
 	for _s in range(200): m12_c.step(DT, true, false)
 	var p12: bool = m12_c.state.ax_mps2 < 0.0 and (m12_c.state.fault_flags & VehicleDynamicsTypes.FaultFlag.NON_FINITE_FORCE) == 0
@@ -193,14 +177,13 @@ func _init() -> void:
 	])
 	if p12: total_passed += 1
 
-	# 13. Slalom / Transient left-right steering
 	var m13_c: VehicleDynamicsModel = make_model.call(cfg_calibrated)
 	m13_c.state.linear_velocity_world_godot = Vector3(0.0, 0.0, -10.0)
 	for w in m13_c.state.wheels: w.omega_rad_s = 50.0
 	var yaw_peaks: Array[float] = []
 	for s in range(600):
 		var t_slalom: float = float(s) * DT
-		var steer_sine: float = 0.12 * sin(TAU * 1.0 * t_slalom) # 1.0 Hz slalom
+		var steer_sine: float = 0.12 * sin(TAU * 1.0 * t_slalom)
 		m13_c.set_control_commands(0.05, steer_sine, false)
 		m13_c.step(DT, true, false)
 		if (s % 100) == 0:

@@ -1,18 +1,12 @@
 extends Resource
 class_name VehicleDynamicsConfig
 
-## Top-level composite configuration Resource for the MirenaSim VehicleDynamics framework.
-##
-## Aggregates all subsystem configurations so that a complete vehicle setup can be saved,
-## inspected, and swapped as a single `.tres` Resource without modifying physics code.
-
 @export_group("Integration & Execution")
-## Integration mode governing force ownership. Defaults to INACTIVE_LEGACY_PASSTHROUGH in Phase 1
-## so the legacy VehicleBody3D (`vehicleMotion.gd`) remains the sole active model until Phase 2+ switchover.
+
 @export var integration_mode: VehicleDynamicsTypes.IntegrationMode = VehicleDynamicsTypes.IntegrationMode.INACTIVE_LEGACY_PASSTHROUGH
-## Number of internal physics substeps per Godot `_physics_process` tick (default 1 at 400 Hz = 2.5 ms).
+
 @export_range(1, 10) var physics_substeps: int = 1
-## Enable per-tick diagnostic snapshot capture in `DynamicsDiagnostics`.
+
 @export var enable_diagnostics: bool = true
 
 @export_group("Subsystem Configurations")
@@ -24,7 +18,6 @@ class_name VehicleDynamicsConfig
 @export var brake_config: BrakeConfiguration = BrakeConfiguration.new()
 @export var aerodynamics_config: AerodynamicConfiguration = AerodynamicConfiguration.new()
 
-## Ensure all sub-resources are instantiated if loaded from a partial resource.
 func ensure_subresources() -> void:
 	if vehicle_parameters == null:
 		vehicle_parameters = VehicleParameters.new()
@@ -41,7 +34,6 @@ func ensure_subresources() -> void:
 	if aerodynamics_config == null:
 		aerodynamics_config = AerodynamicConfiguration.new()
 
-## Validate that all subsystem configurations are present and physically valid.
 func is_valid() -> bool:
 	if physics_substeps < 1:
 		return false

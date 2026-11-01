@@ -1,6 +1,4 @@
 extends SceneTree
-## Unit test suite for VehicleCoordinates, VehicleUnits, and WheelKinematics.
-
 
 func _init() -> void:
 	var result := run_suite()
@@ -9,14 +7,12 @@ func _init() -> void:
 	else:
 		quit(0)
 
-
 static func run_suite() -> Dictionary:
 	var passed: int = 0
 	var failed: int = 0
 
 	print("=== [test_wheel_kinematics] Starting Coordinate & Wheel Kinematics Tests ===")
 
-	# 1. Godot <-> Vehicle (ISO 8855 / ROS) vector round-trip and axis mapping
 	var godot_vec := Vector3(-2.0, 5.0, -10.0)
 	var veh_vec := VehicleCoordinates.godot_to_vehicle_vec(godot_vec)
 	var back_to_godot := VehicleCoordinates.vehicle_to_godot_vec(veh_vec)
@@ -27,8 +23,7 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] VehicleCoordinates vector mapping failed: got %s" % str(veh_vec))
 
-	# 2. Angular velocity / torque mapping (Right-handed parity preservation)
-	var godot_omega := Vector3(-0.2, 0.5, -0.1) # pitch=+0.2, yaw=+0.5, roll=+0.1 in Vehicle
+	var godot_omega := Vector3(-0.2, 0.5, -0.1)
 	var veh_omega := VehicleCoordinates.godot_to_vehicle_angular(godot_omega)
 	var back_omega := VehicleCoordinates.vehicle_to_godot_angular(veh_omega)
 	if veh_omega.is_equal_approx(Vector3(0.1, 0.2, 0.5)) and back_omega.is_equal_approx(godot_omega):
@@ -38,7 +33,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] VehicleCoordinates angular mapping failed: got %s" % str(veh_omega))
 
-	# 3. Body <-> Steered Wheel frame round-trip
 	var v_body := Vector3(12.0, 1.5, 0.0)
 	var delta_rad := 0.25
 	var v_wheel := VehicleCoordinates.body_to_wheel_frame(v_body, delta_rad)
@@ -50,9 +44,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Body <-> Steered Wheel rotation failed")
 
-	# 4. Wheel hub velocity under chassis yaw rate
-	# For yaw rate r > 0 (CCW, turning left), FL wheel (y = +0.587 m) moves slower longitudinally:
-	# u_hub = u - r * y_i
 	var ws_fl := WheelState.new(VehicleDynamicsTypes.WheelCorner.FL)
 	ws_fl.hub_offset_from_com_vehicle = Vector3(0.876, 0.587, 0.0)
 	ws_fl.omega_rad_s = 50.0
@@ -70,14 +61,13 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Yaw rate hub velocity transfer failed")
 
-	# 5. Slip ratio sign: driven wheel (omega * r_eff > v_wx) => kappa > 0; braked => kappa < 0
 	var ws_test := WheelState.new(VehicleDynamicsTypes.WheelCorner.RL)
 	ws_test.hub_offset_from_com_vehicle = Vector3(-0.717, 0.587, 0.0)
 	ws_test.effective_radius_m = 0.20
-	ws_test.omega_rad_s = 55.0 # r*omega = 11.0 m/s vs u = 10.0 m/s
+	ws_test.omega_rad_s = 55.0
 	WheelKinematics.update_wheel_kinematics(ws_test, Vector3(10.0, 0.0, 0.0), Vector3.ZERO, 0.25)
 	var kappa_drive: float = ws_test.slip_ratio_kappa
-	ws_test.omega_rad_s = 45.0 # r*omega = 9.0 m/s vs u = 10.0 m/s
+	ws_test.omega_rad_s = 45.0
 	WheelKinematics.update_wheel_kinematics(ws_test, Vector3(10.0, 0.0, 0.0), Vector3.ZERO, 0.25)
 	var kappa_brake: float = ws_test.slip_ratio_kappa
 	if absf(kappa_drive - 0.10) < 1e-3 and absf(kappa_brake - (-0.10)) < 1e-3:
@@ -87,7 +77,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Slip ratio calculation failed: drive=%f brake=%f" % [kappa_drive, kappa_brake])
 
-	# 6. Standstill singularity protection (u = 0, omega = 0 => finite zero slip)
 	ws_test.omega_rad_s = 0.0
 	WheelKinematics.update_wheel_kinematics(ws_test, Vector3.ZERO, Vector3.ZERO, 0.25)
 	if is_finite(ws_test.slip_ratio_kappa) and is_finite(ws_test.slip_angle_alpha_rad) and ws_test.slip_ratio_kappa == 0.0 and ws_test.slip_angle_alpha_rad == 0.0:
@@ -97,8 +86,7 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Standstill singularity check failed")
 
-	# 7. RPM conversions and quantization
-	var rpm: float = VehicleUnits.rad_s_to_rpm(PI) # 30 RPM
+	var rpm: float = VehicleUnits.rad_s_to_rpm(PI)
 	var quant_rpm: float = VehicleUnits.quantize_rpm(30.4, 1.0)
 	if absf(rpm - 30.0) < 1e-4 and absf(quant_rpm - 30.0) < 1e-5:
 		passed += 1

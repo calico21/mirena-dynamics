@@ -1,10 +1,6 @@
 extends RefCounted
 class_name DrivetrainModel
 
-## Distributes motor shaft torque to the four wheel shafts [FL, FR, RL, RR] (in N*m)
-## through the transmission gear ratio, drivetrain efficiency, front/rear drive bias, and differential.
-
-## Compute per-wheel drive torques [FL, FR, RL, RR] (N*m).
 static func distribute_wheel_torques_nm(
 	motor_torque_nm: float,
 	wheel_omegas_rad_s: Array[float],
@@ -27,9 +23,6 @@ static func distribute_wheel_torques_nm(
 	var rl_trq: float = 0.5 * rear_axle_trq
 	var rr_trq: float = 0.5 * rear_axle_trq
 
-	# Viscous locking differential transfer on driven rear axle when diff_lock_ratio > 0
-	# Physical law: T_lock = diff_lock_ratio * K_visc * (omega_RL - omega_RR)
-	# Dimensional check: [-] * [N*m*s/rad] * [rad/s] = [N*m]
 	if config.diff_lock_ratio > 0.0 and wheel_omegas_rad_s.size() == VehicleDynamicsTypes.WHEEL_COUNT:
 		var d_omega_rear: float = wheel_omegas_rad_s[VehicleDynamicsTypes.WheelCorner.RL] - wheel_omegas_rad_s[VehicleDynamicsTypes.WheelCorner.RR]
 		var k_visc: float = config.diff_viscous_damping_nm_s_per_rad

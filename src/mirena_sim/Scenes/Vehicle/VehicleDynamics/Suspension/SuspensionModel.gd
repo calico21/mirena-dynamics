@@ -1,15 +1,6 @@
 extends RefCounted
 class_name SuspensionModel
 
-## Coordinates the 4-wheel suspension subsystem (springs, digressive dampers, anti-roll bars,
-## static preload equilibrium, and dynamic camber/bump-steer kinematics).
-##
-## Ownership & Responsibilities:
-## - Computes `SuspensionState` for FL, FR, RL, RR from current suspension displacements and velocities.
-## - Adds aerodynamic downforce per axle/wheel to determine the total vertical contact normal load `Fz >= 0`.
-## - Enforces non-negativity of tire normal load (`normal_load_fz_n = max(0, F_total)` — tires cannot pull on the ground).
-
-## Evaluate all four corners' suspension forces, normal loads, and kinematic camber/bump-steer angles.
 func evaluate_all_corners(
 	wheels: Array[WheelState],
 	body_roll_rad: float,
@@ -24,7 +15,6 @@ func evaluate_all_corners(
 
 	var static_loads: Array[float] = VehicleInertia.compute_static_corner_loads_n(params)
 
-	# 1. Anti-roll bar forces per axle
 	var front_arb: Vector2 = AntiRollBarModel.compute_axle_arb_forces_n(
 		wheels[VehicleDynamicsTypes.WheelCorner.FL].suspension_state.compression_m,
 		wheels[VehicleDynamicsTypes.WheelCorner.FR].suspension_state.compression_m,
@@ -39,7 +29,6 @@ func evaluate_all_corners(
 	)
 	var arb_forces: Array[float] = [front_arb.x, front_arb.y, rear_arb.x, rear_arb.y]
 
-	# 2. Compute base strut forces (spring + bump_stop + damper) per corner
 	var base_strut_forces: Array[float] = [0.0, 0.0, 0.0, 0.0]
 	for i in range(VehicleDynamicsTypes.WHEEL_COUNT):
 		var w: WheelState = wheels[i]
@@ -60,8 +49,6 @@ func evaluate_all_corners(
 		else:
 			base_strut_forces[i] = 0.0
 
-	# Bound axle ARB vertical load transfer so an unloaded inside wheel at liftoff (Fz = 0)
-	# cannot transfer more vertical load than it actually supports, strictly conserving axle heave force.
 	var front_arb_bounded: float = clampf(arb_forces[0], -base_strut_forces[0], base_strut_forces[1])
 	if not wheels[0].contact_state.in_contact or not wheels[1].contact_state.in_contact:
 		front_arb_bounded = clampf(front_arb_bounded, -base_strut_forces[0], base_strut_forces[1])
@@ -74,7 +61,6 @@ func evaluate_all_corners(
 	arb_forces[2] = rear_arb_bounded
 	arb_forces[3] = -rear_arb_bounded
 
-	# 3. Finalize per-corner total vertical load and K&C angles
 	for i in range(VehicleDynamicsTypes.WHEEL_COUNT):
 		var w: WheelState = wheels[i]
 		var s: SuspensionState = w.suspension_state
@@ -93,7 +79,6 @@ func evaluate_all_corners(
 			s.total_suspension_force_n = 0.0
 			s.normal_load_fz_n = 0.0
 
-		# Dynamic camber: static camber + heave camber gain + roll camber gain
 		var static_camber: float = susp_cfg.static_camber_front_rad if is_front else susp_cfg.static_camber_rear_rad
 		var heave_gain: float = susp_cfg.camber_per_m_travel_front_radpm if is_front else susp_cfg.camber_per_m_travel_rear_radpm
 		var roll_gain: float = susp_cfg.camber_gain_roll_front if is_front else susp_cfg.camber_gain_roll_rear

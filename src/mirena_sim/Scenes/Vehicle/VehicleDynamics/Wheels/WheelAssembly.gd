@@ -1,14 +1,11 @@
 extends RefCounted
 class_name WheelAssembly
 
-## Encapsulates the per-corner wheel subsystem operations (`WheelState`, `WheelKinematics`, `WheelRotationalDynamics`).
-
 var corner: VehicleDynamicsTypes.WheelCorner = VehicleDynamicsTypes.WheelCorner.FL
 
 func _init(p_corner: VehicleDynamicsTypes.WheelCorner = VehicleDynamicsTypes.WheelCorner.FL) -> void:
 	corner = p_corner
 
-## Update local velocities and slip variables for this wheel corner.
 func evaluate_kinematics(
 	wheel: WheelState,
 	v_com_vehicle: Vector3,
@@ -17,7 +14,6 @@ func evaluate_kinematics(
 ) -> void:
 	WheelKinematics.update_wheel_kinematics(wheel, v_com_vehicle, omega_vehicle, vx_eps_mps)
 
-## Build a `TireInputs` structure from the current `WheelState` and `TireConfiguration`.
 func build_tire_inputs(
 	wheel: WheelState,
 	tire_cfg: TireConfiguration,
@@ -35,10 +31,7 @@ func build_tire_inputs(
 	else:
 		inputs.slip_angle_rate_rad_s = 0.0
 	inputs.normal_load_fz_n = wheel.suspension_state.normal_load_fz_n if wheel.contact_state.in_contact else 0.0
-	# Convert automotive setup camber (negative = top of wheel tilted inward toward vehicle centerline)
-	# to ISO/TeR tire inclination angle `gamma_rad`:
-	# - Left wheels (FL, RL): inward tilt (-camber_setup) leans toward -Y (right), which is +gamma_iso -> Fy0 < 0 (inward).
-	# - Right wheels (FR, RR): inward tilt (-camber_setup) leans toward +Y (left), which is -gamma_iso -> Fy0 > 0 (inward).
+
 	var camber_iso_sign: float = -1.0 if VehicleDynamicsTypes.is_left_corner(wheel.corner) else 1.0
 	inputs.camber_gamma_rad = camber_iso_sign * wheel.camber_angle_rad
 	inputs.vx_contact_mps = wheel.contact_velocity_wheel.x
@@ -52,7 +45,6 @@ func build_tire_inputs(
 	inputs.dt_s = dt_s
 	return inputs
 
-## Integrate rotational spin dynamics for this wheel corner.
 func integrate_rotation(
 	wheel: WheelState,
 	wheel_inertia_kgm2: float,

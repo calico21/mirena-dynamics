@@ -1,27 +1,6 @@
 extends RefCounted
 class_name VehicleDynamicsModel
 
-## Pure, scene-independent orchestrator of the 4-wheel physical vehicle dynamics model.
-##
-## Implements the central 13-step vehicle-dynamics contract:
-## 1. Obtain current chassis and wheel states (`ChassisModel.update_kinematics_from_world`).
-## 2. Evaluate contact geometry and wheel-ground conditions (`WheelContact.evaluate_wheel_contact`).
-## 3. Calculate aerodynamic drag and downforce distribution (`AerodynamicModel.evaluate_aerodynamics`)
-##    and suspension displacement + vertical normal load Fz (`SuspensionModel.evaluate_all_corners`).
-## 4. Calculate individual wheel steering angles (`SteeringModel.update_steering`).
-## 5. Calculate each wheel's local velocity (`WheelAssembly.evaluate_kinematics`).
-## 6. Calculate tire slip variables (`kappa`, `alpha`, `alpha_dot`).
-## 7. Obtain tire forces and moments from the configured tire model (`TireModel.evaluate_wheel_forces`).
-## 8. Calculate available powertrain drive torque (`PowertrainModel.evaluate_drive_torques`)
-##    and brake torque (`BrakeSystem.evaluate_brake_torques`).
-## 9. Apply combined-slip and contact-load limits consistently (inside `TireModel` & `SuspensionModel`).
-## 10. Assemble individual forces and moments about the Chassis CoM (`ChassisModel.assemble_forces_and_moments`).
-## 11. Integrate wheel rotational dynamics (`WheelAssembly.integrate_rotation`) and, when running in
-##     `STANDALONE_BENCH` mode, advance chassis rigid-body states (`RigidBodyDynamics.integrate_standalone_step`).
-##     (In `CUSTOM_RIGID_BODY_3D` mode, chassis force application is delegated to `GodotPhysicsAdapter`.)
-## 12. Update internal states and diagnostics (`DynamicsDiagnostics.record_from_state`).
-## 13. Expose the updated `VehicleState` to `ROSVehicleAdapter` for publication.
-
 var config: VehicleDynamicsConfig
 var state: VehicleState
 var contact_query: ContactQuery
@@ -60,7 +39,6 @@ func _init(p_config: VehicleDynamicsConfig = null) -> void:
 
 	reset()
 
-## Reset the entire vehicle model, sub-models, and diagnostics to a clean initial state at `origin_godot`.
 func reset(origin_godot: Transform3D = Transform3D.IDENTITY) -> void:
 	config.ensure_subresources()
 	state.reset(origin_godot, config.vehicle_parameters)
@@ -70,8 +48,6 @@ func reset(origin_godot: Transform3D = Transform3D.IDENTITY) -> void:
 	diagnostics.enabled = config.enable_diagnostics
 	diagnostics.reset()
 
-## Set driver or ROS control commands on `state` prior to stepping.
-## `gas_input` follows `mirena_common/msg/CarControl`: `[-1, 1]` where `> 0` is throttle and `< 0` is braking.
 func set_control_commands(gas_input: float, steer_angle_rad: float, ebs_triggered: bool = false) -> void:
 	if not VehicleUnits.is_finite_scalar(gas_input) or not VehicleUnits.is_finite_scalar(steer_angle_rad):
 		state.fault_flags |= VehicleDynamicsTypes.FaultFlag.NON_FINITE_INPUT
@@ -92,7 +68,6 @@ func set_control_commands(gas_input: float, steer_angle_rad: float, ebs_triggere
 	)
 	state.ebs_active = ebs_triggered
 
-## Execute one complete physics step of duration `dt_s` (supporting configured substeps).
 func step(dt_s: float, integrate_chassis_standalone: bool = false, constrain_planar_standalone: bool = false) -> void:
 	state.fault_flags = VehicleDynamicsTypes.FaultFlag.NONE
 
@@ -118,12 +93,10 @@ func step(dt_s: float, integrate_chassis_standalone: bool = false, constrain_pla
 func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_planar_standalone: bool) -> void:
 	var params: VehicleParameters = config.vehicle_parameters
 
-	# Step 1: Synchronize chassis body-frame kinematics from world transform & velocity
 	chassis_model.update_kinematics_from_world(state, params)
 	if (state.fault_flags & VehicleDynamicsTypes.FaultFlag.NON_FINITE_STATE) != 0:
 		return
 
-	# Step 2: Evaluate wheel-ground contact geometry for all 4 wheels
 	for i in range(VehicleDynamicsTypes.WHEEL_COUNT):
 		contact_model.evaluate_wheel_contact(
 			state.wheels[i],
@@ -135,7 +108,6 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 			contact_query
 		)
 
-	# Step 3a: Evaluate aerodynamic drag and downforce distribution
 	var aero_res: Dictionary = aerodynamic_model.evaluate_aerodynamics(
 		state.get_body_velocity_vehicle(),
 		config.aerodynamics_config,
@@ -147,10 +119,6 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 	state.aero_force_vehicle = aero_res["aero_force_vehicle"]
 	state.aero_moment_vehicle = aero_res["aero_moment_vehicle"]
 
-	# Step 3b: Calculate suspension displacement, forces, dynamic camber, and vertical normal load Fz
-	# In 6-DOF mode, aerodynamic downforce on the chassis is transmitted to the tires naturally through
-	# strut spring compression; in planar-constrained standalone mode (where heave is locked), downforce
-	# is allocated directly to wheel normal loads so high-speed grip is maintained without double-counting.
 	var df_front_eval: float = state.aero_downforce_front_n if constrain_planar_standalone else 0.0
 	var df_rear_eval: float = state.aero_downforce_rear_n if constrain_planar_standalone else 0.0
 	suspension_model.evaluate_all_corners(
@@ -163,7 +131,6 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 		config.steering_config
 	)
 
-	# Step 4: Calculate individual wheel steering angles (FL, FR, RL, RR)
 	steering_model.update_steering(
 		state.steer_cmd_rad,
 		dt_s,
@@ -172,7 +139,6 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 		config.steering_config
 	)
 
-	# Steps 5, 6 & 7: Calculate each wheel's local velocity, slip variables, and tire forces/moments
 	var v_com_veh: Vector3 = state.get_body_velocity_vehicle()
 	var omega_veh: Vector3 = state.get_body_angular_velocity_vehicle()
 	var vx_eps: float = config.tire_config.vx_min_regularization_mps
@@ -187,7 +153,6 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 		state.fault_flags |= w.tire_forces.fault_flags
 		wheel_omegas[i] = w.omega_rad_s
 
-	# Step 8: Calculate available powertrain drive torque and brake torque
 	powertrain_model.evaluate_drive_torques(
 		state.throttle_cmd,
 		state.u_mps,
@@ -204,10 +169,8 @@ func _step_single(dt_s: float, integrate_chassis_standalone: bool, constrain_pla
 		state.wheels
 	)
 
-	# Step 10: Assemble per-wheel and aerodynamic forces and moments about the Chassis CoM
 	chassis_model.assemble_forces_and_moments(state, params)
 
-	# Step 11: Integrate wheel rotational dynamics and (if standalone) chassis rigid-body motion
 	for i in range(VehicleDynamicsTypes.WHEEL_COUNT):
 		wheel_assemblies[i].integrate_rotation(
 			state.wheels[i],

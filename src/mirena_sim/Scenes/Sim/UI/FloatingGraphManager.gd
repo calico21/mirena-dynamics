@@ -38,9 +38,6 @@ func _ready() -> void:
 	
 	if graphs_button != null:
 		graphs_button.pressed.connect(_on_graphs_button_pressed)
-	
-	# Load persisted layout or load default preset
-	call_deferred("_load_or_create_default_layout")
 
 func _resolve_car_reference() -> void:
 	if car != null and is_instance_valid(car):
@@ -94,6 +91,7 @@ func _setup_popup_menu() -> void:
 	graphs_menu.add_item("👁️ Show All Graphs", 400)
 	graphs_menu.add_item("🚫 Hide All Graphs", 401)
 	graphs_menu.add_item("🔄 Reset to Default Layout", 402)
+	graphs_menu.add_item("📂 Restore Saved Layout", 403)
 	graphs_menu.add_separator()
 	graphs_menu.add_item("⚙️ Manage Active Graphs...", 500)
 	
@@ -140,6 +138,8 @@ func _on_graphs_menu_id_pressed(id: int) -> void:
 			set_all_graphs_visible(false)
 		402: # Reset to Default
 			reset_layout()
+		403: # Restore Saved Layout
+			load_layout()
 		500: # Manage Active Graphs
 			open_manage_graphs_dialog()
 

@@ -1,18 +1,6 @@
 extends RefCounted
 class_name DamperModel
 
-## Evaluates digressive (bilinear knee) asymmetric bump/rebound damping force for a wheel corner.
-##
-## Physical Equation (Horstman / Ohlins digressive damper model from TeR26/TeR27):
-##   v_damper = v_wheel / MR
-##   F_damper_bump(v_d) = c_low * v_d / (1 + |v_d| / v_knee) + c_high * v_d         for v_d >= 0 (bump)
-##   F_damper_reb(v_d)  = rebound_ratio * [c_low * v_d / (1 + |v_d| / v_knee) + c_high * v_d]  for v_d < 0 (rebound)
-##   F_wheel_damper     = F_damper / MR
-##
-## Sign Convention:
-## - `compression_velocity_mps > 0` in bump (compressing) -> `damper_force_n > 0` (pushes chassis upward).
-## - `compression_velocity_mps < 0` in rebound (extending) -> `damper_force_n < 0` (pulls chassis downward).
-
 static func compute_damper_force_n(
 	compression_velocity_mps: float,
 	axle: VehicleDynamicsTypes.Axle,

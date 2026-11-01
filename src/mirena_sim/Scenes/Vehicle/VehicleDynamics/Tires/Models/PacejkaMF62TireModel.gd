@@ -1,21 +1,6 @@
 extends TireModelInterface
 class_name PacejkaMF62TireModel
 
-## Calibrated Pacejka Magic Formula 6.2 Tire Model (`TireModelType.PACEJKA_MF62`).
-##
-## Directly integrates the analytical baseline from `TeR_Tire/physics/pacejka_baseline.py`
-## and the 39 fitted parameters from `TeR_Tire/config/pacejka_mf62_params.yaml`
-## (Hoosier 16.0x7.5-10 R20 on 8-inch rim, calibrated on TTC Round 9 Run 1 cornering data).
-##
-## HONEST PROVENANCE & SCOPE:
-## - Pure Lateral Force (`Fy0`) and Self-Aligning Moment (`Mz0`) are experimentally calibrated
-##   from `TeR_Tire` (`pacejka_mf62_params.yaml`).
-## - Because `TeR_Tire` only calibrates pure lateral `Fy0` and `Mz0` (its `friction_envelope.py`,
-##   `relaxation.py`, and `thermal_core.py` are empty 0-byte placeholders and no longitudinal `p_Cx/Dx/Kx`
-##   coefficients exist in `pacejka_mf62_params.yaml`), longitudinal traction/braking force (`Fx`) and
-##   combined-slip coupling (`Gyx`) are computed by an explicitly separated, clearly labeled companion
-##   module (`_evaluate_uncalibrated_longitudinal_companion`) and recorded in `TireState.fx_companion_uncalibrated_n`.
-
 const EPS: float = 1.0e-6
 
 var params: Dictionary = TeRTireWeightsData.MF62_PARAMS.duplicate()
@@ -29,7 +14,6 @@ func is_calibrated() -> bool:
 func is_implemented() -> bool:
 	return true
 
-## Return provenance metadata describing which channels are calibrated vs. companion estimates.
 func get_provenance_metadata() -> Dictionary:
 	return {
 		"tire_spec": TeRTireWeightsData.TIRE_NAME,
@@ -40,11 +24,6 @@ func get_provenance_metadata() -> Dictionary:
 		"combined_slip_provenance": "FRICTION_ELLIPSE_COMPANION",
 	}
 
-## Exact port of `TeR_Tire/physics/pacejka_baseline.py::PacejkaMF62.forward`.
-## In `TeR_Tire`'s sign convention, `alpha_ter > 0` yields `Fy0 > 0` and `Mz0 < 0`.
-## Set `include_ply_steer = true` for 1:1 match with `TeR_Tire` single-tire rig equations,
-## or `false` to zero out single-tire conicity/ply-steer offsets (`p_Hy1`, `p_Hy2`, `p_Vy1`, `p_Vy2`, `q_Hz1`, `q_Dz6`)
-## so a 4-wheel vehicle tracks straight at zero steer and zero camber.
 func eval_ter_mf62_raw(
 	alpha_ter_rad: float,
 	gamma_rad: float,
@@ -56,8 +35,6 @@ func eval_ter_mf62_raw(
 	var p0: float = TeRTireWeightsData.P0_KPA
 	var r0: float = TeRTireWeightsData.R0_M
 
-	# Bound dfz in empirical dimensionless coefficients to TTC calibration envelope (Fz in [150, 1600] N)
-	# to prevent polynomial/hyperbolic blow-up when vehicle encounters extreme dynamic normal loads
 	var dfz: float = clampf((fz_n - fz0) / (fz0 + EPS), -0.786, 1.286)
 	var dpi: float = (pressure_kpa - p0) / (p0 + EPS)
 
@@ -81,7 +58,6 @@ func eval_ter_mf62_raw(
 	var p_py1: float = float(params["p_py1"])
 	var p_py2: float = float(params["p_py2"])
 
-	# 1. Pure Lateral Force (Fy0)
 	var mu_y: float = (p_Dy1 + p_Dy2 * dfz) * (1.0 + p_py1 * dpi) * (1.0 - p_Dy3 * gamma_rad * gamma_rad)
 	var Dy: float = mu_y * fz_n
 	var Cy: float = p_Cy1
@@ -101,7 +77,6 @@ func eval_ter_mf62_raw(
 	var inside_sin: float = Cy * atan(B_ay - Ey * (B_ay - atan_B_ay))
 	var Fy0: float = Dy * sin(inside_sin) + S_Vy
 
-	# 2. Pure Self-Aligning Moment (Mz0)
 	var Fy0_prime: float = Fy0 - S_Vy
 
 	var q_Bz1: float = float(params["q_Bz1"])
@@ -145,7 +120,6 @@ func eval_ter_mf62_raw(
 	var Mz0: float = -trail_t * Fy0_prime + Mzr
 	return Vector2(Fy0, Mz0)
 
-## Evaluate tire forces in the ISO 8855 Steered Wheel Frame.
 func evaluate_forces(
 	inputs: TireInputs,
 	state: TireState,
@@ -178,7 +152,6 @@ func evaluate_forces(
 	state.iso_camber_gamma_rad = inputs.camber_gamma_rad
 	state.slip_angle_rate_rad_s = inputs.slip_angle_rate_rad_s
 
-	# Optional first-order slip relaxation
 	var eff_kappa: float = inputs.slip_ratio_kappa
 	var eff_alpha_iso: float = inputs.slip_angle_alpha_rad
 	if config.enable_relaxation and inputs.dt_s > 0.0:
@@ -193,8 +166,6 @@ func evaluate_forces(
 		state.relaxed_slip_ratio = eff_kappa
 		state.relaxed_slip_angle_rad = eff_alpha_iso
 
-	# Convert ISO slip angle (alpha_iso = atan2(vy, |vx|)) to TeR_Tire convention (alpha_ter = -alpha_iso)
-	# so left steer (+delta -> vy < 0 -> alpha_iso < 0 -> alpha_ter > 0) produces +Fy (leftward).
 	var alpha_ter: float = clampf(-eff_alpha_iso, -0.55, 0.55)
 	var gamma_clamped: float = clampf(inputs.camber_gamma_rad, -0.25, 0.25)
 
@@ -223,12 +194,10 @@ func evaluate_forces(
 	state.delta_fy_pinn_n = 0.0
 	state.delta_mz_pinn_nm = 0.0
 
-	# Evaluate subclass residual hook (0.0 for pure PacejkaMF62; PINN residual for TeRTireGreyBoxModel)
 	var residual_out: Vector2 = _evaluate_residual_hook(alpha_ter, inputs, state, config, fz, grip_scale)
 	var fy_uncombined: float = fy_pure + residual_out.x
 	var mz_uncombined: float = mz_pure + residual_out.y
 
-	# Evaluate explicitly separated uncalibrated longitudinal companion & friction ellipse
 	var companion: Vector3 = _evaluate_uncalibrated_longitudinal_companion(
 		eff_kappa, fy_uncombined, fz, inputs.surface_mu_scale, config, alpha_ter, gamma_clamped, inputs.inflation_pressure_kpa
 	)
@@ -238,7 +207,6 @@ func evaluate_forces(
 	state.fx_companion_uncalibrated_n = companion.x
 	state.combined_slip_factor_gyx = gyx
 
-	# Compute lateral friction capacity and combined-slip utilization diagnostics
 	var fz0: float = TeRTireWeightsData.FZ0_N
 	var p0: float = TeRTireWeightsData.P0_KPA
 	var dfz: float = (fz - fz0) / (fz0 + EPS)
@@ -257,7 +225,6 @@ func evaluate_forces(
 	state.prev_slip_angle_rad = inputs.slip_angle_alpha_rad
 	return out
 
-## Overridden by `TeRTireGreyBoxModel` to add the 7-input PINN residual.
 func _evaluate_residual_hook(
 	_alpha_ter: float,
 	_inputs: TireInputs,
@@ -268,11 +235,6 @@ func _evaluate_residual_hook(
 ) -> Vector2:
 	return Vector2.ZERO
 
-## Explicitly separated, clearly labeled uncalibrated longitudinal slip & friction-ellipse companion.
-## Includes Pacejka MF6.2 bidirectional combined-slip coupling:
-## - Longitudinal force reduction under sideslip `G_x_alpha = cos(C_xa * atan(B_xa * alpha))`
-## - Lateral force reduction under longitudinal slip `G_y_kappa` scaled against the combined friction envelope
-## Returns Vector3(fx_combined, fy_combined, gyx_factor).
 func _evaluate_uncalibrated_longitudinal_companion(
 	eff_kappa: float,
 	fy_candidate_n: float,
@@ -285,19 +247,14 @@ func _evaluate_uncalibrated_longitudinal_companion(
 ) -> Vector3:
 	var fx_max: float = maxf(config.companion_longitudinal_peak_mu * surface_mu_scale * fz_n, EPS)
 	var kx: float = config.companion_longitudinal_kx_per_fz * fz_n
-	# Smooth Magic-Formula saturation for pure longitudinal force Fx0
+
 	var bx: float = kx / (1.35 * fx_max + EPS)
 	var fx0: float = fx_max * sin(1.35 * atan(bx * eff_kappa))
 
-	# Pacejka combined-slip longitudinal reduction factor G_x_alpha(alpha):
-	# When the tire is cornering at slip angle alpha, longitudinal traction shares the contact patch
-	# rather than taking 100% unilateral priority over lateral cornering force.
 	var b_xa: float = 9.5 * cos(atan(6.0 * eff_kappa))
 	var g_x_alpha: float = clampf(cos(1.0 * atan(b_xa * alpha_ter_rad)), 0.25, 1.0)
 	var fx_combined: float = fx0 * g_x_alpha
 
-	# Friction ellipse coupling factor Gyx: scales against the Hoosier R20 total combined envelope
-	# (lateral mu_y ~ 2.2 vs longitudinal mu_x ~ 1.45), retaining realistic cornering reserve under moderate throttle.
 	var combined_env_x: float = fx_max * 1.18
 	var ratio_x: float = clampf(absf(fx_combined) / combined_env_x, 0.0, 0.94)
 	var gyx: float = sqrt(maxf(1.0 - ratio_x * ratio_x, 0.12))

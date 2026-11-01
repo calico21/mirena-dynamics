@@ -1,14 +1,11 @@
 extends RefCounted
 class_name SteeringModel
 
-## Subsystem managing steering actuator state, rate limits, and per-wheel steering angle assignment.
-
 var _current_rack_angle_rad: float = 0.0
 
 func reset() -> void:
 	_current_rack_angle_rad = 0.0
 
-## Update the steering actuator state and assign `steering_angle_rad` on all 4 `WheelState` instances.
 func update_steering(
 	requested_steer_rad: float,
 	dt_s: float,

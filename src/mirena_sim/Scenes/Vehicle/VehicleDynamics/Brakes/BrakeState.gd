@@ -1,19 +1,11 @@
 extends RefCounted
 class_name BrakeState
 
-## Mutable state for the 4-wheel hydraulic brake and Emergency Braking System (EBS).
-##
-## Sign convention:
-## - `available_torque_nm`: Non-negative magnitude (>= 0, in N*m) of maximum friction brake torque
-##   available at each wheel for the current brake command.
-## - `applied_torque_nm`: Signed resistive brake torque (N*m) applied to the wheel rotational dynamics
-##   after accounting for wheel spin direction and standstill stiction.
-
 var brake_command_norm: float = 0.0
 var ebs_active: bool = false
-## Per-wheel available brake torque magnitude [FL, FR, RL, RR] (N*m, >= 0).
+
 var available_torque_nm: Array[float] = [0.0, 0.0, 0.0, 0.0]
-## Per-wheel signed resistive brake torque [FL, FR, RL, RR] (N*m).
+
 var applied_torque_nm: Array[float] = [0.0, 0.0, 0.0, 0.0]
 
 func _init() -> void:

@@ -1,6 +1,4 @@
 extends SceneTree
-## Unit test suite for SuspensionModel, SpringModel, DamperModel, and AntiRollBarModel.
-
 
 func _init() -> void:
 	var result := run_suite()
@@ -8,7 +6,6 @@ func _init() -> void:
 		quit(1)
 	else:
 		quit(0)
-
 
 static func run_suite() -> Dictionary:
 	var passed: int = 0
@@ -20,7 +17,6 @@ static func run_suite() -> Dictionary:
 	var cfg := SuspensionConfiguration.new()
 	var susp_model := SuspensionModel.new()
 
-	# 1. Static equilibrium at zero deflection (compression = 0, velocity = 0)
 	var wheels: Array[WheelState] = []
 	for corner in VehicleDynamicsTypes.ALL_CORNERS:
 		var w := WheelState.new(corner)
@@ -40,7 +36,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Static equilibrium wheel load recovery failed")
 
-	# 2. Bump stop engagement above bump_stop_engage_m
 	var bs_below := SpringModel.compute_bump_stop_force_n(0.020, cfg)
 	var bs_above := SpringModel.compute_bump_stop_force_n(0.030, cfg)
 	var expected_bs := cfg.bump_stop_rate_npm * (0.030 - cfg.bump_stop_engage_m)
@@ -51,7 +46,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] SpringModel bump-stop calculation failed")
 
-	# 3. Digressive damper bump vs rebound asymmetry (bump > 0, rebound < 0, |rebound| > |bump|)
 	var f_bump := DamperModel.compute_damper_force_n(0.05, VehicleDynamicsTypes.Axle.FRONT, cfg)
 	var f_rebound := DamperModel.compute_damper_force_n(-0.05, VehicleDynamicsTypes.Axle.FRONT, cfg)
 	if f_bump > 0.0 and f_rebound < 0.0 and absf(f_rebound) > absf(f_bump):
@@ -61,7 +55,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] DamperModel asymmetry check failed")
 
-	# 4. Anti-roll bar zero net heave contribution (F_left + F_right == 0)
 	var arb_pair := AntiRollBarModel.compute_axle_arb_forces_n(0.015, -0.005, VehicleDynamicsTypes.Axle.FRONT, cfg)
 	if arb_pair.x > 0.0 and arb_pair.y < 0.0 and absf(arb_pair.x + arb_pair.y) < 1e-6:
 		passed += 1
@@ -70,7 +63,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] AntiRollBarModel symmetry check failed: %s" % str(arb_pair))
 
-	# 5. Wheel liftoff clamping (normal_load_fz_n >= 0, never tensile)
 	wheels[0].suspension_state.compression_m = -0.035
 	wheels[0].suspension_state.compression_velocity_mps = -0.80
 	susp_model.evaluate_all_corners(wheels, 0.0, 0.0, 0.0, params, cfg)

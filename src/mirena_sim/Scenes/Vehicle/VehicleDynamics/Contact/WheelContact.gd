@@ -1,10 +1,6 @@
 extends RefCounted
 class_name WheelContact
 
-## Evaluates wheel-ground contact geometry (`ContactState`) and suspension compression
-## for all four wheels given the current chassis transform and `ContactQuery`.
-
-## Evaluate contact geometry for a single wheel corner.
 func evaluate_wheel_contact(
 	wheel: WheelState,
 	chassis_global_tf_godot: Transform3D,
@@ -40,7 +36,7 @@ func evaluate_wheel_contact(
 	wheel.contact_state.surface_friction_scale = res["friction_scale"]
 
 	if hit:
-		# Positive compression when hub is closer to ground than nominal unloaded_r
+
 		var compression: float = clampf(
 			unloaded_r - dist_m,
 			-susp_cfg.max_droop_travel_m,
@@ -48,7 +44,6 @@ func evaluate_wheel_contact(
 		)
 		wheel.suspension_state.compression_m = compression
 
-		# Vertical velocity of the hub along the chassis downward axis gives compression rate
 		var arm_world: Vector3 = hub_world_godot - chassis_global_tf_godot.origin
 		var hub_vel_world: Vector3 = chassis_lin_vel_world_godot + chassis_ang_vel_world_godot.cross(arm_world)
 		wheel.suspension_state.compression_velocity_mps = hub_vel_world.dot(down_world_godot)

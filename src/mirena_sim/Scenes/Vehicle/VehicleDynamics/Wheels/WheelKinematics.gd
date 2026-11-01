@@ -1,21 +1,6 @@
 extends RefCounted
 class_name WheelKinematics
 
-## Pure kinematic equations for wheel hub velocity, contact-patch velocity in the steered wheel frame,
-## and low-speed regularized longitudinal slip ratio (`kappa`) and lateral slip angle (`alpha`).
-##
-## Coordinate Frames & Sign Conventions (ISO 8855 / ROS 2 Vehicle Body Frame):
-## - Chassis velocity at CoM: `v_com_veh = (u, v, w)` (+X forward, +Y left, +Z up).
-## - Chassis angular velocity: `omega_veh = (p, q, r)` (roll, pitch, yaw rate).
-## - Hub velocity in Vehicle Body Frame:
-##     `v_hub_veh = v_com_veh + omega_veh x r_hub_from_com_veh`
-## - Contact velocity in Steered Wheel Frame (rotated by `steer_angle_rad` about +Z_veh):
-##     `v_wheel = VehicleCoordinates.body_to_wheel_frame(v_hub_veh, steer_angle_rad)`
-## - Regularized denominator `vx_reg = sqrt(vx^2 + vx_eps^2)` guarantees smooth, finite behavior at `vx = 0`:
-##     `slip_ratio_kappa = (omega_w * R_eff - vx) / max(abs(vx), vx_eps)` (or smooth `sqrt(vx^2 + vx_eps^2)`)
-##     `slip_angle_alpha_rad = atan2(vy, sqrt(vx^2 + vx_eps^2))`
-
-## Compute the wheel hub velocity in the ISO/ROS Vehicle Body Frame (m/s).
 static func compute_hub_velocity_vehicle(
 	v_com_vehicle: Vector3,
 	omega_vehicle: Vector3,
@@ -23,7 +8,6 @@ static func compute_hub_velocity_vehicle(
 ) -> Vector3:
 	return v_com_vehicle + omega_vehicle.cross(hub_offset_from_com_vehicle)
 
-## Compute contact center velocity in the Steered Wheel Frame (vx, vy, vz) (m/s).
 static func compute_contact_velocity_wheel(
 	v_com_vehicle: Vector3,
 	omega_vehicle: Vector3,
@@ -33,8 +17,6 @@ static func compute_contact_velocity_wheel(
 	var v_hub: Vector3 = compute_hub_velocity_vehicle(v_com_vehicle, omega_vehicle, hub_offset_from_com_vehicle)
 	return VehicleCoordinates.body_to_wheel_frame(v_hub, steer_angle_rad)
 
-## Compute regularized longitudinal slip ratio `kappa` (dimensionless).
-## Positive (> 0) when driving (`omega_w * R_eff > vx`), Negative (< 0) when braking (`omega_w * R_eff < vx`).
 static func compute_slip_ratio_kappa(
 	vx_wheel_mps: float,
 	wheel_omega_rad_s: float,
@@ -55,13 +37,6 @@ static func compute_slip_ratio_kappa(
 	var low_speed_envelope: float = t_low * t_low * (3.0 - 2.0 * t_low)
 	return raw_kappa * low_speed_envelope
 
-## Compute regularized lateral slip angle `alpha` (rad).
-## Matches dbm_model.py regularization: `atan2(vy_wheel, sqrt(vx_wheel^2 + eps^2))`, with a smooth
-## cubic Hermite low-speed regularization envelope below `vx_eps_mps` so standstill micro-velocities
-## cannot generate unphysical slip-angle oscillations.
-## When `vy_wheel > 0` (wheel sliding to the left), `alpha > 0`, which generates a restoring lateral force `Fy < 0`.
-## When the wheel is steered left (`delta > 0`) on a forward-moving vehicle (`vx > 0, vy_body = 0`),
-## `vy_wheel = -vx * sin(delta) < 0`, so `alpha < 0`, which generates a positive leftward cornering force `Fy > 0`.
 static func compute_slip_angle_alpha_rad(
 	vx_wheel_mps: float,
 	vy_wheel_mps: float,
@@ -77,7 +52,6 @@ static func compute_slip_angle_alpha_rad(
 	var low_speed_envelope: float = t_low * t_low * (3.0 - 2.0 * t_low)
 	return raw_alpha * low_speed_envelope
 
-## Update kinematic velocity and slip variables on a `WheelState` instance.
 static func update_wheel_kinematics(
 	wheel: WheelState,
 	v_com_vehicle: Vector3,

@@ -1,9 +1,6 @@
 extends RefCounted
 class_name TeRTireWeightsData
 
-## Auto-generated from TeR_Tire/config/pacejka_mf62_params.yaml and
-## TeR_Tire/export/weights/pinn_residual_best.pth (Hoosier 16.0x7.5-10 R20, TTC Round 9).
-
 const TIRE_NAME: String = "Hoosier 16.0x7.5-10 (LCO / R20) on 8 inch rim"
 const FZ0_N: float = 700.0
 const P0_KPA: float = 82.7

@@ -1,23 +1,8 @@
 extends RefCounted
 class_name DynamicsDiagnostics
 
-## Lightweight, zero-overhead-when-disabled diagnostics snapshot and numerical fault tracker
-## for MirenaSim VehicleDynamics.
-##
-## Exposes all required physical variables for offline telemetry comparison and real-car validation:
-## - Per-wheel normal load Fz (N)
-## - Per-wheel slip ratio kappa (-) and slip angle alpha (rad)
-## - Per-wheel tire forces Fx, Fy, Fz (N) and moments Mx, My, Mz (N*m)
-## - Per-wheel suspension compression (m) and compression velocity (m/s)
-## - Per-wheel angular velocity (rad/s) and RPM
-## - Per-wheel drive torque (N*m) and brake torque (N*m)
-## - Chassis velocities (u, v, w) (m/s), accelerations (ax, ay, az) (m/s^2), and yaw rate (r) (rad/s)
-## - Per-wheel contact state booleans
-## - Cumulative numerical fault counters
-
 var enabled: bool = true
 
-## Latest snapshot values (updated once per physics tick when `enabled == true`).
 var timestamp_s: float = 0.0
 var chassis_u_mps: float = 0.0
 var chassis_v_mps: float = 0.0
@@ -50,7 +35,6 @@ var wheel_drive_torque_nm: Array[float] = [0.0, 0.0, 0.0, 0.0]
 var wheel_brake_torque_nm: Array[float] = [0.0, 0.0, 0.0, 0.0]
 var wheel_steer_angle_rad: Array[float] = [0.0, 0.0, 0.0, 0.0]
 
-## Cumulative fault counters across the current run.
 var total_steps_recorded: int = 0
 var non_finite_input_count: int = 0
 var non_finite_state_count: int = 0
@@ -99,7 +83,6 @@ func reset() -> void:
 	tire_saturation_count = 0
 	last_fault_flags = VehicleDynamicsTypes.FaultFlag.NONE
 
-## Capture diagnostic snapshot from `VehicleState`. Does nothing when `enabled == false`.
 func record_from_state(state: VehicleState) -> void:
 	if not enabled or state == null:
 		return
@@ -186,7 +169,6 @@ func record_from_state(state: VehicleState) -> void:
 	if (step_flags & VehicleDynamicsTypes.FaultFlag.TIRE_SATURATION) != 0:
 		tire_saturation_count += 1
 
-## Return a Dictionary snapshot suitable for unit tests or offline telemetry comparison.
 func to_dictionary() -> Dictionary:
 	return {
 		"timestamp_s": timestamp_s,

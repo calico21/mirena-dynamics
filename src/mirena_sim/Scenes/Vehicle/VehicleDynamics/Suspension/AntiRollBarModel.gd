@@ -1,14 +1,6 @@
 extends RefCounted
 class_name AntiRollBarModel
 
-## Evaluates front and rear Anti-Roll Bar (ARB) vertical force transfer between left and right wheels.
-##
-## Sign Convention:
-## - When the left wheel is compressed more than the right wheel (`compression_left_m > compression_right_m`),
-##   the ARB increases upward force on the left wheel (`+F_arb`) and decreases upward force on the right wheel (`-F_arb`).
-## - Sum of left and right ARB forces on an axle is identically zero (`F_arb_left + F_arb_right == 0`).
-
-## Compute [left_arb_force_n, right_arb_force_n] for a single axle.
 static func compute_axle_arb_forces_n(
 	compression_left_m: float,
 	compression_right_m: float,

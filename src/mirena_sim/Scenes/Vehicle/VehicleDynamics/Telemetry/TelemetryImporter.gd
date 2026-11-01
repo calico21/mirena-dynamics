@@ -1,18 +1,8 @@
 extends RefCounted
 class_name TelemetryImporter
 
-## Modular telemetry log importer and exporter for MirenaSim VehicleDynamics.
-##
-## Supported Ingestion Formats:
-## 1. `imu_compare` Real Vehicle Multi-CSV Bundle (`real_imu.csv`, `real_control.csv`, `real_wheels.csv`, `real_odom.csv`)
-## 2. `imu_compare` Simulation Multi-CSV Bundle (`sim_imu*.csv`, `sim_control*.csv`, `sim_state*.csv`)
-## 3. MirenaSim `DynamicsLogger` 30-Column Single-File CSV (`t_s,mode,tire_model,u_mps,...`)
-## 4. Generic Single-File Time-Series CSV (auto-detects `imu`, `control`, `state`, or `wheels` schema)
-## 5. ROS 2 Bag Directory (`metadata.yaml` + companion CSVs)
-
 const WHEEL_RADIUS_REAL_M: float = 0.2032
 
-## Load the real-vehicle telemetry bundle from an `imu_compare` directory (e.g. `/home/alexr/eRacing/mirena_ws-SIM/imu_compare`).
 static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000) -> TelemetryRecording:
 	var rec := TelemetryRecording.new("Real Vehicle Bag (TeR26 VN-300 + CAN)", true)
 	rec.source_path = dir_path
@@ -32,7 +22,6 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 	var wheels_path: String = dir_path.path_join("real_wheels.csv")
 	var odom_path: String = dir_path.path_join("real_odom.csv")
 
-	# 1. Load real_imu.csv
 	var imu_unix_t0: float = 0.0
 	var imu_rel_t0: float = 0.0
 	var have_imu_clock_map: bool = false
@@ -63,12 +52,11 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 		_add_series(rec, "imu.gz", "Yaw Rate gz (r)", "rad/s", "motion",
 			TelemetryChannel.SourceType.MEASURED_REAL, t_rel, imu_data.get("gz", PackedFloat64Array()),
 			"ISO 8855 car/cog (+Z CCW yaw)", "/sensors/imu angular_velocity.z")
-		# Also expose yaw rate under chassis.r for direct chassis comparison
+
 		_add_series(rec, "chassis.r", "Chassis Yaw Rate r", "rad/s", "motion",
 			TelemetryChannel.SourceType.MEASURED_REAL, t_rel, imu_data.get("gz", PackedFloat64Array()),
 			"ISO 8855 car/cog (+Z CCW yaw)", "Directly measured by VN-300 gyro gz")
 
-	# 2. Load real_control.csv
 	if FileAccess.file_exists(ctl_path):
 		var ctl_data: Dictionary = _read_csv_columns(ctl_path, max_rows * 3)
 		var t_rel: PackedFloat64Array = ctl_data.get("t_rel", PackedFloat64Array())
@@ -79,7 +67,6 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 			TelemetryChannel.SourceType.MEASURED_REAL, t_rel, ctl_data.get("steer_rad", PackedFloat64Array()),
 			"Positive = Left turn (+Z)", "/control/can steer_angle converted from deg to rad")
 
-	# 3. Load real_odom.csv
 	if FileAccess.file_exists(odom_path):
 		var odom_data: Dictionary = _read_csv_columns(odom_path, max_rows)
 		var t_epoch: PackedFloat64Array = odom_data.get("t", PackedFloat64Array())
@@ -106,7 +93,6 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 			TelemetryChannel.SourceType.MEASURED_REAL, t_rel_odom, speed_odom,
 			"Forward speed magnitude (m/s)", "/sensors/imu/odom twist magnitude")
 
-	# 4. Load real_wheels.csv
 	if FileAccess.file_exists(wheels_path):
 		var w_data: Dictionary = _read_csv_columns(wheels_path, max_rows)
 		var t_epoch: PackedFloat64Array = w_data.get("t", PackedFloat64Array())
@@ -122,7 +108,7 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 		_add_series(rec, "wheel.rr_rpm", "Rear Right Wheel Speed", "RPM", "powertrain",
 			TelemetryChannel.SourceType.MEASURED_REAL, t_rel_w, rr_rpm,
 			"Wheel rotational speed (RPM)", "/sensors/wheel_speeds rr")
-		# Derived wheel-speed longitudinal velocity (calibrated k=0.93 against INS odom per speed_analysis.py)
+
 		var v_wheel := PackedFloat64Array()
 		v_wheel.resize(rl_rpm.size())
 		for i in range(rl_rpm.size()):
@@ -135,12 +121,10 @@ static func load_imu_compare_real_bundle(dir_path: String, max_rows: int = 60000
 				TelemetryChannel.SourceType.DERIVED_ESTIMATE, t_rel_w, v_wheel,
 				"Forward speed from rear RPM (m/s)", "Derived from /sensors/wheel_speeds")
 
-	# 5. Explicitly register unavailable channels so the UI reports Awaiting Reference Data honestly
 	_register_unavailable_real_channels(rec)
 	rec.detect_maneuver_onset()
 	return rec
 
-## Load a simulation CSV bundle from `imu_compare/` (e.g. `suffix = "front10_rear12"`, `"grip10"`, `"grip14"`, `"pre_aero"`, or `""`).
 static func load_imu_compare_sim_bundle(dir_path: String, suffix: String = "front10_rear12", max_rows: int = 60000) -> TelemetryRecording:
 	var tag: String = ("_" + suffix) if not suffix.is_empty() else ""
 	var label: String = suffix if not suffix.is_empty() else "default"
@@ -232,7 +216,6 @@ static func load_imu_compare_sim_bundle(dir_path: String, suffix: String = "fron
 	rec.detect_maneuver_onset()
 	return rec
 
-## Load a single CSV file (auto-detecting `DynamicsLogger` 30-column format or `imu_compare` individual CSV).
 static func load_single_csv(file_path: String, is_real: bool = false, max_rows: int = 60000) -> TelemetryRecording:
 	var rec := TelemetryRecording.new(file_path.get_file(), is_real)
 	rec.source_path = file_path
@@ -286,7 +269,6 @@ static func load_single_csv(file_path: String, is_real: bool = false, max_rows: 
 	rec.detect_maneuver_onset()
 	return rec
 
-## Inspect a ROS 2 bag directory (`metadata.yaml`) and return metadata + any companion CSV recordings.
 static func inspect_rosbag2_directory(bag_dir_path: String) -> Dictionary:
 	var meta_path: String = bag_dir_path.path_join("metadata.yaml")
 	var info := {
@@ -361,7 +343,7 @@ static func _add_series(
 	if t_arr.is_empty() or v_arr.is_empty() or t_arr.size() != v_arr.size():
 		return
 	var ch := TelemetryChannel.new(ch_id, name, unit, category, source, frame, note)
-	# Ensure strictly increasing timestamps for clean interpolation
+
 	var prev_t: float = -INF
 	for i in range(t_arr.size()):
 		var ti: float = t_arr[i]
@@ -373,7 +355,6 @@ static func _add_series(
 			prev_t = ti
 	rec.add_channel(ch)
 
-## Fast CSV parser returning `Dictionary[column_name -> PackedFloat64Array]` with optional row decimation for huge files.
 static func _read_csv_columns(file_path: String, max_rows: int = 60000) -> Dictionary:
 	var out: Dictionary = {}
 	var f := FileAccess.open(file_path, FileAccess.READ)
@@ -393,7 +374,6 @@ static func _read_csv_columns(file_path: String, max_rows: int = 60000) -> Dicti
 		col_arrays.append(PackedFloat64Array())
 		is_numeric_col.append(headers[i] != "frame_id" and headers[i] != "mode" and headers[i] != "tire_model")
 
-	# Estimate line count from file length to decimate smoothly if > max_rows
 	var file_len: int = f.get_length()
 	var approx_rows: int = maxi(1, int(file_len / 75))
 	var stride: int = maxi(1, int(ceil(float(approx_rows) / float(maxi(max_rows, 1000)))))

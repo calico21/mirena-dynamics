@@ -1,18 +1,6 @@
 extends RefCounted
 class_name RigidBodyDynamics
 
-## 6-DOF Newton-Euler rigid-body equations of motion and force/moment assembly for the vehicle chassis.
-##
-## Coordinate Frame:
-## - Force and moment assembly is performed in the ISO 8855 / ROS 2 Vehicle Body Frame (`car/cog`:
-##   +X forward, +Y left, +Z up) and then transformed consistently to the Godot World Frame
-##   via `VehicleCoordinates`.
-## - Never mixes body-frame and world-frame vectors.
-
-## Transform a per-wheel force and moment from the Steered Wheel Frame into the Vehicle Body Frame
-## and compute the induced moment about the Chassis Center of Mass (CoM):
-##   F_body = R_z(delta) * F_wheel
-##   M_body_about_com = r_application_from_com x F_body + R_z(delta) * M_wheel
 static func assemble_wheel_force_and_moment_vehicle(
 	force_wheel: Vector3,
 	moment_wheel: Vector3,
@@ -27,11 +15,6 @@ static func assemble_wheel_force_and_moment_vehicle(
 		"moment_vehicle": lever_moment_body + intrinsic_moment_body,
 	}
 
-## Compute linear acceleration (a_x, a_y, a_z) in the Vehicle Body Frame (m/s^2) from net external force:
-##   a_inertial_in_body = F_total_vehicle / m
-##   du/dt = F_x / m + v * r - w * q
-##   dv/dt = F_y / m + w * p - u * r
-##   dw/dt = F_z / m + u * q - v * p
 static func compute_linear_acceleration_vehicle(
 	net_force_vehicle: Vector3,
 	mass_kg: float
@@ -40,9 +23,6 @@ static func compute_linear_acceleration_vehicle(
 		return Vector3.ZERO
 	return net_force_vehicle / mass_kg
 
-## Compute angular acceleration (dp/dt, dq/dt, dr/dt) in the Vehicle Body Frame (rad/s^2)
-## using Euler's rigid-body equation:
-##   I * d(omega)/dt = M_total_vehicle - omega x (I * omega)
 static func compute_angular_acceleration_vehicle(
 	net_moment_vehicle: Vector3,
 	omega_vehicle: Vector3,
@@ -60,8 +40,6 @@ static func compute_angular_acceleration_vehicle(
 		rhs.z / inertia_diag_vehicle.z
 	)
 
-## Advance the chassis state by `dt_s` in standalone benchmark/test mode (when not driven by Godot's RigidBody3D solver).
-## Includes gravity (acting along -Y_godot in world frame) so vertical suspension equilibrium can be tested standalone.
 static func integrate_standalone_step(
 	state: VehicleState,
 	params: VehicleParameters,

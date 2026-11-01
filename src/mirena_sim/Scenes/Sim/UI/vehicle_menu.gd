@@ -6,6 +6,7 @@ const MISSION_STATUS_NAMES := ["INACTIVE", "CONFIGURING", "READY", "RUNNING", "F
 
 var _physics_mode_select: OptionButton = null
 var _tire_model_select: OptionButton = null
+var _selected_modular_tire_type: int = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -28,7 +29,7 @@ func _build_dynamics_controls() -> void:
 	_physics_mode_select = OptionButton.new()
 	_physics_mode_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_physics_mode_select.add_item("Modular VehicleDynamics (6-DOF)", 1)
-	_physics_mode_select.add_item("Legacy VehicleBody3D (Raycast)", 0)
+	_physics_mode_select.add_item("Legacy VehicleBody3D (Godot)", 0)
 	_physics_mode_select.selected = 0
 	_physics_mode_select.item_selected.connect(_on_physics_engine_selected)
 	phys_row.add_child(_physics_mode_select)
@@ -62,25 +63,61 @@ func _on_physics_engine_selected(index: int) -> void:
 	if Sim.car != null and Sim.car.has_method("set_physics_engine_mode"):
 		var mode_id: int = _physics_mode_select.get_item_id(index)
 		Sim.car.set_physics_engine_mode(mode_id)
+		if mode_id == 1 and Sim.car.has_method("set_active_tire_model_type"):
+			Sim.car.set_active_tire_model_type(_selected_modular_tire_type)
+	_update_tire_selector_ui()
 
 func _on_tire_model_selected(index: int) -> void:
+	var selected_type: int = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
+	match index:
+		0:
+			selected_type = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
+		1:
+			selected_type = VehicleDynamicsTypes.TireModelType.PACEJKA_MF62
+		2:
+			selected_type = VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB
+	_selected_modular_tire_type = selected_type
 	if Sim.car != null and Sim.car.has_method("set_active_tire_model_type"):
-		match index:
-			0:
-				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN)
-			1:
-				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.PACEJKA_MF62)
-			2:
-				Sim.car.set_active_tire_model_type(VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB)
+		Sim.car.set_active_tire_model_type(selected_type)
+
+func _update_tire_selector_ui() -> void:
+	if _tire_model_select == null or Sim.car == null:
+		return
+	var is_modular: bool = (Sim.car.physics_engine_mode == MirenaCar.PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
+	if is_modular:
+		_tire_model_select.disabled = false
+		_tire_model_select.tooltip_text = "Select active tire model implementation for modular 6-DOF solver."
+		var cur_type: int = _selected_modular_tire_type
+		if Sim.car.dynamics_controller != null and Sim.car.dynamics_controller.config != null and Sim.car.dynamics_controller.config.tire_config != null:
+			cur_type = Sim.car.dynamics_controller.config.tire_config.model_type
+			_selected_modular_tire_type = cur_type
+		var ui_idx: int = 0
+		match cur_type:
+			VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN:
+				ui_idx = 0
+			VehicleDynamicsTypes.TireModelType.PACEJKA_MF62:
+				ui_idx = 1
+			VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB:
+				ui_idx = 2
+		if _tire_model_select.selected != ui_idx:
+			_tire_model_select.selected = ui_idx
+	else:
+		_tire_model_select.disabled = true
+		_tire_model_select.tooltip_text = "Modular tire selection is unavailable in Legacy Godot mode (built-in VehicleWheel3D godot physics active)."
 
 func _process(delta):
+	if Sim == null or Sim.car == null:
+		return
 	var ms_idx: int = Sim.car._mission_info.status
 	var ms_text: String = MISSION_STATUS_NAMES[ms_idx] if ms_idx >= 0 and ms_idx < MISSION_STATUS_NAMES.size() else "UNKNOWN"
-	$Vehicle/MissionStatus/Label.text = "MISSION_STATUS: " + ms_text
+	var ms_lbl: Label = get_node_or_null("Vehicle/MissionStatus/Label") as Label
+	if ms_lbl != null:
+		ms_lbl.text = "MISSION_STATUS: " + ms_text
 	if _physics_mode_select != null and Sim.car != null:
 		var target_idx: int = 0 if Sim.car.physics_engine_mode == MirenaCar.PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS else 1
 		if _physics_mode_select.selected != target_idx:
 			_physics_mode_select.selected = target_idx
+		_update_tire_selector_ui()
 
 func _on_pilot_mode_item_selected(index: int) -> void:
 	match index:

@@ -1,42 +1,21 @@
 extends RefCounted
 class_name TireModelInterface
 
-## Abstract interface contract for replaceable tire models in MirenaSim VehicleDynamics.
-##
-## Every concrete tire model must:
-## 1. Extend `TireModelInterface`.
-## 2. Compute `TireForces` strictly from `(inputs: TireInputs, state: TireState, config: TireConfiguration)`
-##    without accessing scene nodes, ROS topics, or chassis globals.
-## 3. Return zero forces (`fx=0, fy=0, fz=0, mx=0, my=0, mz=0`) when `inputs.normal_load_fz_n <= 0.0`.
-## 4. Handle invalid or non-finite inputs safely by returning zero forces with `valid = false` and
-##    `FaultFlag.NON_FINITE_INPUT` set.
-## 5. Report honestly via `is_calibrated()` whether the model represents an experimentally calibrated
-##    formulation or a test/unimplemented contract stub.
-
-## Human-readable identifier of the tire model implementation.
 func get_model_name() -> String:
 	return "TireModelInterface(Abstract)"
 
-## Return true ONLY if this model is backed by experimentally calibrated tire parameters.
-## Must return false for contract placeholders and linear unit-test stubs.
 func is_calibrated() -> bool:
 	return false
 
-## Return true if the physical equations for this model have been implemented.
 func is_implemented() -> bool:
 	return false
 
-## Reset internal mutable `TireState` to equilibrium defaults.
 func reset_state(state: TireState, config: TireConfiguration = null) -> void:
 	if state == null:
 		return
 	var temp_c: float = config.nominal_temperature_c if config != null else 65.0
 	state.reset(temp_c)
 
-## Evaluate tire forces and moments in the ISO 8855 Steered Wheel Contact Frame.
-## Base implementation acts as the `UNIMPLEMENTED_CONTRACT` placeholder:
-## validates inputs, enforces contact loss semantics, and raises `UNIMPLEMENTED_MODEL_CALLED`
-## when non-zero load is evaluated on an unimplemented model.
 func evaluate_forces(
 	inputs: TireInputs,
 	state: TireState,
@@ -47,23 +26,13 @@ func evaluate_forces(
 		out.valid = false
 		out.fault_flags |= VehicleDynamicsTypes.FaultFlag.NON_FINITE_INPUT
 		return out
-
 	if inputs.normal_load_fz_n <= 0.0:
 		out.zero()
 		return out
-
 	out.fz_n = inputs.normal_load_fz_n
 	out.fault_flags |= VehicleDynamicsTypes.FaultFlag.UNIMPLEMENTED_MODEL_CALLED
 	return out
 
-
-## Uncalibrated Linear + Friction-Ellipse Test Stub (`TireModelType.LINEAR_TEST_STUB`).
-##
-## Purpose:
-## Enables independent unit and integration testing of coordinate signs, slip relaxation,
-## combined-slip friction-ellipse bounding, contact loss, and chassis force/moment assembly
-## in Phase 1 BEFORE the Phase 2 Pacejka MF6.2 / TeR-Tire Grey-Box models are integrated.
-## Explicitly reports `is_calibrated() == false`.
 class LinearTestStubTireModel extends TireModelInterface:
 	func get_model_name() -> String:
 		return "LinearTestStubTireModel(Uncalibrated)"
@@ -73,6 +42,16 @@ class LinearTestStubTireModel extends TireModelInterface:
 
 	func is_implemented() -> bool:
 		return true
+
+	func get_provenance_metadata() -> Dictionary:
+		return {
+			"tire_spec": "Hoosier 16.0x7.5-10 R20 (Linear Baseline)",
+			"fy_provenance": "UNCALIBRATED_LINEAR_STIFFNESS (C_alpha=25 kN/rad, C_gamma=0.10*C_alpha)",
+			"fx_provenance": "UNCALIBRATED_LINEAR_STIFFNESS (Kx=15.0/Fz)",
+			"friction_envelope": "FRICTION_ELLIPSE_SATURATION (mu=1.20)",
+			"calibrated": false,
+			"status": "FUNCTIONAL_LINEAR_BASELINE",
+		}
 
 	func evaluate_forces(
 		inputs: TireInputs,
@@ -84,16 +63,17 @@ class LinearTestStubTireModel extends TireModelInterface:
 			out.valid = false
 			out.fault_flags |= VehicleDynamicsTypes.FaultFlag.NON_FINITE_INPUT
 			return out
-
 		if inputs.normal_load_fz_n <= 0.0:
 			state.is_saturated = false
+			state.combined_slip_utilization = 0.0
+			state.lateral_force_reserve_n = 0.0
+			state.static_camber_fy_n = 0.0
+			state.iso_camber_gamma_rad = 0.0
 			out.zero()
 			return out
-
 		var fz: float = minf(inputs.normal_load_fz_n, config.fz_max_n)
 		out.fz_n = inputs.normal_load_fz_n
 
-		# Optional first-order slip relaxation
 		var eff_kappa: float = inputs.slip_ratio_kappa
 		var eff_alpha: float = inputs.slip_angle_alpha_rad
 		if config.enable_relaxation and inputs.dt_s > 0.0:
@@ -109,36 +89,44 @@ class LinearTestStubTireModel extends TireModelInterface:
 			state.relaxed_slip_angle_rad = eff_alpha
 
 		state.prev_slip_angle_rad = inputs.slip_angle_alpha_rad
+		state.iso_camber_gamma_rad = inputs.camber_gamma_rad
+		state.slip_angle_rate_rad_s = inputs.slip_angle_rate_rad_s
 
-		# Uncalibrated linear force generation:
-		# - Positive kappa (driving) -> positive Fx (+X_wheel)
-		# - Positive alpha (sliding left, vy > 0) -> negative Fy (-Y_wheel, restoring force)
 		var kx_n: float = config.stub_kx_per_fz * fz
-		var ky_n_rad: float = config.stub_cornering_stiffness_n_rad * (fz / maxf(config.fz_nominal_n, 1.0))
-
 		var fx_raw: float = kx_n * eff_kappa
-		var fy_raw: float = -ky_n_rad * eff_alpha
+		state.fx_companion_uncalibrated_n = fx_raw
 
-		# Combined-slip friction circle / ellipse saturation: sqrt(Fx^2 + Fy^2) <= mu * Fz
+		var fz_ratio: float = fz / maxf(config.fz_nominal_n, 1.0)
+		var ky_n_rad: float = config.stub_cornering_stiffness_n_rad * fz_ratio
+		var c_gamma_n_rad: float = 0.10 * ky_n_rad
+		var fy_camber: float = c_gamma_n_rad * inputs.camber_gamma_rad
+		state.static_camber_fy_n = fy_camber
+
+		var fy_raw: float = -ky_n_rad * eff_alpha + fy_camber
+
 		var f_max: float = maxf(0.0, config.stub_peak_mu * inputs.surface_mu_scale * fz)
 		var f_mag: float = sqrt(fx_raw * fx_raw + fy_raw * fy_raw)
+
 		if f_mag > f_max and f_mag > VehicleUnits.EPSILON_STRICT:
 			var scale: float = f_max / f_mag
-			fx_raw *= scale
-			fy_raw *= scale
+			out.fx_n = fx_raw * scale
+			out.fy_n = fy_raw * scale
 			state.is_saturated = true
 			out.fault_flags |= VehicleDynamicsTypes.FaultFlag.TIRE_SATURATION
 		else:
+			out.fx_n = fx_raw
+			out.fy_n = fy_raw
 			state.is_saturated = false
 
-		out.fx_n = fx_raw
-		out.fy_n = fy_raw
-		# Self-aligning moment Mz opposes slip angle via pneumatic trail t: Mz = -t * Fy
-		out.mz_nm = -config.stub_pneumatic_trail_m * fy_raw
-		# Rolling resistance moment opposes forward rotation
+		state.combined_slip_utilization = clampf(f_mag / maxf(f_max, 1e-4), 0.0, 1.5)
+		state.lateral_force_reserve_n = maxf(0.0, f_max - absf(out.fy_n))
+
+		out.mz_nm = -config.stub_pneumatic_trail_m * out.fy_n
+
 		if absf(inputs.wheel_omega_rad_s) > VehicleUnits.EPSILON_SMALL:
 			out.my_nm = -signf(inputs.wheel_omega_rad_s) * config.rolling_resistance_coeff * fz * inputs.effective_radius_m
 		else:
 			out.my_nm = 0.0
 		out.mx_nm = 0.0
+
 		return out

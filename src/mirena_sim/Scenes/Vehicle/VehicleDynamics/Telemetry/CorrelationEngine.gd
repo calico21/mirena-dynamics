@@ -1,30 +1,17 @@
 extends RefCounted
 class_name CorrelationEngine
 
-## Quantitative real-versus-simulation correlation and error-analysis engine.
-##
-## Methodology & Scientific Integrity Guarantees:
-## 1. Global Time Alignment Only: Timestamp alignment (`tau = t - t_onset + global_offset_s`) is applied
-##    uniformly across ALL signals in a recording. Individual channels are NEVER shifted independently
-##    to artificially inflate correlation metrics.
-## 2. Explicit Provenance & Missing-Reference Handling: If a signal is `UNAVAILABLE` in the reference
-##    recording (e.g., real-car tire forces or suspension travel), its status is explicitly reported as
-##    `AWAITING_REFERENCE_DATA` and no fabricated error metrics are produced.
-## 3. Transparent Metrics: Computes RMSE, MAE, Bias (Mean Error), Pearson r, NRMSE (std & range),
-##    Peak Absolute Error, Peak Amplitude Discrepancy, Sim/Ref Gain Ratio, and Cross-Correlation Lag.
-
 enum EvaluationStatus {
-	NOT_EVALUATED = 0,           ## Comparison has not been run yet.
-	AWAITING_REFERENCE_DATA = 1, ## Simulated signal exists, but no corresponding real measurement is available.
-	INSUFFICIENT_DATA = 2,       ## Fewer than minimum required overlapping samples in the selected time window.
-	EVALUATED = 3,               ## Quantitatively evaluated with valid reference and simulation data.
-	VALIDATION_WARNING = 4,      ## Evaluated, but exhibits low correlation (r < 0.25), high NRMSE (> 1.2), or unit/sign warning.
+	NOT_EVALUATED = 0,
+	AWAITING_REFERENCE_DATA = 1,
+	INSUFFICIENT_DATA = 2,
+	EVALUATED = 3,
+	VALIDATION_WARNING = 4,
 }
 
 const MIN_OVERLAP_SAMPLES: int = 10
 const EPS: float = 1.0e-9
 
-## Return human-readable status label required by Section 7.
 static func status_to_string(st: EvaluationStatus) -> String:
 	match st:
 		EvaluationStatus.NOT_EVALUATED:
@@ -40,7 +27,6 @@ static func status_to_string(st: EvaluationStatus) -> String:
 		_:
 			return "Unknown"
 
-## Return UI color associated with an `EvaluationStatus`.
 static func status_to_color(st: EvaluationStatus) -> Color:
 	match st:
 		EvaluationStatus.EVALUATED:
@@ -54,8 +40,6 @@ static func status_to_color(st: EvaluationStatus) -> Color:
 		EvaluationStatus.NOT_EVALUATED, _:
 			return Color(0.62, 0.65, 0.70)
 
-## Evaluate quantitative correlation between `ref_rec` (Real) and `sim_rec` (Simulation) for one `channel_id`
-## over maneuver time window `[tau_start_s, tau_end_s]` at uniform step `dt_grid_s`.
 static func evaluate_channel(
 	ref_rec: TelemetryRecording,
 	sim_rec: TelemetryRecording,
@@ -138,7 +122,6 @@ static func evaluate_channel(
 	var onset_ref: float = ref_rec.maneuver_onset_time_s if align_by_maneuver_onset else 0.0
 	var onset_sim: float = sim_rec.maneuver_onset_time_s if align_by_maneuver_onset else 0.0
 
-	# Determine overlapping maneuver time domain [t0, t1]
 	var ref_tau_min: float = ref_ch.time_s[0] - onset_ref
 	var ref_tau_max: float = ref_ch.time_s[ref_ch.time_s.size() - 1] - onset_ref
 	var sim_tau_min: float = sim_ch.time_s[0] - onset_sim + global_sim_time_offset_s
@@ -154,7 +137,6 @@ static func evaluate_channel(
 		result["status_reason"] = "Insufficient overlapping time span ([%.2f, %.2f] s)." % [win_start, win_end]
 		return result
 
-	# Optional static pre-onset bias calculation over tau in [-15, -1] s (matching compare_imu.py)
 	var bias_ref: float = 0.0
 	var bias_sim: float = 0.0
 	if remove_pre_onset_bias and channel_id.begins_with("imu."):
@@ -260,7 +242,6 @@ static func evaluate_channel(
 	result["residual"] = arr_res
 	return result
 
-## Evaluate all standard vehicle-dynamics channels across all 8 dashboard areas.
 static func evaluate_all_channels(
 	ref_rec: TelemetryRecording,
 	sim_rec: TelemetryRecording,
@@ -286,9 +267,6 @@ static func evaluate_all_channels(
 		)
 	return metrics_by_channel
 
-## Primary real-measured vehicle-dynamics channels and weights used for the overall vehicle correlation score.
-## Weights sum to 1.00 across lateral acceleration (0.30), yaw rate (0.30), longitudinal speed (0.20),
-## longitudinal acceleration (0.15), and lateral velocity (0.05).
 const PRIMARY_CORRELATION_WEIGHTS: Dictionary = {
 	"imu.ay": 0.30,
 	"imu.gz": 0.30,
@@ -300,19 +278,6 @@ const PRIMARY_CORRELATION_WEIGHTS: Dictionary = {
 const MIN_AGGREGATE_SAMPLES: int = 30
 const MIN_DYNAMIC_STD: float = 1.0e-3
 
-## Compute the aggregate vehicle-dynamics correlation summary from a dictionary of per-channel metrics
-## produced by `evaluate_all_channels()`.
-##
-## Mathematical Definition:
-## 1. Selects all channels in `PRIMARY_CORRELATION_WEIGHTS` that have `sample_count >= 30` and
-##    non-degenerate signal variance (`ref_std > 1e-3` and `sim_std > 1e-3`, preventing constant zero
-##    signals from producing artificial 100% correlation).
-## 2. Computes the Fisher-z weighted mean of Pearson correlation `r_k`:
-##      z_bar = sum(w_k * artanh(clamp(r_k, -0.999, 0.999))) / sum(w_k),  r_bar = tanh(z_bar)
-## 3. Computes the weighted range-normalized RMSE agreement factor:
-##      A_amp = clamp(1.0 - 0.5 * NRMSE_range_bar, 0.0, 1.0)
-## 4. Combines phase/shape correlation (`r_bar`) and amplitude agreement (`A_amp`):
-##      correlation_pct = 100.0 * clamp(max(0.0, r_bar) * (0.75 + 0.25 * A_amp), 0.0, 100.0)
 static func compute_aggregate_vehicle_correlation(
 	all_metrics: Dictionary,
 	context_mode: String = "LAST"
@@ -365,7 +330,7 @@ static func compute_aggregate_vehicle_correlation(
 		var r_std: float = float(m.get("ref_std", 0.0))
 		var s_std: float = float(m.get("sim_std", 0.0))
 		if not is_finite(r_std) or not is_finite(s_std) or r_std < MIN_DYNAMIC_STD or s_std < MIN_DYNAMIC_STD:
-			# Flat/constant signal: exclude from correlation to avoid artificial 100% or 0/0
+
 			continue
 
 		var r_val: float = float(m.get("pearson_r", NAN))
@@ -439,8 +404,6 @@ static func compute_aggregate_vehicle_correlation(
 	]
 	return summary
 
-## Estimate global synchronization offset `global_sim_time_offset_s` from a single primary reference channel
-## (`imu.gz` or `imu.ax`) so that timestamp alignment is transparent and uniform across all signals.
 static func estimate_global_sync_offset_s(
 	ref_rec: TelemetryRecording,
 	sim_rec: TelemetryRecording,

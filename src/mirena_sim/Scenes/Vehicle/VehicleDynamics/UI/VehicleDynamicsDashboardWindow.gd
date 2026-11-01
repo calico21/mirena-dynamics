@@ -1,20 +1,6 @@
 extends Window
 class_name VehicleDynamicsDashboardWindow
 
-## Separate, resizable, independently navigable native Godot `Window` for:
-## - Mode A: Live Vehicle-Dynamics Monitoring & Real-Time Parameter Tuning
-## - Mode B: Real-versus-Simulation Quantitative Correlation Analysis & Control Replay
-##
-## Covers all 8 required vehicle-dynamics areas (Sections 3.1 - 3.8):
-## 1. Vehicle Motion & Chassis Dynamics
-## 2. Steering & Lateral Response
-## 3. Tires & Tire-Road Interaction (with explicit TeR_Tire MF6.2 + 7D PINN vs Companion Fx provenance)
-## 4. Suspension & Wheel Loads
-## 5. Powertrain & Longitudinal Response
-## 6. Aerodynamics
-## 7. Sensors, ROS & Measurement Consistency
-## 8. Numerical Stability & Simulation Health
-
 enum DashboardMode {
 	LIVE_MONITORING = 0,
 	CORRELATION_ANALYSIS = 1,
@@ -91,18 +77,15 @@ var active_category_index: int = 0
 var selected_primary_channel: String = "imu.ax"
 var selected_secondary_channel: String = "imu.gz"
 
-## Live ring-buffer arrays (last 20 seconds at 50 Hz = 1000 samples)
 const LIVE_HISTORY_MAX: int = 1000
 var _live_time_s: PackedFloat64Array = PackedFloat64Array()
 var _live_traces: Dictionary = {}
 var _live_sample_accum_s: float = 0.0
 var _live_elapsed_s: float = 0.0
 
-## Session recording into `TelemetryRecording` when `is_recording_live` is active
 var is_recording_live: bool = false
 var live_session_recording: TelemetryRecording = null
 
-## Correlation datasets (Mode B)
 var real_reference_recording: TelemetryRecording = null
 var sim_comparison_recording: TelemetryRecording = null
 var legacy_baseline_recording: TelemetryRecording = null
@@ -111,7 +94,6 @@ var corr_tau_start_s: float = 20.0
 var corr_tau_end_s: float = 95.0
 var corr_global_offset_s: float = 0.0
 
-## UI Controls
 var _mode_banner_panel: PanelContainer
 var _mode_banner_label: Label
 var _mode_select: OptionButton
@@ -138,7 +120,6 @@ var _file_dialog: FileDialog
 var _ui_refresh_accum: float = 0.0
 var _updating_controls_from_car: bool = false
 
-## Parameter spinboxes for live tuning
 var _mass_spin: SpinBox
 var _grip_scale_spin: SpinBox
 var _pinn_check: CheckBox
@@ -221,7 +202,6 @@ func _build_ui() -> void:
 	main_vbox.add_theme_constant_override("separation", 6)
 	root_margin.add_child(main_vbox)
 
-	# 1. Prominent Mode Banner
 	_mode_banner_panel = PanelContainer.new()
 	var banner_style := StyleBoxFlat.new()
 	banner_style.bg_color = Color(0.11, 0.30, 0.22, 1.0)
@@ -238,7 +218,6 @@ func _build_ui() -> void:
 	_mode_banner_panel.add_child(_mode_banner_label)
 	main_vbox.add_child(_mode_banner_panel)
 
-	# 2. Top Toolbar Row 1: Mode, Physics Authority, Tire Model, Recording & Replay
 	var toolbar_row1 := HBoxContainer.new()
 	toolbar_row1.add_theme_constant_override("separation", 8)
 	main_vbox.add_child(toolbar_row1)
@@ -282,7 +261,6 @@ func _build_ui() -> void:
 	_replay_btn.toggled.connect(_on_replay_toggled)
 	toolbar_row1.add_child(_replay_btn)
 
-	# 3. Top Toolbar Row 2: Correlation Dataset Selector & Time Alignment Controls
 	var toolbar_row2 := HBoxContainer.new()
 	toolbar_row2.add_theme_constant_override("separation", 8)
 	main_vbox.add_child(toolbar_row2)
@@ -341,13 +319,11 @@ func _build_ui() -> void:
 	_auto_align_btn.pressed.connect(_on_auto_align_pressed)
 	toolbar_row2.add_child(_auto_align_btn)
 
-	# 4. Main Content Split: [Left Category Sidebar] | [Center Plots] | [Right Inspector Tabs]
 	var body_hbox := HBoxContainer.new()
 	body_hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body_hbox.add_theme_constant_override("separation", 8)
 	main_vbox.add_child(body_hbox)
 
-	# 4A. Left Sidebar (8 Vehicle-Dynamics Areas)
 	var left_panel := PanelContainer.new()
 	left_panel.custom_minimum_size = Vector2(245, 0)
 	var left_vbox := VBoxContainer.new()
@@ -386,7 +362,6 @@ func _build_ui() -> void:
 	left_vbox.add_child(provenance_legend)
 	body_hbox.add_child(left_panel)
 
-	# 4B. Center Multi-Plot Column
 	var center_vbox := VBoxContainer.new()
 	center_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -415,12 +390,10 @@ func _build_ui() -> void:
 	_bottom_plot = SignalPlotCanvas.new()
 	center_vbox.add_child(_bottom_plot)
 
-	# 4C. Right Inspector Panel (Tabs: Live Diagnostics | Correlation Metrics | Live Tuning)
 	_right_tabs = TabContainer.new()
 	_right_tabs.custom_minimum_size = Vector2(440, 0)
 	body_hbox.add_child(_right_tabs)
 
-	# Tab 0: Live State, Forces & Provenance
 	var tab_live := MarginContainer.new()
 	tab_live.name = "Live State & Provenance"
 	_live_readout_label = RichTextLabel.new()
@@ -432,7 +405,6 @@ func _build_ui() -> void:
 	tab_live.add_child(_live_readout_label)
 	_right_tabs.add_child(tab_live)
 
-	# Tab 1: Quantitative Correlation Metrics
 	var tab_metrics := MarginContainer.new()
 	tab_metrics.name = "Correlation Metrics"
 	_metrics_readout_label = RichTextLabel.new()
@@ -444,7 +416,6 @@ func _build_ui() -> void:
 	tab_metrics.add_child(_metrics_readout_label)
 	_right_tabs.add_child(tab_metrics)
 
-	# Tab 2: Live Parameter Tuning
 	var tab_tuning := ScrollContainer.new()
 	tab_tuning.name = "Live Physics Tuning"
 	var tuning_vbox := VBoxContainer.new()
@@ -454,14 +425,12 @@ func _build_ui() -> void:
 	_build_tuning_controls(tuning_vbox)
 	_right_tabs.add_child(tab_tuning)
 
-	# 5. Footer Status Bar
 	_status_footer_label = Label.new()
 	_status_footer_label.text = "Ready. Use mouse wheel on plots to zoom, right-drag to pan, double-click to reset zoom."
 	_status_footer_label.add_theme_font_size_override("font_size", 11)
 	_status_footer_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.78))
 	main_vbox.add_child(_status_footer_label)
 
-	# File Dialog for custom CSV / ROS2 bag loading
 	_file_dialog = FileDialog.new()
 	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -630,6 +599,37 @@ func _on_physics_mode_selected(index: int) -> void:
 	var use_modular: bool = (index == 0)
 	if target_car.has_method("set_physics_engine_mode"):
 		target_car.call("set_physics_engine_mode", 1 if use_modular else 0)
+	_update_selectors_from_car()
+
+func _update_selectors_from_car() -> void:
+	if target_car == null:
+		return
+	var is_modular: bool = (int(target_car.get("physics_engine_mode")) == 1)
+	if _physics_mode_select != null:
+		var target_p_idx: int = 0 if is_modular else 1
+		if _physics_mode_select.selected != target_p_idx:
+			_physics_mode_select.selected = target_p_idx
+
+	if _tire_model_select != null:
+		if is_modular:
+			_tire_model_select.disabled = false
+			_tire_model_select.tooltip_text = "Select active tire model implementation for modular 6-DOF solver."
+			var cur_type: int = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
+			if target_car.get("dynamics_controller") != null and target_car.dynamics_controller.config != null and target_car.dynamics_controller.config.tire_config != null:
+				cur_type = target_car.dynamics_controller.config.tire_config.model_type
+			var target_t_idx: int = 0
+			match cur_type:
+				VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN:
+					target_t_idx = 0
+				VehicleDynamicsTypes.TireModelType.PACEJKA_MF62:
+					target_t_idx = 1
+				VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB:
+					target_t_idx = 2
+			if _tire_model_select.selected != target_t_idx:
+				_tire_model_select.selected = target_t_idx
+		else:
+			_tire_model_select.disabled = true
+			_tire_model_select.tooltip_text = "Modular tire selection is unavailable in Legacy Godot mode (built-in VehicleWheel3D raycast physics active)."
 
 func _on_tire_model_selected(index: int) -> void:
 	if target_car == null:
@@ -835,13 +835,12 @@ func _on_restore_default_params() -> void:
 	_sync_tuning_controls_from_car()
 	_apply_tuning_to_car()
 
-## Called every physics frame (or from `_physics_process`) to sample live telemetry from `target_car`.
 func _physics_process(delta: float) -> void:
 	if target_car == null or not is_instance_valid(target_car):
 		return
 	_live_elapsed_s += delta
 	_live_sample_accum_s += delta
-	# Record live buffer at 50 Hz (every 20 ms)
+
 	if _live_sample_accum_s >= 0.02:
 		_live_sample_accum_s = 0.0
 		_capture_live_sample(_live_elapsed_s)
@@ -900,7 +899,7 @@ func _refresh_live_plots() -> void:
 			Color(0.25, 0.90, 0.55),
 			2.0
 		)
-	# Overlay partner corner on Tires/Suspension/Powertrain
+
 	if selected_primary_channel == "tire.fy_fl" and _live_traces.has("tire.fy_fr"):
 		_top_plot.add_trace("tire.fy_fr", _live_time_s, _live_traces["tire.fy_fr"], Color(0.35, 0.72, 0.98), 1.6)
 	elif selected_primary_channel == "susp.heave_fl" and _live_traces.has("susp.heave_rl"):
@@ -980,6 +979,7 @@ func _refresh_live_readout() -> void:
 	if target_car == null or not target_car.has_method("get_live_dynamics_snapshot"):
 		_live_readout_label.text = "[b]No MirenaCar bound to dashboard.[/b]"
 		return
+	_update_selectors_from_car()
 	var s: Dictionary = target_car.call("get_live_dynamics_snapshot")
 	var phys_mode_str: String = str(s.get("physics_mode_name", "MODULAR_VEHICLE_DYNAMICS"))
 	var tire_name_str: String = str(s.get("tire_model_name", "TeR_Tire Grey-Box PINN"))

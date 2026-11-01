@@ -1,7 +1,4 @@
 extends SceneTree
-## Unit test suite for Tires/ subsystem contract, TireModelRegistry, and Phase 1
-## uncalibrated LINEAR_TEST_STUB behavior.
-
 
 func _init() -> void:
 	var result := run_suite()
@@ -9,7 +6,6 @@ func _init() -> void:
 		quit(1)
 	else:
 		quit(0)
-
 
 static func _make_inputs(
 	fz_n: float,
@@ -33,14 +29,12 @@ static func _make_inputs(
 	inp.dt_s = dt_s
 	return inp
 
-
 static func run_suite() -> Dictionary:
 	var passed: int = 0
 	var failed: int = 0
 
 	print("=== [test_tire_model] Starting Tire Subsystem Contract Tests ===")
 
-	# 1. Registry and uncalibrated status verification
 	var cfg := TireConfiguration.new()
 	cfg.model_type = VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB
 	var tire_model := TireModel.new(cfg.model_type)
@@ -52,7 +46,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] LINEAR_TEST_STUB calibration status check failed")
 
-	# 2. Base TireModelInterface contract reports UNIMPLEMENTED_MODEL_CALLED when not overridden
 	var base_cfg := TireConfiguration.new()
 	base_cfg.model_type = VehicleDynamicsTypes.TireModelType.UNIMPLEMENTED_CONTRACT
 	var base_model := TireModel.new(base_cfg.model_type)
@@ -66,7 +59,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Base TireModelInterface contract check failed")
 
-	# 3. Contact loss (Fz <= 0) produces strictly zero forces and moments
 	state.reset()
 	var zero_fz_inputs := _make_inputs(0.0, 0.15, 0.10)
 	var zero_forces: TireForces = tire_model.evaluate_wheel_forces(zero_fz_inputs, state, cfg)
@@ -77,7 +69,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Zero normal load check failed")
 
-	# 4. Sign conventions: positive slip ratio -> +Fx; positive slip angle -> -Fy, +Mz
 	cfg.enable_relaxation = false
 	state.reset()
 	var sign_inputs := _make_inputs(700.0, 0.05, 0.04)
@@ -91,7 +82,6 @@ static func run_suite() -> Dictionary:
 			sign_forces.fx_n, sign_forces.fy_n, sign_forces.mz_nm
 		])
 
-	# 5. Combined-slip friction circle saturation
 	state.reset()
 	var sat_inputs := _make_inputs(700.0, 0.80, 0.60)
 	var sat_forces: TireForces = tire_model.evaluate_wheel_forces(sat_inputs, state, cfg)
@@ -104,7 +94,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Combined-slip friction envelope exceeded bound: %f vs %f" % [actual_f, max_f])
 
-	# 6. First-order transient slip relaxation convergence
 	var cfg_relax := TireConfiguration.new()
 	cfg_relax.model_type = VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB
 	cfg_relax.enable_relaxation = true
@@ -122,7 +111,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Transient slip relaxation check failed (first=%f, steady=%f)" % [first_fx, f_steady.fx_n])
 
-	# 7. Non-finite input rejection
 	state.reset()
 	var nan_inputs := _make_inputs(NAN, 0.05, 0.04)
 	var nan_forces: TireForces = tire_model.evaluate_wheel_forces(nan_inputs, state, cfg)
@@ -133,7 +121,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] Non-finite TireInputs rejection check failed")
 
-	# 8. TeR_Tire Pacejka MF6.2 exact parity against PyTorch reference (Hoosier 16.0x7.5-10 R20)
 	var mf62_model := PacejkaMF62TireModel.new()
 	var ref_mf62: Vector2 = mf62_model.eval_ter_mf62_raw(0.05, 0.0, 700.0, 82.7, true)
 	if mf62_model.is_calibrated() and absf(ref_mf62.x - 1162.642) < 0.05 and absf(ref_mf62.y - (-18.910)) < 0.05:
@@ -143,7 +130,6 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] TeR_Tire PacejkaMF62TireModel mismatch: Fy0=%f Mz0=%f" % [ref_mf62.x, ref_mf62.y])
 
-	# 9. TeR_Tire 7-input PINN ResidualTireMLP exact parity against pinn_residual_best.pth
 	var greybox_model := TeRTireGreyBoxModel.new()
 	var ref_res_zero: Vector2 = greybox_model.eval_ter_pinn_residual_raw(0.0, 0.0, 0.0, 700.0, 82.7, 62.0, 1.5)
 	var ref_res_005: Vector2 = greybox_model.eval_ter_pinn_residual_raw(0.05, 0.0, 0.0, 700.0, 82.7, 62.0, 1.5)
@@ -160,13 +146,12 @@ static func run_suite() -> Dictionary:
 		failed += 1
 		print("  [FAIL] TeR_Tire 7D PINN Residual mismatch: dFy=%f dMz=%f" % [ref_res_005.x, ref_res_005.y])
 
-	# 10. Full TeRTireGreyBoxModel evaluation via TireModelRegistry & ISO sign convention check
 	var gb_cfg := TireConfiguration.new()
 	gb_cfg.model_type = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
 	gb_cfg.enable_ply_steer_asymmetry = false
 	var gb_tire := TireModel.new(gb_cfg.model_type)
 	var gb_state := TireState.new()
-	# Left turn (+steer -> vy_contact < 0 -> slip_angle_alpha_rad = -0.05 rad) must produce +Fy > 0
+
 	var gb_inp := _make_inputs(700.0, 0.02, -0.05)
 	gb_inp.tire_temperature_c = 62.0
 	var gb_forces: TireForces = gb_tire.evaluate_wheel_forces(gb_inp, gb_state, gb_cfg)

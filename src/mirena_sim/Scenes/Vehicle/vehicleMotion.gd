@@ -491,11 +491,15 @@ func _process_no_pilot() -> void:
 
 func _process_manual_pilot(delta: float) -> void:
 	var steer_input = Input.get_action_strength("manual_steer_l") - Input.get_action_strength("manual_steer_r")
-	var smooth_spd: float = 7.5
-	if dynamics_controller != null and dynamics_controller.config != null and dynamics_controller.config.steering_config != null:
-		smooth_spd = dynamics_controller.config.steering_config.manual_steer_smooth_speed
-	_steer_smoothed = _smooth_steer(_steer_smoothed, steer_input, delta, smooth_spd)
-	
+
+	if physics_engine_mode == PhysicsEngineMode.LEGACY_GODOT_VEHICLE_BODY:
+		_steer_smoothed = _smooth_steer_legacy(_steer_smoothed, steer_input, delta, 7.5)
+	else:
+		var smooth_spd: float = 7.5
+		if dynamics_controller != null and dynamics_controller.config != null and dynamics_controller.config.steering_config != null:
+			smooth_spd = dynamics_controller.config.steering_config.manual_steer_smooth_speed
+		_steer_smoothed = _smooth_steer(_steer_smoothed, steer_input, delta, smooth_spd)
+
 	self.gas = Input.get_action_strength("manual_gas_pos") - Input.get_action_strength("manual_gas_neg")
 	self.steering = _steer_smoothed * MAX_STEER
 	self.brake = Input.get_action_strength("EBS") * BRAKE_F
@@ -561,26 +565,41 @@ func _apply_legacy_vehicle_physics(_delta: float) -> void:
 
 	var throttle = max(gas, 0.0)
 	var braking = max(-gas, 0.0)
+	var ebs = min(brake, 1.0) * BRAKE_F
 
 	# The whole braking budget, and how it is split between the axles.
 	var brake_budget = BRAKE_MU * MASS_KG * GRAVITY
 	var front_share = brake_budget * BRAKE_BIAS_F * 0.5
 	var rear_share = brake_budget * (1.0 - BRAKE_BIAS_F)
 
-	var fx = minf(throttle * max_fx_motor,
-		POWER_LIM * DRIVETRAIN_EFF / maxf(u, 1.0))
+	var fx = minf(
+    throttle * max_fx_motor,
+    POWER_LIM * DRIVETRAIN_EFF / maxf(u, 1.0)
+	)
 
 	var fl_w: VehicleWheel3D = _fl_wheel_node if _fl_wheel_node != null else get_node_or_null("FL_WHEEL") as VehicleWheel3D
 	var fr_w: VehicleWheel3D = _fr_wheel_node if _fr_wheel_node != null else get_node_or_null("FR_WHEEL") as VehicleWheel3D
 	var rl_w: VehicleWheel3D = _rl_wheel_node if _rl_wheel_node != null else get_node_or_null("RL_WHEEL") as VehicleWheel3D
 	var rr_w: VehicleWheel3D = _rr_wheel_node if _rr_wheel_node != null else get_node_or_null("RR_WHEEL") as VehicleWheel3D
 
+	# legacy steering, pendiente de corregir pq esta un pcoo rancio
+	var steer_angle: float = clampf(self.steering, -MAX_STEER, MAX_STEER)
+
+	if fl_w != null:
+			fl_w.steering = steer_angle
+	if fr_w != null:
+			fr_w.steering = steer_angle
+
+	if rl_w != null:
+			rl_w.steering = 0.0
+	if rr_w != null:
+			rr_w.steering = 0.0
+
 	if rl_w != null:
 		rl_w.engine_force = fx / 2.0
 	if rr_w != null:
 		rr_w.engine_force = fx / 2.0
 
-	var ebs = min(brake, 1.0) * BRAKE_F
 	if fl_w != null:
 		fl_w.brake = front_share * braking + ebs
 	if fr_w != null:
@@ -600,6 +619,15 @@ func _smooth_steer(current: float, target: float, delta: float, speed: float) ->
 	if signf(target - current) != signf(diff):
 		current = target
 	return clampf(current, -1.0, 1.0)
+
+func _smooth_steer_legacy(current: float, target: float, delta: float, speed: float) -> float:
+	var diff = target - current
+	var t = clamp(abs(diff), 0.0, 1.0)
+	var _ease = t * t * (3.0 - 2.0 * t)
+	current += sign(diff) * _ease * speed * delta
+	if sign(target - current) != sign(diff):
+		current = target
+	return clamp(current, -1.0, 1.0)
 
 # --- Interface & Utility ---
 
@@ -713,6 +741,12 @@ func set_physics_engine_mode(mode: int) -> void:
 	if physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS:
 		self.engine_force = 0.0
 		self.brake = 0.0
+		if dynamics_controller != null and dynamics_controller.model != null:
+			for i in range(wheel_list.size()):
+				var w: VehicleWheel3D = wheel_list[i]
+				if w != null and i < dynamics_controller.model.state.wheels.size():
+					var rpm: float = -w.get_rpm()
+					dynamics_controller.model.state.wheels[i].omega_rad_s = rpm * TAU / 60.0
 		for i in range(wheel_list.size()):
 			var w: VehicleWheel3D = wheel_list[i]
 			if w == null:
@@ -732,15 +766,23 @@ func set_physics_engine_mode(mode: int) -> void:
 		if dynamics_controller != null and dynamics_controller.config != null:
 			dynamics_controller.config.integration_mode = VehicleDynamicsTypes.IntegrationMode.INACTIVE_LEGACY_PASSTHROUGH
 		self.mass = MASS_KG
+		self.center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
+		self.center_of_mass = Vector3(0.0, 0.33, -0.117)
+		self.inertia = Vector3.ZERO
+		self.engine_force = 0.0
+		self.brake = 0.0
 		for i in range(wheel_list.size()):
 			var w: VehicleWheel3D = wheel_list[i]
 			if w == null:
 				continue
+			if i < _wheel_rest_transforms.size():
+				w.transform = _wheel_rest_transforms[i]
 			if w.get_parent() != self:
 				w.owner = null
 				w.reparent(self, false)
-			if i < _wheel_rest_transforms.size():
-				w.transform = _wheel_rest_transforms[i]
+			w.engine_force = 0.0
+			w.brake = 0.0
+			w.steering = 0.0
 
 	_hud_corr_loaded = false
 	_hud_corr_summary.clear()
@@ -826,7 +868,7 @@ func save_dynamics_csv_log(path: String) -> bool:
 func get_live_dynamics_snapshot() -> Dictionary:
 	var is_mod: bool = (physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
 	var mode_name: String = "MODULAR 6-DOF (VehicleDynamics)" if is_mod else "LEGACY (Godot VehicleBody3D)"
-	var tire_name: String = "Legacy VehicleWheel3D Raycast"
+	var tire_name: String = "Legacy VehicleWheel3D Godot"
 	if is_mod and dynamics_controller != null and dynamics_controller.model != null:
 		tire_name = dynamics_controller.model.tire_model.get_active_model_name()
 
@@ -1090,7 +1132,7 @@ func _refresh_dynamics_hud_overlay() -> void:
 			u_mps, u_mps * 3.6, ay_mps2, r_rads, beta_deg, fy_fl, fz_rl
 		]
 	else:
-		_hud_status_label.text = "PHYSICS: LEGACY GODOT VehicleBody3D [Raycast Wheels] | %s\nu=%+.1f m/s (%.0f km/h) | ay_kin=%+.1f m/s² | r=%+.2f rad/s | RL_RPM=%.0f" % [
+		_hud_status_label.text = "PHYSICS: LEGACY GODOT VehicleBody3D [Godot Wheels] | %s\nu=%+.1f m/s (%.0f km/h) | ay_kin=%+.1f m/s² | r=%+.2f rad/s | RL_RPM=%.0f" % [
 			corr_str,
 			u_mps, u_mps * 3.6, ay_mps2, r_rads, float(snap.get("wheel.rl_rpm", 0.0))
 		]
@@ -1124,9 +1166,30 @@ func set_correlation_reference_data(ref_rec: TelemetryRecording, sim_rec: Teleme
 ## Uses the exact same `CorrelationEngine` as the `F7` dashboard window and updates at low rate without per-frame overhead.
 func get_hud_correlation_summary() -> Dictionary:
 	var is_modular: bool = (physics_engine_mode == PhysicsEngineMode.MODULAR_VEHICLE_DYNAMICS)
-	var mode_label: String = "MODULAR 6-DOF: TeR_Tire MF6.2" if is_modular else "LEGACY RAYCAST: Godot Wheel"
+	var active_tire_type: int = VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN
+	if is_modular and dynamics_controller != null and dynamics_controller.config != null and dynamics_controller.config.tire_config != null:
+		active_tire_type = dynamics_controller.config.tire_config.model_type
+
+	var tire_short_name: String = "TeR_Tire MF6.2"
+	var tire_full_name: String = "TeR_Tire (MF6.2 + PINN)"
+	if not is_modular:
+		tire_short_name = "Godot Wheel"
+		tire_full_name = "Pacejka Godot"
+	else:
+		match active_tire_type:
+			VehicleDynamicsTypes.TireModelType.PACEJKA_MF62:
+				tire_short_name = "Pure MF6.2"
+				tire_full_name = "Pure Pacejka MF6.2 (Analytical)"
+			VehicleDynamicsTypes.TireModelType.LINEAR_TEST_STUB:
+				tire_short_name = "Linear Baseline"
+				tire_full_name = "Linear Baseline (Uncalibrated)"
+			VehicleDynamicsTypes.TireModelType.TER_GREYBOX_PINN, _:
+				tire_short_name = "TeR_Tire MF6.2"
+				tire_full_name = "TeR_Tire (MF6.2 + PINN)"
+
+	var mode_label: String = ("MODULAR 6-DOF: " + tire_short_name) if is_modular else "LEGACY: Godot Wheel"
 	var mode_color: Color = Color(0.20, 0.85, 0.45) if is_modular else Color(0.95, 0.72, 0.20)
-	var tire_label: String = "TeR_Tire (MF6.2 + PINN)" if is_modular else "Pacejka Raycast"
+	var tire_label: String = tire_full_name
 	var ref_name: String = "TeR26 VN-300 Real"
 	var sim_name: String = "modular_calibrated" if is_modular else "front10_rear12"
 	var win_label: String = "tau: 20.0 - 281.0 s"
@@ -1182,7 +1245,7 @@ func get_hud_correlation_summary() -> Dictionary:
 				_hud_corr_summary["eval_window_label"] = "tau: 0.0 - %.1f s" % t_end
 				_hud_corr_summary["channel_metrics"] = live_metrics
 				_hud_corr_summary["overall_score"] = _hud_corr_summary.get("correlation_pct", NAN)
-			return _hud_corr_summary
+			return _hud_corr_summary.duplicate()
 		if not dashboard_window.cached_correlation_metrics.is_empty():
 			var mode_tag: String = "LIVE" if is_replaying_controls else "LAST"
 			var dash_summary: Dictionary = CorrelationEngine.compute_aggregate_vehicle_correlation(
@@ -1282,4 +1345,4 @@ func get_hud_correlation_summary() -> Dictionary:
 	if not _hud_corr_summary.has("channel_metrics"):
 		_hud_corr_summary["channel_metrics"] = {}
 	_hud_corr_summary["overall_score"] = _hud_corr_summary.get("correlation_pct", NAN)
-	return _hud_corr_summary
+	return _hud_corr_summary.duplicate()

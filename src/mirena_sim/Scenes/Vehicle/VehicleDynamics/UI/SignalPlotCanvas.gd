@@ -1,16 +1,6 @@
 extends Control
 class_name SignalPlotCanvas
 
-## Custom-drawn scientific oscilloscope, time-history overlay, residual, and XY scatter plot Control
-## for the MirenaSim Vehicle-Dynamics & Correlation Dashboard Window.
-##
-## Features:
-## - Multi-trace time-series plotting with gridlines, unit labels, legend, and zero reference line
-## - Optional synchronized residual error subplot `e(t) = y_sim(t) - y_ref(t)` at the bottom
-## - XY scatter / trajectory / friction-ellipse mode with optional friction-circle boundary
-## - Interactive mouse-hover crosshair cursor with exact numerical readout at cursor time
-## - Mouse-wheel horizontal zoom and right/middle-click pan
-
 enum PlotMode {
 	TIME_SERIES = 0,
 	TIME_SERIES_WITH_RESIDUAL = 1,
@@ -23,14 +13,12 @@ var x_axis_label: String = "Time [s]"
 var y_axis_label: String = "Value"
 var residual_label: String = "Residual (Sim - Real)"
 
-## Array of dictionaries: `{"name": String, "color": Color, "width": float, "x": PackedFloat64Array, "y": PackedFloat64Array, "dashed": bool}`
 var traces: Array[Dictionary] = []
-## Residual trace: `{"x": PackedFloat64Array, "y": PackedFloat64Array, "color": Color}`
+
 var residual_trace: Dictionary = {}
-## Optional reference circle radius for XY friction-ellipse plots (e.g., mu * Fz in N).
+
 var xy_reference_circle_radius: float = 0.0
 
-## View window override (`x_zoom_factor = 1.0` shows full trace x-span; > 1.0 zooms in).
 var x_zoom_factor: float = 1.0
 var x_pan_normalized: float = 0.0
 var _hover_pos: Vector2 = Vector2(-1.0, -1.0)
@@ -115,10 +103,8 @@ func _draw() -> void:
 	var font: Font = ThemeDB.fallback_font
 	var font_size: int = 12
 
-	# Title bar
 	draw_string(font, Vector2(12, 18), plot_title, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.92, 0.95, 1.0))
 
-	# Legend in top-right
 	var leg_x: float = size.x - 14.0
 	for i in range(traces.size() - 1, -1, -1):
 		var tr: Dictionary = traces[i]
@@ -182,7 +168,6 @@ func _draw_subplot(
 	draw_rect(box, Color(0.05, 0.06, 0.08, 1.0), true)
 	draw_rect(box, Color(0.20, 0.23, 0.29, 1.0), false, 1.0)
 
-	# Compute data bounds
 	var x_min: float = INF
 	var x_max: float = -INF
 	var y_min: float = INF
@@ -205,7 +190,6 @@ func _draw_subplot(
 		x_min -= 0.5
 		x_max += 0.5
 
-	# Apply horizontal zoom & pan for time series
 	if plot_mode != PlotMode.XY_SCATTER and x_zoom_factor > 1.001:
 		var full_span: float = x_max - x_min
 		var center: float = 0.5 * (x_min + x_max) + x_pan_normalized * full_span
@@ -213,7 +197,6 @@ func _draw_subplot(
 		x_min = center - half_vis
 		x_max = center + half_vis
 
-	# Compute y bounds within visible [x_min, x_max]
 	for tr in sub_traces:
 		var xa: PackedFloat64Array = tr["x"]
 		var ya: PackedFloat64Array = tr["y"]
@@ -243,7 +226,6 @@ func _draw_subplot(
 		y_min -= 0.08 * y_span
 		y_max += 0.08 * y_span
 
-	# Grid lines & Y-axis ticks
 	var n_y_grid: int = 4
 	for g in range(n_y_grid + 1):
 		var frac: float = float(g) / float(n_y_grid)
@@ -252,13 +234,11 @@ func _draw_subplot(
 		draw_line(Vector2(box.position.x, py), Vector2(box.end.x, py), Color(0.16, 0.18, 0.23, 1.0), 1.0)
 		draw_string(font, Vector2(4.0, py + 4.0), _fmt_num(y_val), HORIZONTAL_ALIGNMENT_RIGHT, box.position.x - 6.0, 10, Color(0.68, 0.72, 0.80))
 
-	# Zero Y reference line
 	if y_min < 0.0 and y_max > 0.0:
 		var zero_frac: float = (0.0 - y_min) / (y_max - y_min)
 		var zy: float = box.position.y + box.size.y * (1.0 - zero_frac)
 		draw_line(Vector2(box.position.x, zy), Vector2(box.end.x, zy), Color(0.35, 0.40, 0.48, 0.9), 1.2)
 
-	# X-axis grid & ticks
 	var n_x_grid: int = 5
 	for g in range(n_x_grid + 1):
 		var frac: float = float(g) / float(n_x_grid)
@@ -268,13 +248,11 @@ func _draw_subplot(
 		if draw_x_ticks:
 			draw_string(font, Vector2(px - 18.0, box.end.y + 13.0), _fmt_num(x_val), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.68, 0.72, 0.80))
 
-	# Zero X reference line (e.g. tau = 0 maneuver onset)
 	if x_min < 0.0 and x_max > 0.0:
 		var x0_frac: float = (0.0 - x_min) / (x_max - x_min)
 		var zx: float = box.position.x + box.size.x * x0_frac
 		draw_line(Vector2(zx, box.position.y), Vector2(zx, box.end.y), Color(0.45, 0.45, 0.30, 0.85), 1.2)
 
-	# Optional friction circle in XY scatter mode
 	if xy_reference_circle_radius > 0.0 and plot_mode == PlotMode.XY_SCATTER:
 		var pts := PackedVector2Array()
 		for k in range(65):
@@ -286,7 +264,6 @@ func _draw_subplot(
 			pts.append(Vector2(sx, sy))
 		draw_polyline(pts, Color(0.85, 0.70, 0.25, 0.65), 1.5)
 
-	# Plot traces (decimated to pixel columns for fast 60 FPS rendering)
 	var max_draw_pts: int = maxi(200, int(box.size.x * 1.5))
 	for tr in sub_traces:
 		var xa: PackedFloat64Array = tr["x"]
@@ -306,7 +283,7 @@ func _draw_subplot(
 			var sx: float = box.position.x + ((xv - x_min) / (x_max - x_min)) * box.size.x
 			var sy: float = box.position.y + (1.0 - clampf((yv - y_min) / (y_max - y_min), 0.0, 1.0)) * box.size.y
 			poly.append(Vector2(sx, sy))
-		# Always include the final sample for smooth live edge
+
 		if (n - 1) % stride != 0:
 			var xv_last: float = xa[n - 1]
 			var yv_last: float = ya[n - 1]
@@ -317,12 +294,10 @@ func _draw_subplot(
 		if poly.size() >= 2:
 			draw_polyline(poly, col, width, true)
 
-	# Y-axis unit label
 	draw_string(font, Vector2(box.position.x + 6.0, box.position.y + 13.0), y_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.58, 0.66, 0.78))
 	if draw_x_ticks:
 		draw_string(font, Vector2(box.end.x - 110.0, box.end.y + 23.0), x_label, HORIZONTAL_ALIGNMENT_RIGHT, 110.0, 10, Color(0.58, 0.66, 0.78))
 
-	# Interactive hover crosshair & value readout
 	if box.has_point(_hover_pos) and plot_mode != PlotMode.XY_SCATTER:
 		var hover_frac: float = (_hover_pos.x - box.position.x) / maxf(box.size.x, 1.0)
 		var hover_t: float = lerpf(x_min, x_max, hover_frac)
