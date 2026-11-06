@@ -1,0 +1,8 @@
+[configuration]
+entry_symbol = "ter26_vehicle_library_init"
+compatibility_minimum = "4.3"
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 = "res://Scenes/Vehicle/Native/bin/libter26_vehicle.so"
+linux.release.x86_64 = "res://Scenes/Vehicle/Native/bin/libter26_vehicle.so"

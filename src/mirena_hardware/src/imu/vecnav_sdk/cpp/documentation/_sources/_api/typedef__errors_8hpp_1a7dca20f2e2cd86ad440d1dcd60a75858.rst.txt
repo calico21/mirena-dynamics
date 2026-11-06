@@ -1,0 +1,14 @@
+.. _exhale_typedef__errors_8hpp_1a7dca20f2e2cd86ad440d1dcd60a75858:
+
+Typedef VN::VnErr_CommandProccessor
+===================================
+
+- Defined in :ref:`file_include_vectornav_Interface_Errors.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::VnErr_CommandProccessor
+   :project: VectorNav SDK

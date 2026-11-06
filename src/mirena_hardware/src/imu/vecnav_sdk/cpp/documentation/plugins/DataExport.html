@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Data Export &#8212; VectorNav SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+    <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Firmware Programmer" href="FirmwareProgrammer.html" />
+    <link rel="prev" title="Calibration" href="Calibration.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FirmwareProgrammer.html" title="Firmware Programmer"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="Calibration.html" title="Calibration"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data Export</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="data-export">
+<span id="cppdataexportpage"></span><h1>Data Export<a class="headerlink" href="#data-export" title="Link to this heading">¶</a></h1>
+<p>The Data Export plugin allows the user to export data from a VectorNav unit into various file types, such as a <em>CSV</em>, <em>TXT</em>, <em>RINEX</em>, <em>IMR</em>, or <em>BIN</em> file.
+Data can be exported from previously recorded log files as well as directly from a VectorNav unit in real time.
+Additionally, this plugin supports exporting to multiple file formats at once, including exporting any skipped byte data to a separate <em>BIN</em> file.</p>
+<p>Each of the following exporter types can be obtained from the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> class.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_ascii.html#_CPPv4N2VN10DataExport13ExporterAsciiE" title="VN::DataExport::ExporterAscii"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterAscii</span></code></a> - exports to a <em>TXT</em> file</p></li>
+<li><p><a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_csv.html#_CPPv4N2VN10DataExport11ExporterCsvE" title="VN::DataExport::ExporterCsv"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterCsv</span></code></a> - exports to a <em>CSV</em> file</p></li>
+<li><p><a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_skipped_byte.html#_CPPv4N2VN10DataExport19ExporterSkippedByteE" title="VN::DataExport::ExporterSkippedByte"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterSkippedByte</span></code></a> - exports to a <em>BIN</em> file</p></li>
+<li><p><a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_rinex.html#_CPPv4N2VN10DataExport13ExporterRinexE" title="VN::DataExport::ExporterRinex"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterRinex</span></code></a> - exports to a <em>RINEX</em> file</p></li>
+<li><p><a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_imr.html#_CPPv4N2VN10DataExport11ExporterImrE" title="VN::DataExport::ExporterImr"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterImr</span></code></a> - exports to a <em>IMR</em> file</p></li>
+</ul>
+<p>This Data Export plugin can be used in conjunction with the Logger plugin, which allows users to log all bytes received from the VectorNav unit to a binary file without the parsing of any packets. Any files logged from the Logger plugin can then be exported into the desired file formats using this Data Export plugin. Information on how to log data from a VectorNav unit into a binary file can be found on the <a class="reference internal" href="Logger.html#cpploggerpage"><span class="std std-ref">Logger</span></a> page.</p>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>There are two ways to use the Data Export plugin: exporting data from a previously logged file or connecting to a VectorNav unit and exporting the data in real time.</p>
+<section id="exporting-from-a-file">
+<h3>Exporting from a File<a class="headerlink" href="#exporting-from-a-file" title="Link to this heading">¶</a></h3>
+<p>When exporting data from a previously recorded log file, a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object must first be created to process the logged data.
+Because the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> class works with raw packets, it does not require the use of the <a class="reference internal" href="../_api/class_v_n_1_1_composite_data.html#_CPPv4N2VN13CompositeDataE" title="VN::CompositeData"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CompositeData</span></code></a> class for parsing.
+Therefore, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object should be configured with <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor13MeasQueueMode3OffE" title="VN::Sensor::MeasQueueMode::Off"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">MeasQueueMode::Off</span></code></a>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="w"> </span><span class="n">pushToCompositeData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="o">::</span><span class="n">Off</span><span class="p">;</span><span class="w">  </span><span class="c1">// do not parse to CompositeData because that is not needed by exporters</span>
+<span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="p">,</span><span class="w"> </span><span class="mi">65536</span><span class="o">&gt;</span><span class="w"> </span><span class="n">byteBufferArray</span><span class="p">{};</span><span class="w">  </span><span class="c1">// using statically allocated main byte buffer to be able to read more of the file at once (could</span>
+<span class="w">                                               </span><span class="c1">// alternatively change &#39;mainBufferCapacity&#39; in Config.hpp)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="o">&gt;</span><span class="w"> </span><span class="n">fbBufferArray</span><span class="p">{};</span>
+
+<span class="n">Sensor</span><span class="w"> </span><span class="nf">sensor</span><span class="p">(</span><span class="n">byteBufferArray</span><span class="p">,</span><span class="w"> </span><span class="n">fbBufferArray</span><span class="p">,</span><span class="w"> </span><span class="n">pushToCompositeData</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The desired <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object should then be created.
+The <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_ascii.html#_CPPv4N2VN10DataExport13ExporterAsciiE" title="VN::DataExport::ExporterAscii"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterAscii</span></code></a> class can only export logged ASCII output messages from the VectorNav unit, while the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_csv.html#_CPPv4N2VN10DataExport11ExporterCsvE" title="VN::DataExport::ExporterCsv"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterCsv</span></code></a> class can export both ASCII and binary output messages.
+The <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_skipped_byte.html#_CPPv4N2VN10DataExport19ExporterSkippedByteE" title="VN::DataExport::ExporterSkippedByte"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterSkippedByte</span></code></a> class exports bytes that do not belong to any valid packet format,  which is useful for debugging communication issues and data corruption. Once the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object is created, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object must subscribe to the exporter’s message queue.</p>
+<div class="tab-set docutils container">
+<input checked="True" class="tab-input" id="tab-set--0-input--1" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--1">ASCII</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">DataExport</span><span class="o">::</span><span class="n">ExporterAscii</span><span class="w"> </span><span class="nf">asciiExporter</span><span class="p">(</span><span class="n">outputDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">PacketQueueMode</span><span class="o">::</span><span class="n">Retry</span><span class="p">);</span>
+<span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">asciiExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;VN&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--0-input--2" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--2">CSV</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">DataExport</span><span class="o">::</span><span class="n">ExporterCsv</span><span class="w"> </span><span class="nf">csvExporter</span><span class="p">(</span><span class="n">outputDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">PacketQueueMode</span><span class="o">::</span><span class="n">Retry</span><span class="p">);</span>
+<span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">csvExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;VN&quot;</span><span class="p">);</span>
+<span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">csvExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">SyncByte</span><span class="o">::</span><span class="n">FA</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--0-input--3" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--3">Skipped Bytes</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">DataExport</span><span class="o">::</span><span class="n">ExporterSkippedByte</span><span class="w"> </span><span class="nf">skippedByteExporter</span><span class="p">(</span><span class="n">outputDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">PacketQueueMode</span><span class="o">::</span><span class="n">Retry</span><span class="p">);</span>
+<span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">skippedByteExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">SyncByte</span><span class="o">::</span><span class="n">None</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Before connecting <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object to the file, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object must be started. This will kick off a separate thread for the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object.
+.. tab:: ASCII</p>
+<blockquote>
+<div><div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">asciiExporter</span><span class="p">.</span><span class="n">start</span><span class="p">();</span>
+</pre></div>
+</div>
+</div></blockquote>
+<div class="tab-set docutils container">
+<input checked="True" class="tab-input" id="tab-set--1-input--1" name="tab-set--1" type="radio"><label class="tab-label" for="tab-set--1-input--1">CSV</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">csvExporter</span><span class="p">.</span><span class="n">start</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--1-input--2" name="tab-set--1" type="radio"><label class="tab-label" for="tab-set--1-input--2">Skipped Bytes</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">skippedByteExporter</span><span class="p">.</span><span class="n">start</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Once the different <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> has been started, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object should be used to connect to the log file, which will begin the exporting process.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filePath</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Because the file is processsed in a background thread, the AsyncError queue should be monitored to detect when the end of the file is reached.
+A <a class="reference internal" href="../_api/enum__errors_8hpp_1a1176d97ac8230053c095d40f6ddd9541.html#_CPPv4N2VN5Error14FileReadFailedE" title="VN::Error::FileReadFailed"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">FileReadFailed</span></code></a> error indicates that the end of the file has been reached and processing is complete.
+The <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object can then be disconnected from the log file.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">disconnect</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>After exporting the data, the exporter should be stopped to ensure all buffered data is written.</p>
+<div class="tab-set docutils container">
+<input checked="True" class="tab-input" id="tab-set--2-input--1" name="tab-set--2" type="radio"><label class="tab-label" for="tab-set--2-input--1">ASCII</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">asciiExporter</span><span class="p">.</span><span class="n">stop</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--2-input--2" name="tab-set--2" type="radio"><label class="tab-label" for="tab-set--2-input--2">CSV</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">csvExporter</span><span class="p">.</span><span class="n">stop</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--2-input--3" name="tab-set--2" type="radio"><label class="tab-label" for="tab-set--2-input--3">Skipped Bytes</label><div class="tab-content docutils container">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">skippedByteExporter</span><span class="p">.</span><span class="n">stop</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="exporting-in-real-time">
+<h3>Exporting in Real Time<a class="headerlink" href="#exporting-in-real-time" title="Link to this heading">¶</a></h3>
+<p>When using the Data Export plugin to export data in real time from a VectorNav unit, it is first necessary to create a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object and connect to the VectorNav unit, such as by using the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor11autoConnectERKN11Serial_Base8PortNameE" title="VN::Sensor::autoConnect"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">autoConnect()</span></code></a> method.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="w"> </span><span class="n">sensor</span><span class="p">;</span>
+<span class="n">Error</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">portName</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Once the VectorNav unit is connected, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object should be created.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">DataExport</span><span class="o">::</span><span class="n">ExporterCsv</span><span class="w"> </span><span class="nf">csvExporter</span><span class="p">(</span><span class="n">outputDirectory</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In order for the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object to export the desired messages from the sensor, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object must subscribe to the exporter’s message queue.
+In the example below, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_csv.html#_CPPv4N2VN10DataExport11ExporterCsvE" title="VN::DataExport::ExporterCsv"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterCsv</span></code></a> object is used to filter for binary packets with an “0xFA” sync byte.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">csvExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">SyncByte</span><span class="o">::</span><span class="n">FA</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_csv.html#_CPPv4N2VN10DataExport11ExporterCsvE" title="VN::DataExport::ExporterCsv"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterCsv</span></code></a> object can subscribe to multiple message types at once.
+For example, while subscribing to the binary packets with an “0xFA” sync byte, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter_csv.html#_CPPv4N2VN10DataExport11ExporterCsvE" title="VN::DataExport::ExporterCsv"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ExporterCsv</span></code></a> object can also subscribe to ASCII messages that begin with “VN”.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">subscribeToMessage</span><span class="p">(</span><span class="n">csvExporter</span><span class="p">.</span><span class="n">getQueuePtr</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;VN&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">AsciiSubscriberFilterType</span><span class="o">::</span><span class="n">StartsWith</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object has now been set up, but has not  yet begun exporting data.
+To begin exporting the subscribed messages, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object must be started.
+After all desired data has been exported from the VectorNav unit, the <a class="reference internal" href="../_api/class_v_n_1_1_data_export_1_1_exporter.html#_CPPv4N2VN10DataExport8ExporterE" title="VN::DataExport::Exporter"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Exporter</span></code></a> object must be stopped. This ensures all buffered data is exported to the output file.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Ensure the VectorNav unit is configured to output the desired data before starting the exporter.</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">csvExporter</span><span class="p">.</span><span class="n">start</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Logging to &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">outputDirectory</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="mi">5</span><span class="n">s</span><span class="p">);</span>
+<span class="n">csvExporter</span><span class="p">.</span><span class="n">stop</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="../_api/namespace_VN__DataExport.html#namespace-vn-dataexport"><span class="std std-ref">DataExport</span></a></p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/MigrationGuide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/KeyFunctionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/AdvancedFunctionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MemoryConstrained.html">Memory Constrained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/NonOsUsage.html">Non-Os Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/api_index.html">VNSDK API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Plugins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Calibration.html">Calibration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Data Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FirmwareProgrammer.html">Firmware Programmer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Logger.html">Logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RegisterScan.html">Register Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Ros2.html">ROS2</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="Calibration.html"
+                          title="Previous page">&larr; Calibration</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="FirmwareProgrammer.html"
+                          title="Next page">&rarr; Firmware Programmer</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plugins/DataExport.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FirmwareProgrammer.html" title="Firmware Programmer"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="Calibration.html" title="Calibration"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Data Export</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,65 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_Hsi2d.hpp:
+
+Program Listing for File Hsi2d.hpp
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_Hsi2d.hpp>` (``plugins\Calibration\include\vectornav\Hsi2d.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_HSI2D_HPP_
+   #define VN_HSI2D_HPP_
+   
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Hsi.hpp"
+   #include "vectornav/HsiDipole.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct Hsi2dConfig : HsiConfig
+   {
+       uint16_t numPatches = 360;  // Data selection algorithm keeps a measurement whenever the heading has changed by 360/nPatches degrees.
+   };
+   
+   class Hsi2d : public Hsi<Hsi2dConfig, hsi2dFom.size(), hsi2dBufferSize>
+   {
+   public:
+       Hsi2d(Hsi2dConfig config) : Hsi(config, hsi2dFom) {}
+   
+   private:
+       static constexpr float _RFR_MINEIG = 1e-4;
+       static constexpr float _PLANE_MINEIG = 1e-4;
+       static constexpr float _ELLIPSE_MINEIG = 1e-4;
+       static constexpr float _SQRT_THRESHOLD = 1e-8;
+       static constexpr float _COND_THRESHOLD = 1e6;
+       static constexpr float _GYRO_TOL_FIRST_MEAS = Math::deg2rad(5.0);
+       static constexpr float _PITCH_ROLL_TOLERANCE = Math::deg2rad(10.0);
+   
+       bool _scaleS33 = false;
+   
+       bool _keepMeasurement(const HsiDipole& dipole, const HsiMeas& meas) noexcept override;
+   
+       ErrorCal _solve(bool updatedFlag) noexcept override;
+   
+       ErrorCal _calculateRFRError(Ypr& ypr) const noexcept;
+       ErrorCal _fitToPlane(const Mat3f& R, Vec3f& Zn, float& alignmentCoverage, bool updatedFlag) const noexcept;
+       ErrorCal _fitEllipse(const Mat3f& R, Matrix<6, 1, float>& ellipseParams, float& ellipsoidCoverage, bool updatedFlag) const noexcept;
+       ErrorCal _ellipse2Hsi(const Matrix<6, 1, float>& ellipseParams, const Vec3f& Zn, Mat3f& SI, Vec3f& HI) const noexcept;
+   
+       // variables for _keepMeasurement
+       uint16_t _gravCnt = 0;
+       Vec3f _gravVec = {0.0, 0.0, 0.0};
+       float _deltaTheta = 0.0f;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_HSI2D_HPP_

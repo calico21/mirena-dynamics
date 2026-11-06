@@ -1,0 +1,14 @@
+.. _exhale_enum__cal_error_8hpp_1a5479e5fd4012b96adaf2bc0555406c30:
+
+Enum ErrorCal
+=============
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalError.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: VN::Calibration::ErrorCal
+   :project: VectorNav SDK

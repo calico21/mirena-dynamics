@@ -1,0 +1,95 @@
+
+.. _program_listing_file_include_vectornav_Interface_Stream.hpp:
+
+Program Listing for File Stream.hpp
+===================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_Interface_Stream.hpp>` (``include\vectornav\Interface\Stream.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   // vectornav/Interface/Stream.hpp
+   #ifndef VN_INTERFACE_STREAM_HPP_
+   #define VN_INTERFACE_STREAM_HPP_
+   
+   #include <ostream>
+   #include <sstream>
+   #include <type_traits>
+   
+   #include "vectornav/HAL/Timer.hpp"
+   #include "vectornav/Implementation/MeasurementDatatypes.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/Interface/Registers.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   #include "vectornav/TemplateLibrary/String.hpp"
+   
+   namespace VN
+   {
+   
+   template <uint16_t N>
+   inline std::ostream& operator<<(std::ostream& os, const String<N>& s) noexcept
+   {
+       os << s.c_str();
+       return os;
+   }
+   
+   template <typename T, std::enable_if_t<is_same_any<T, _VN_ERROR_LIST>, bool> = true>
+   inline std::ostream& operator<<(std::ostream& outStream, const T& error) noexcept
+   {
+       outStream << "Error " << static_cast<uint16_t>(error) << ": " << errorCodeToString(error);
+       return outStream;
+   }
+   
+   inline std::ostream& operator<<(std::ostream& outStream, const ErrorAll& error) noexcept
+   {
+       std::visit([&outStream](auto&& arg) { outStream << arg; }, error._e);
+       return outStream;
+   }
+   
+   inline std::ostream& operator<<(std::ostream& os, const time_point& tp) noexcept
+   {
+       os << std::chrono::duration_cast<Milliseconds>(tp.time_since_epoch()).count() << " ms";
+       return os;
+   }
+   
+   inline std::ostream& operator<<(std::ostream& os, const AsyncError& asyncError) noexcept
+   {
+       os << asyncError.message << " (" << asyncError.error << ") at " << asyncError.timestamp;
+       return os;
+   }
+   
+   template <uint16_t m, uint16_t n, typename T>
+   inline std::ostream& operator<<(std::ostream& out, const Matrix<m, n, T>& mat) noexcept
+   {
+       out << "[";
+       for (uint16_t i = 0; i < m; ++i)
+       {
+           if (i == 0) { out << "("; }
+           else { out << '\n' << "("; }
+   
+           for (uint16_t j = 0; j < n; ++j) { out << ' ' << mat(i, j) << ','; }
+   
+           out << '\b' << ' ' << ')';
+       }
+       out << ']' << '\n';
+       return out;
+   }
+   
+   inline std::ostream& operator<<(std::ostream& outStream, const Registers::System::BaudRate::BaudRates& baudrate) noexcept
+   {
+       return outStream << static_cast<uint32_t>(baudrate);
+   }
+   
+   template <typename T, std::enable_if_t<Detail::HasBufferPrint<T>::value, int> = 0>
+   inline std::ostream& operator<<(std::ostream& os, const T& value) noexcept
+   {
+       char buf[2000]{};
+       value.print(buf, sizeof(buf));
+       return os << buf;
+   }
+   
+   }  // namespace VN
+   
+   #endif  // VN_INTERFACE_STREAM_HPP_

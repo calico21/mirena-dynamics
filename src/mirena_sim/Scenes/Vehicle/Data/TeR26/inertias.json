@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "sprung_inertia_tensor_kg_m2": {
+    "Ixx": 42.5,
+    "Iyy": 78.0,
+    "Izz": 118.0,
+    "Ixy": 0.0,
+    "Ixz": 2.4,
+    "Iyz": 0.0,
+    "total_vehicle_Ixx_reference": 45.0,
+    "total_vehicle_Iyy_reference": 85.0,
+    "total_vehicle_Izz_reference": 135.0,
+    "uncertainty_fraction": 0.12,
+    "provenance": "ESTIMATED",
+    "source": "active_vehicle_config.json (Ixx=45, Iyy=85, Izz=120), mirena_ws-SIM_02-11 (Izz=135), ter26.py (Izz=150). Sprung tensor has parallel-axis unsprung contribution subtracted so total assembled 14-DOF M(q) matches total vehicle inertia."
+  },
+  "component_inertias_kg_m2": {
+    "upright_front_tensor_diag": [0.028, 0.022, 0.026],
+    "upright_rear_tensor_diag": [0.030, 0.024, 0.028],
+    "wheel_tire_spin_Iy": {
+      "value": 0.24,
+      "diametral_Ixx_Izz": 0.14,
+      "provenance": "CAD_DERIVED",
+      "source": "10-inch Braid/Keizer rim + Hoosier 16.0x7.5-10 R20 rotational inertia (without gearbox)"
+    },
+    "rocker_pivot_Iz": {
+      "value": 0.0018,
+      "provenance": "CAD_DERIVED",
+      "source": "7075-T6 CNC aluminum bellcrank inertia about pivot"
+    },
+    "motor_rotor_inertia_kg_m2": {
+      "value": 0.0032,
+      "gear_ratio": 5.0,
+      "reflected_at_rear_wheel_kg_m2": 0.080,
+      "total_rear_wheel_effective_Iy_kg_m2": 0.320,
+      "provenance": "CAD_DERIVED",
+      "source": "active_vehicle_config.json wheel_inertia = 0.32 kg*m^2 (0.24 wheel + 0.08 reflected rotor/drivetrain)"
+    }
+  }
+}

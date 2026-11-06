@@ -1,0 +1,117 @@
+{
+  "aerodynamics": {
+    "air_density_kg_m3": 1.225,
+    "cd_a_m2": 2.75,
+    "cl_a_m2": 4.554
+  },
+  "braking": {
+    "brake_bias_front": 0.6,
+    "brake_friction_mu": 0.4
+  },
+  "candidate_id": "candidate_phase6_1_corrected",
+  "candidate_version": "1.6.5-rc1",
+  "chassis": {
+    "center_of_mass": {
+      "x": 0.0,
+      "y": 0.33,
+      "z": -0.11699999999999999
+    },
+    "mass_kg": 298.0,
+    "track_front_m": 1.174,
+    "track_rear_m": 1.174,
+    "wheelbase_m": 1.593,
+    "yaw_inertia_kg_m2": 120.0
+  },
+  "configuration_hash": "409522025cc4a90d7aaffc022cfc958922b545e2258b9f4523c45d75f9c8a81a",
+  "effective_parameters": {
+    "aerodynamics.air_density_kg_m3": 1.225,
+    "aerodynamics.cd_a_m2": 2.75,
+    "aerodynamics.cl_a_m2": 4.554,
+    "braking.brake_bias_front_pct": 60.0,
+    "braking.brake_friction_mu": 0.4,
+    "chassis.cg_height_m": 0.33,
+    "chassis.cg_x_from_front_axle_m": 0.876,
+    "chassis.cg_x_from_rear_axle_m": 0.717,
+    "chassis.total_mass_kg": 298.0,
+    "chassis.track_front_m": 1.174,
+    "chassis.track_rear_m": 1.174,
+    "chassis.wheelbase_m": 1.593,
+    "mass_and_inertia.yaw_inertia_kg_m2": 120.0,
+    "powertrain.drivetrain_efficiency": 0.92,
+    "powertrain.gear_ratio": 5.0,
+    "powertrain.motor_peak_torque_nm": 100.0,
+    "powertrain.power_limit_w": 80000.0,
+    "steering.gear_ratio": 4.5,
+    "steering.max_steer_angle_rad": 0.35,
+    "steering.steering_delay_s": 0.0269,
+    "wheels_and_tires.cornering_stiffness_front_n_rad": 28000.0,
+    "wheels_and_tires.cornering_stiffness_rear_n_rad": 35920.0,
+    "wheels_and_tires.damping_compression_front": 6.7,
+    "wheels_and_tires.damping_compression_rear": 6.7,
+    "wheels_and_tires.damping_relaxation_front": 2.7,
+    "wheels_and_tires.damping_relaxation_rear": 2.7,
+    "wheels_and_tires.friction_slip_front": 1.0,
+    "wheels_and_tires.friction_slip_rear": 1.2,
+    "wheels_and_tires.relaxation_length_m": 0.15,
+    "wheels_and_tires.suspension_stiffness_front_n_m": 35.03,
+    "wheels_and_tires.suspension_stiffness_rear_n_m": 52.54,
+    "wheels_and_tires.wheel_radius_m": 0.2,
+    "wheels_and_tires.wheel_rest_length_m": 0.05
+  },
+  "handling": {
+    "a_m": 0.876,
+    "b_m": 0.717,
+    "ca_f_axle_n_rad": 28000.0,
+    "ca_r_axle_n_rad": 35920.0,
+    "characteristic_speed_mps": 83.55958263634946,
+    "critical_speed_mps": null,
+    "handling_regime": "UNDERSTEER",
+    "kus_deg_per_g": 0.12819366369828192,
+    "kus_rad_per_g": 0.0022374015117293503,
+    "kus_rad_per_mps2": 0.0002281514596451745,
+    "margin_to_neutral_pct": 5.0009784735812115,
+    "mass_kg": 298.0,
+    "stiffness_convention": "AXLE_EQUIVALENT",
+    "stiffness_ratio_actual": 1.282857142857143,
+    "stiffness_ratio_neutral": 1.2217573221757323,
+    "wheelbase_m": 1.593
+  },
+  "powertrain": {
+    "drivetrain_efficiency": 0.92,
+    "gear_ratio": 5.0,
+    "motor_peak_torque_nm": 100.0,
+    "power_limit_w": 80000.0
+  },
+  "schema_version": "2.0",
+  "source_file_hash": "14c5dbe44df91befb35b6a9ced56282c11ba5a150ab627420f4dadfd93e14045",
+  "steering": {
+    "gear_ratio": 4.5,
+    "max_steer_angle_rad": 0.35,
+    "steering_delay_s": 0.0269
+  },
+  "stiffness_convention": "AXLE_EQUIVALENT",
+  "tire_integration_mode": "NATIVE_VEHICLE_WHEEL",
+  "unsupported_parameters": [
+    "wheels_and_tires.relaxation_length_m"
+  ],
+  "wheels": {
+    "front": {
+      "cornering_stiffness_axle_n_rad": 28000.0,
+      "cornering_stiffness_per_tire_n_rad": 14000.0,
+      "damping_compression": 6.7,
+      "damping_relaxation": 2.7,
+      "friction_slip": 1.0,
+      "suspension_stiffness": 0.03503
+    },
+    "rear": {
+      "cornering_stiffness_axle_n_rad": 35920.0,
+      "cornering_stiffness_per_tire_n_rad": 17960.0,
+      "damping_compression": 6.7,
+      "damping_relaxation": 2.7,
+      "friction_slip": 1.2,
+      "suspension_stiffness": 0.052539999999999996
+    },
+    "wheel_radius_m": 0.2,
+    "wheel_rest_length_m": 0.05
+  }
+}

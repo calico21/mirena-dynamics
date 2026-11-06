@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "masses": {
+    "total_mass_with_driver_kg": {
+      "value": 300.0,
+      "calibrated_config_value": 298.0,
+      "uncertainty": 2.0,
+      "provenance": "MEASURED",
+      "source": "mirena_car.tscn (300.0 kg) & active_vehicle_config.json (298.0 kg = 223 kg car + 75 kg driver)"
+    },
+    "driver_mass_kg": {
+      "value": 75.0,
+      "uncertainty": 2.0,
+      "provenance": "MEASURED"
+    },
+    "sprung_mass_kg": {
+      "value": 269.0,
+      "uncertainty": 2.5,
+      "provenance": "CAD_DERIVED",
+      "source": "Total mass minus 4 corners unsprung mass (2 * 7.74 + 2 * 7.76 = 31.0 kg)"
+    },
+    "corner_unsprung_front_kg": {
+      "total_per_corner_kg": 7.74,
+      "upright_hub_caliper_kg": 3.44,
+      "wheel_tire_assembly_kg": 3.55,
+      "wishbones_pushrod_participating_kg": 0.75,
+      "rocker_equivalent_kg": 0.28,
+      "uncertainty": 0.25,
+      "provenance": "CAD_DERIVED",
+      "source": "FS_Driver_Setup_Optimizer/config/vehicles/ter26.py (unsprung_mass_f = 15.48 kg/axle)"
+    },
+    "corner_unsprung_rear_kg": {
+      "total_per_corner_kg": 7.76,
+      "upright_hub_caliper_kg": 3.46,
+      "wheel_tire_assembly_kg": 3.55,
+      "wishbones_pullrod_participating_kg": 0.75,
+      "rocker_equivalent_kg": 0.28,
+      "uncertainty": 0.25,
+      "provenance": "CAD_DERIVED",
+      "source": "FS_Driver_Setup_Optimizer/config/vehicles/ter26.py (unsprung_mass_r = 15.52 kg/axle)"
+    }
+  },
+  "centers_of_mass_body_frame_m": {
+    "sprung_cg_m": [0.0, 0.0, 0.345],
+    "total_cg_m": [0.0, 0.0, 0.330],
+    "front_left_unsprung_m": [0.876, 0.587, 0.208],
+    "front_right_unsprung_m": [0.876, -0.587, 0.208],
+    "rear_left_unsprung_m": [-0.717, 0.587, 0.208],
+    "rear_right_unsprung_m": [-0.717, -0.587, 0.208]
+  }
+}

@@ -1,0 +1,26 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_hsi3d:
+
+Class Hsi3d
+===========
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_Hsi3d.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public VN::Calibration::Hsi< Hsi3dConfig, hsi3dFom.size(), hsi3dBufferSize >`` (:ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::Hsi3d
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

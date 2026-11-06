@@ -1,0 +1,14 @@
+{
+  "applied_at": "2026-11-06T20:55:36",
+  "candidate_id": "candidate_phase6_1_corrected",
+  "candidate_version": "1.6.5-rc1",
+  "center_of_mass": [
+    0.0,
+    0.330000013113022,
+    -0.116999998688698
+  ],
+  "configuration_hash": "409522025cc4a90d7aaffc022cfc958922b545e2258b9f4523c45d75f9c8a81a",
+  "mass_kg": 298.0,
+  "status": "APPLIED_AND_VERIFIED",
+  "tire_integration_mode": "NATIVE_VEHICLE_WHEEL"
+}

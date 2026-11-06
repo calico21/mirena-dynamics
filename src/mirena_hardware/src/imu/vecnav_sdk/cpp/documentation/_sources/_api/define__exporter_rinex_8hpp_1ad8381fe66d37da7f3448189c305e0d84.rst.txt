@@ -1,0 +1,14 @@
+.. _exhale_define__exporter_rinex_8hpp_1ad8381fe66d37da7f3448189c305e0d84:
+
+Define VN_EXPORTER_RINEX_ENABLED
+================================
+
+- Defined in :ref:`file_plugins_DataExport_include_vectornav_ExporterRinex.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: VN_EXPORTER_RINEX_ENABLED
+   :project: VectorNav SDK

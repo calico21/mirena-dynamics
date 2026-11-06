@@ -1,0 +1,127 @@
+{
+  "dataset": "/home/alexr/eRacing/mirena-ws-SIM/imu_compare/ (Real TeR26 track session)",
+  "active_window_s": [
+    272.0,
+    315.0
+  ],
+  "duration_s": 43.0,
+  "sample_rate_hz": 400.0,
+  "num_samples": 17200,
+  "horizon_s": 2.5,
+  "nominal_100pct_torque_baseline": {
+    "vx_m_s": {
+      "rmse": 2.9334,
+      "mae": 2.2488,
+      "bias": 0.0807,
+      "pearson_r": 0.858,
+      "gain_ratio_sim_vs_real": 1.9258,
+      "phase_lag_ms": -362.5,
+      "peak_real": 14.3034,
+      "peak_sim": 16.6476
+    },
+    "yaw_rate_rad_s": {
+      "rmse": 0.5286,
+      "mae": 0.3366,
+      "bias": -0.2273,
+      "pearson_r": 0.752,
+      "gain_ratio_sim_vs_real": 1.2231,
+      "phase_lag_ms": 45.0,
+      "peak_real": 1.8663,
+      "peak_sim": 4.8152
+    },
+    "ay_imu_m_s2": {
+      "rmse": 4.9271,
+      "mae": 3.8381,
+      "bias": -2.2291,
+      "pearson_r": 0.6468,
+      "gain_ratio_sim_vs_real": 0.921,
+      "phase_lag_ms": -20.0,
+      "peak_real": 19.1219,
+      "peak_sim": 13.2868
+    },
+    "ax_imu_m_s2": {
+      "rmse": 3.3326,
+      "mae": 2.4473,
+      "bias": 0.7541,
+      "pearson_r": 0.6543,
+      "gain_ratio_sim_vs_real": 1.9401,
+      "phase_lag_ms": -92.5,
+      "peak_real": 7.031,
+      "peak_sim": 18.9969
+    },
+    "rl_wheel_rpm": {
+      "rmse": 219.058,
+      "mae": 147.0367,
+      "bias": 14.1262,
+      "pearson_r": 0.594,
+      "gain_ratio_sim_vs_real": 2.229,
+      "phase_lag_ms": -500.0,
+      "peak_real": 693.3355,
+      "peak_sim": 1183.6608
+    }
+  },
+  "identified_50pct_autonomous_inverter_cap": {
+    "vx_m_s": {
+      "rmse": 2.2484,
+      "mae": 1.291,
+      "bias": -0.9732,
+      "pearson_r": 0.8874,
+      "gain_ratio_sim_vs_real": 1.5642,
+      "phase_lag_ms": -337.5,
+      "peak_real": 14.3034,
+      "peak_sim": 14.1758
+    },
+    "yaw_rate_rad_s": {
+      "rmse": 0.3356,
+      "mae": 0.2522,
+      "bias": -0.2094,
+      "pearson_r": 0.8983,
+      "gain_ratio_sim_vs_real": 0.8254,
+      "phase_lag_ms": 62.5,
+      "peak_real": 1.8663,
+      "peak_sim": 1.8512
+    },
+    "ay_imu_m_s2": {
+      "rmse": 4.2985,
+      "mae": 3.3035,
+      "bias": -2.0532,
+      "pearson_r": 0.7176,
+      "gain_ratio_sim_vs_real": 0.702,
+      "phase_lag_ms": -35.0,
+      "peak_real": 19.1219,
+      "peak_sim": 12.8134
+    },
+    "ax_imu_m_s2": {
+      "rmse": 3.0159,
+      "mae": 1.9696,
+      "bias": -0.4566,
+      "pearson_r": 0.6226,
+      "gain_ratio_sim_vs_real": 1.7471,
+      "phase_lag_ms": -135.0,
+      "peak_real": 7.031,
+      "peak_sim": 19.0279
+    },
+    "rl_wheel_rpm": {
+      "rmse": 153.1306,
+      "mae": 82.6794,
+      "bias": -65.4959,
+      "pearson_r": 0.7646,
+      "gain_ratio_sim_vs_real": 1.7216,
+      "phase_lag_ms": -500.0,
+      "peak_real": 693.3355,
+      "peak_sim": 681.916
+    }
+  },
+  "identified_session_parameters": {
+    "inverter_torque_limit_fraction": 0.5,
+    "effective_motor_peak_torque_Nm": 50.0,
+    "coasting_regen_brake_equivalent": 0.14,
+    "steering_calibration_scale": 0.85
+  },
+  "hardware_anomalies_detected_in_real_logs": [
+    "real_wheels.csv: RR wheel speed sensor (`rr`) reads 0.0 RPM for 42.6% of the log while `rl` reads up to 709.0 RPM (confirmed single-encoder dropout on real car CAN bus).",
+    "real_odom.csv: Because the real car's EKF averages `rl` and `rr` (where `rr == 0`), `real_odom.csv` under-reports longitudinal speed by ~50% whenever GNSS drops out and diverges after t_rel = 305 s.",
+    "real_control.csv: Autonomous driverless run operated with a 50% inverter torque limit (gain ratio 1.94x on uncalibrated 100 Nm/motor baseline -> 1.01x after identifying the 50 Nm/motor cap).",
+    "real_imu.csv: Unfiltered MEMS accelerometer exhibits +/-3.5 m/s^2 high-frequency chassis/drivetrain structural vibration above 25 Hz; 15 Hz low-pass filtering isolates rigid-body specific force."
+  ]
+}

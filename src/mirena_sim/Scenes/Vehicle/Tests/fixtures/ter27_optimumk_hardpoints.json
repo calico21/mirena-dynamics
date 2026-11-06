@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR27_Fixture",
+  "coordinate_frame": "AXLE_MIDPOINT_ISO_8855",
+  "units_system": "SI_M_KG_S_RAD",
+  "notes": "Complete 16-point CAD OptimumKinematics fixture from TeR27_OptimumK.xlsx & Ter27_Chassis_Loads_Report.xlsx used strictly for validating the 3D kinematic solver and 6x6 ANSYS link reaction equilibrium against independent engineering references. NEVER mixed into TeR26 baseline.",
+  "front_left_m": {
+    "lca_in_f":     [ 0.19450, 0.13000, 0.11900],
+    "lca_in_r":     [-0.14500, 0.14200, 0.10900],
+    "lbj":          [ 0.01550, 0.53100, 0.11400],
+    "uca_in_f":     [ 0.14000, 0.22750, 0.25120],
+    "uca_in_r":     [-0.14500, 0.21940, 0.24420],
+    "ubj":          [-0.00675, 0.51773, 0.27386],
+    "tie_in":       [-0.05500, 0.16500, 0.15100],
+    "tie_out":      [-0.06200, 0.52500, 0.14600],
+    "pushrod_out":  [ 0.00300, 0.48300, 0.25300],
+    "rocker_rod":   [-0.01959, 0.24891, 0.12352],
+    "rocker_piv":   [-0.04500, 0.21500, 0.12500],
+    "rocker_axis":  [-0.04390, 0.21520, 0.22500],
+    "rocker_coi":   [-0.08826, 0.22866, 0.12554],
+    "spring_in":    [-0.24800, 0.18000, 0.12500],
+    "antiroll_out": [-0.07500, 0.22500, 0.10000],
+    "antiroll_in":  [-0.07500, 0.14000, 0.07500],
+    "wheel_center": [ 0.00000, 0.60000, 0.20320]
+  }
+}

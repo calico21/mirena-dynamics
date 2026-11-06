@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a54ec7d90df2921c2f2d72d61d6a2c865:
+
+Variable VN::Calibration::dynamicAccelBiasMaxGyroStd
+====================================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::dynamicAccelBiasMaxGyroStd
+   :project: VectorNav SDK

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "aerodynamics": {
+    "air_density_kg_m3": 1.225,
+    "reference_area_m2": 1.10,
+    "cl_nominal": 3.18,
+    "cd_nominal": 1.27,
+    "cla_nominal_m2": 3.50,
+    "cda_nominal_m2": 1.40,
+    "aero_balance_front_fraction": 0.46,
+    "cop_height_m": 0.25,
+    "ride_height_ref_front_m": 0.035,
+    "ride_height_ref_rear_m": 0.040,
+    "ground_effect_dcl_dh_front_per_m": -8.5,
+    "ground_effect_dcl_dh_rear_per_m": -10.0,
+    "pitch_sensitivity_dcop_dtheta_m_per_rad": -1.8,
+    "roll_moment_coeff_cl_roll_per_rad": -0.35,
+    "yaw_sideforce_cy_per_rad": -0.65,
+    "provenance": "CAD_DERIVED",
+    "source": "active_vehicle_config.json & ter26.py (Cl=3.18, Cd=1.27, A=1.10 m^2,ClA=3.50, CdA=1.40, front_split=0.46)"
+  }
+}

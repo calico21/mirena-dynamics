@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TeR26ParameterDatabaseSchema",
+  "description": "Schema validating SI units, frame conventions, physical bounds, and parameter provenance for TeR26.",
+  "type": "object",
+  "required": ["schema_version", "vehicle_id", "coordinate_frame", "units_system"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "vehicle_id": { "type": "string", "enum": ["TeR26", "TeR27_Fixture"] },
+    "coordinate_frame": { "type": "string", "enum": ["ISO_8855_X_FWD_Y_LEFT_Z_UP", "AXLE_MIDPOINT_ISO_8855"] },
+    "units_system": { "type": "string", "const": "SI_M_KG_S_RAD" }
+  }
+}

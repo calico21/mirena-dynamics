@@ -1,0 +1,14 @@
+.. _exhale_function__exceptions_8hpp_1ab01555705acb6999a58ca6d1ea53750f:
+
+Function VN::_VN_DEF_EXCEPTION
+==============================
+
+- Defined in :ref:`file_include_vectornav_Interface_Exceptions.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::_VN_DEF_EXCEPTION(VnSynchronousException)
+   :project: VectorNav SDK

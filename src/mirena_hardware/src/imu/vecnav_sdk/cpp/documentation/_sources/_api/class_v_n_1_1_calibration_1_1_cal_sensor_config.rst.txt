@@ -1,0 +1,26 @@
+.. _exhale_class_class_v_n_1_1_calibration_1_1_cal_sensor_config:
+
+Template Class CalSensorConfig
+==============================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VN::Calibration::CalSensorConfig
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_typedef__registers_8hpp_1a0df67724e29ba9062aba9f7f215661bb:
+
+Typedef VN::RegisterString
+==========================
+
+- Defined in :ref:`file_include_vectornav_Interface_Registers.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::RegisterString
+   :project: VectorNav SDK

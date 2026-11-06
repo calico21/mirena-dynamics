@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "description": "Formula Student TeR26 (2026 Season) Master Vehicle Dimensions and Architecture",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "architecture": {
+    "drivetrain_layout": "RWD_DUAL_MOTOR",
+    "front_suspension_type": "DOUBLE_WISHBONE_PUSHROD_ROCKER_COILOVER_UBAR_ARB",
+    "rear_suspension_type": "DOUBLE_WISHBONE_PULLROD_ROCKER_COILOVER_UBAR_ARB",
+    "tire_front": "Hoosier_16.0x7.5-10_R20_8in",
+    "tire_rear": "Hoosier_16.0x7.5-10_R20_8in"
+  },
+  "geometry": {
+    "wheelbase_m": {
+      "value": 1.593,
+      "uncertainty": 0.002,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn (0.993 + 0.600 m) & active_vehicle_config.json",
+      "notes": "ter26.py uses nominal 1.550 m; 1.593 m is the exact MirenaSim / CAD scene geometry."
+    },
+    "cg_to_front_axle_m": {
+      "value": 0.876,
+      "uncertainty": 0.005,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn & active_vehicle_config.json (55% rear weight bias)"
+    },
+    "cg_to_rear_axle_m": {
+      "value": 0.717,
+      "uncertainty": 0.005,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn & active_vehicle_config.json"
+    },
+    "track_front_m": {
+      "value": 1.174,
+      "uncertainty": 0.002,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn (2 * 0.587 m)"
+    },
+    "track_rear_m": {
+      "value": 1.174,
+      "uncertainty": 0.002,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn (2 * 0.587 m)"
+    },
+    "cg_height_total_m": {
+      "value": 0.330,
+      "uncertainty": 0.010,
+      "provenance": "CAD_DERIVED",
+      "source": "mirena_car.tscn center_of_mass.y = 0.33 m"
+    },
+    "nominal_wheel_radius_m": {
+      "value": 0.2032,
+      "scene_wheel_radius_m": 0.208,
+      "uncertainty": 0.002,
+      "provenance": "MEASURED",
+      "source": "Hoosier 16.0x7.5-10 R20 nominal OD 16.0 in (0.2032 m unloaded, 0.208 m in MirenaSim)"
+    },
+    "steering_rack_ratio_rad_per_m": {
+      "value": 14.2857,
+      "max_road_steer_rad": 0.45,
+      "rack_travel_max_m": 0.0315,
+      "steering_actuator_bandwidth_hz": 12.0,
+      "steering_actuator_rate_limit_rad_s": 4.5,
+      "provenance": "CAD_DERIVED",
+      "source": "TeR26 steering rack clevis geometry & AS actuator specs"
+    }
+  }
+}

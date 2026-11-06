@@ -1,0 +1,35 @@
+# ROS 2 / colcon generated files
+/build/
+/install/
+/log/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Godot generated files
+**/.godot/
+
+# Native compiled artifacts
+**/Native/build/
+**/Native/bin/*.so
+**/Native/bin/*.dll
+**/Native/bin/*.dylib
+*.o
+*.a
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*~

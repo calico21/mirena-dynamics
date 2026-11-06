@@ -1,0 +1,92 @@
+{
+  "analysis": "Fisher Information Matrix (FIM) Observability & Structural Collinearity",
+  "sensors_assumed": [
+    "IMU_ax",
+    "IMU_ay",
+    "IMU_yaw_rate_r",
+    "Wheel_Odometry_vx"
+  ],
+  "fim_condition_number": 8733752659849966.0,
+  "parameter_sensitivity_ranking": [
+    {
+      "parameter": "drivetrain_efficiency",
+      "normalized_sensitivity_norm": 80.263
+    },
+    {
+      "parameter": "lambda_mux",
+      "normalized_sensitivity_norm": 46.517
+    },
+    {
+      "parameter": "Kya_rear_N_rad",
+      "normalized_sensitivity_norm": 43.099
+    },
+    {
+      "parameter": "Kya_front_N_rad",
+      "normalized_sensitivity_norm": 38.957
+    },
+    {
+      "parameter": "lambda_muy",
+      "normalized_sensitivity_norm": 26.303
+    },
+    {
+      "parameter": "Izz_kg_m2",
+      "normalized_sensitivity_norm": 9.341
+    },
+    {
+      "parameter": "CdA_m2",
+      "normalized_sensitivity_norm": 5.714
+    },
+    {
+      "parameter": "ClA_m2",
+      "normalized_sensitivity_norm": 4.203
+    },
+    {
+      "parameter": "h_cg_m",
+      "normalized_sensitivity_norm": 0.0
+    },
+    {
+      "parameter": "roll_stiffness_front_frac",
+      "normalized_sensitivity_norm": 0.0
+    }
+  ],
+  "high_collinearity_pairs": [
+    {
+      "param_1": "drivetrain_efficiency",
+      "param_2": "Kya_front_N_rad",
+      "correlation_coeff": 0.7169
+    },
+    {
+      "param_1": "drivetrain_efficiency",
+      "param_2": "Kya_rear_N_rad",
+      "correlation_coeff": -0.6856
+    },
+    {
+      "param_1": "drivetrain_efficiency",
+      "param_2": "CdA_m2",
+      "correlation_coeff": -0.9647
+    },
+    {
+      "param_1": "lambda_muy",
+      "param_2": "ClA_m2",
+      "correlation_coeff": 0.9092
+    },
+    {
+      "param_1": "Kya_front_N_rad",
+      "param_2": "Kya_rear_N_rad",
+      "correlation_coeff": -0.9356
+    },
+    {
+      "param_1": "Kya_front_N_rad",
+      "param_2": "CdA_m2",
+      "correlation_coeff": -0.7082
+    },
+    {
+      "param_1": "Kya_rear_N_rad",
+      "param_2": "CdA_m2",
+      "correlation_coeff": 0.6692
+    }
+  ],
+  "unobservable_without_suspension_potentiometers": [
+    "h_cg_m vs roll_stiffness_front_frac (pure IMU cannot separate CoG height from roll stiffness split without wheel normal force or LVDT jounce sensors)"
+  ]
+}

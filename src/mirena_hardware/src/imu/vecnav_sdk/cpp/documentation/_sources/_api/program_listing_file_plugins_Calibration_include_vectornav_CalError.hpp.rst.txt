@@ -1,0 +1,80 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalError.hpp:
+
+Program Listing for File CalError.hpp
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalError.hpp>` (``plugins\Calibration\include\vectornav\CalError.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALERROR_HPP_
+   #define VN_CALERROR_HPP_
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   enum class ErrorCal
+   {
+       None = 0,                   // Indicates there were no errors encountered.
+       Unknown = 1,                // Indicates an unknown error occurred.
+       InvalidValue = 2,           // Indicates a provided value is not valid.
+       NotSupported = 3,           // Indicates the requested functionality is not supported.
+       NotFound = 4,               // Indicates the requested item was not found.
+       InvalidOperation = 5,       // Indicates an invalid operation was attempted.
+       DataNotElliptical = 6,      //  Data set not elliptical.
+       IllConditioned = 7,         // Algorithm had a bad condition.
+       ExceededMaxIterations = 8,  // Algorithm exceeded the number of iterations it is allowed.
+       InsufficientData = 9,       // Not enough data points were provided.
+       ReceivedUnexpectedMessage = 10,
+       FailedEigenDecomposition = 11,
+       MaximumMeasurementsRecorded = 12,
+       IgnoredMeasurement = 13,
+   };
+   
+   }  // namespace Calibration
+   
+   inline static std::string_view errorCodeToString(Calibration::ErrorCal error) noexcept
+   {
+       switch (error)
+       {
+           case Calibration::ErrorCal::None:
+               return "CAL:None";
+           case Calibration::ErrorCal::Unknown:
+               return "CAL:Unknown";
+           case Calibration::ErrorCal::InvalidValue:
+               return "CAL:InvalidValue";
+           case Calibration::ErrorCal::NotSupported:
+               return "CAL:NotSupported";
+           case Calibration::ErrorCal::NotFound:
+               return "CAL:NotFound";
+           case Calibration::ErrorCal::InvalidOperation:
+               return "CAL:InvalidOperation";
+           case Calibration::ErrorCal::DataNotElliptical:
+               return "CAL:DataNotElliptical";
+           case Calibration::ErrorCal::IllConditioned:
+               return "CAL:IllConditioned";
+           case Calibration::ErrorCal::ExceededMaxIterations:
+               return "CAL:ExceededMaxIterations";
+           case Calibration::ErrorCal::InsufficientData:
+               return "CAL:InsufficientData";
+           case Calibration::ErrorCal::ReceivedUnexpectedMessage:
+               return "CAL:ReceivedUnexpectedMessage";
+           case Calibration::ErrorCal::FailedEigenDecomposition:
+               return "CAL:FailedEigenDecomposition";
+           case Calibration::ErrorCal::MaximumMeasurementsRecorded:
+               return "CAL:MaximumMeasurementsRecorded";
+           case Calibration::ErrorCal::IgnoredMeasurement:
+               return "CAL:IgnoredMeasurement";
+           default:
+               return "CAL:Unknown error code.";
+       }
+   }
+   
+   }  // namespace VN
+   
+   #endif  // VN_CALERROR_HPP_

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "axle": "REAR",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "spring": {
+    "spring_rate_N_m": 52540.0,
+    "motion_ratio_poly": [1.16, 2.0, 0.0],
+    "effective_wheel_rate_N_m": 39045.8,
+    "preload_force_N": 540.0,
+    "free_length_m": 0.165,
+    "max_compression_travel_m": 0.032,
+    "max_droop_travel_m": 0.028,
+    "provenance": "CAD_DERIVED",
+    "source": "ter26.py (k_spring_r = 52.54 N/mm, MR = 1.16)"
+  },
+  "damper": {
+    "model": "Horstman_Digressive_4Way",
+    "c_low_bump_N_s_m": 1600.0,
+    "c_high_bump_N_s_m": 640.0,
+    "v_knee_bump_m_s": 0.10,
+    "rebound_to_bump_ratio": 1.60,
+    "c_low_rebound_N_s_m": 2560.0,
+    "c_high_rebound_N_s_m": 1024.0,
+    "v_knee_rebound_m_s": 0.10,
+    "gas_charge_force_N": 120.0,
+    "provenance": "MEASURED",
+    "source": "ter26.py Horstman damper dyno specifications"
+  },
+  "bump_stop": {
+    "engagement_jounce_m": 0.025,
+    "linear_stiffness_N_m": 50000.0,
+    "quadratic_stiffness_N_m2": 1500000.0,
+    "damping_N_s_m": 1200.0,
+    "provenance": "CAD_DERIVED"
+  },
+  "anti_roll_bar": {
+    "wheel_rate_stiffness_N_m": 6500.0,
+    "torsion_bar_stiffness_Nm_rad": 380.0,
+    "roll_stiffness_contribution_Nm_rad": 4480.0,
+    "provenance": "CAD_DERIVED",
+    "source": "active_vehicle_config.json roll_stiffness_rear = 15000 Nm/rad total"
+  },
+  "compliance_matrix_6x6": {
+    "camber_per_Fy_rad_N": 1.92e-5,
+    "camber_per_Mx_rad_Nm": 7.80e-5,
+    "toe_per_Fy_rad_N": 1.75e-6,
+    "toe_per_Mz_rad_Nm": 3.50e-5,
+    "toe_per_Fx_rad_N": 1.50e-6,
+    "lateral_deflection_per_Fy_m_N": 4.5e-6,
+    "longitudinal_deflection_per_Fx_m_N": 3.8e-6,
+    "filter_time_constant_s": 0.005,
+    "provenance": "ESTIMATED"
+  }
+}

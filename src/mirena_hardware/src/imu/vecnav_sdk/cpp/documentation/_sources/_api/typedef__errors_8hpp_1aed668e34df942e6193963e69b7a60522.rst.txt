@@ -1,0 +1,14 @@
+.. _exhale_typedef__errors_8hpp_1aed668e34df942e6193963e69b7a60522:
+
+Typedef VN::VnErr_PacketSync
+============================
+
+- Defined in :ref:`file_include_vectornav_Interface_Errors.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::VnErr_PacketSync
+   :project: VectorNav SDK

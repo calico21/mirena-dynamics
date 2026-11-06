@@ -1,0 +1,181 @@
+
+.. _file_include_vectornav_Interface_Errors.hpp:
+
+File Errors.hpp
+===============
+
+|exhale_lsh| :ref:`Parent directory <dir_include_vectornav_Interface>` (``include\vectornav\Interface``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``include\vectornav\Interface\Errors.hpp``)
+-------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_include_vectornav_Interface_Errors.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``stdint.h``
+
+- ``variant``
+
+- ``vectornav/Config.hpp``
+
+- ``vectornav/HAL/Timer.hpp``
+
+- ``vectornav/TemplateLibrary/String.hpp``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_include_vectornav_HAL_SerialTcp_Windows.hpp`
+
+- :ref:`file_include_vectornav_HAL_Serial_Base.hpp`
+
+- :ref:`file_include_vectornav_HAL_Serial_Linux.hpp`
+
+- :ref:`file_include_vectornav_Implementation_CommandProcessor.hpp`
+
+- :ref:`file_include_vectornav_Implementation_PacketDispatcher.hpp`
+
+- :ref:`file_include_vectornav_Implementation_PacketSynchronizer.hpp`
+
+- :ref:`file_include_vectornav_Interface_Exceptions.hpp`
+
+- :ref:`file_include_vectornav_Interface_GenericCommand.hpp`
+
+- :ref:`file_include_vectornav_Interface_Sensor.hpp`
+
+- :ref:`file_include_vectornav_Interface_Stream.hpp`
+
+- :ref:`file_include_vectornav_TemplateLibrary_ByteBuffer.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_CalBase.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_CalSolution.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBiasAuto.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi2d.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi3d.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp`
+
+- :ref:`file_plugins_FirmwareProgrammer_include_vectornav_Bootloader.hpp`
+
+- :ref:`file_plugins_FirmwareProgrammer_include_vectornav_FirmwareUpdater.hpp`
+
+- :ref:`file_plugins_FirmwareProgrammer_include_vectornav_VnXml.hpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_async_error`
+
+- :ref:`exhale_struct_struct_v_n_1_1_error_all`
+
+- :ref:`exhale_class_class_v_n_1_1_enum_check`
+
+- :ref:`exhale_class_class_v_n_1_1_enum_check_3_01_enum_type_01_4`
+
+- :ref:`exhale_class_class_v_n_1_1_enum_check_3_01_enum_type_00_01_v_00_01_next_8_8_8_01_4`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum__errors_8hpp_1a1176d97ac8230053c095d40f6ddd9541`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function__errors_8hpp_1a532eff0cb42e9d19d24eb64e76e8ee08`
+
+- :ref:`exhale_function__errors_8hpp_1abca10eac4c023257ce46771c06246db4`
+
+- :ref:`exhale_function__firmware_programmer_errors_8hpp_1ae60382ae233c4dd216c278b7488c2100`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define__errors_8hpp_1a7d469679789d2c3f41293c8e5e7da87e`
+
+- :ref:`exhale_define__errors_8hpp_1afb99949d54a00ebb8ddf394147c56aba`
+
+- :ref:`exhale_define__errors_8hpp_1ae513be44956eaa6258a647c54b362b02`
+
+- :ref:`exhale_define__errors_8hpp_1ae904ad6431c72085c0114c9dac1b1127`
+
+- :ref:`exhale_define__errors_8hpp_1aaa9713eb2f41e08a20eff475fe59cfb3`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef__errors_8hpp_1add8cd27f9bb274bbf1fbb34a1331a4c1`
+
+- :ref:`exhale_typedef__errors_8hpp_1a21bf15df0ad9aaadc6d9eb5832b660ea`
+
+- :ref:`exhale_typedef__errors_8hpp_1a7dca20f2e2cd86ad440d1dcd60a75858`
+
+- :ref:`exhale_typedef__errors_8hpp_1a6c4c1fa4d17a05b6fca39ff5be89bf73`
+
+- :ref:`exhale_typedef__errors_8hpp_1aed668e34df942e6193963e69b7a60522`
+
+- :ref:`exhale_typedef__errors_8hpp_1a5a9cd9f353bdb5189e29971843fa5183`
+
+- :ref:`exhale_typedef__errors_8hpp_1a3e2a1b836982eb071c4ea9f75b4ead6f`
+
+- :ref:`exhale_typedef__errors_8hpp_1ae3837d21bd03010a1e70aa2bec8a4639`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable__errors_8hpp_1a4f6b6857d8e5b5967df27225f2f80417`
+

@@ -1,0 +1,79 @@
+
+.. _file_plugins_Calibration_include_vectornav_Hsi.hpp:
+
+File Hsi.hpp
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_Calibration_include_vectornav>` (``plugins\Calibration\include\vectornav``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\Calibration\include\vectornav\Hsi.hpp``)
+--------------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_Calibration_include_vectornav_Hsi.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``cstdint``
+
+- ``vectornav/AttitudeMath.hpp``
+
+- ``vectornav/CalBase.hpp``
+
+- ``vectornav/CalSolution.hpp``
+
+- ``vectornav/HsiDipole.hpp``
+
+- ``vectornav/SampleStats.hpp``
+
+- ``vectornav/TemplateLibrary/Matrix.hpp``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi2d.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi3d.hpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__Calibration`
+
+
+Classes
+-------
+
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_config`
+
+- :ref:`exhale_struct_struct_v_n_1_1_calibration_1_1_hsi_meas`
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_hsi`
+

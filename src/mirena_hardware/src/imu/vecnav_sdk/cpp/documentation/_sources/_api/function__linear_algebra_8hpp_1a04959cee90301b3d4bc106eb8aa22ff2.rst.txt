@@ -1,0 +1,14 @@
+.. _exhale_function__linear_algebra_8hpp_1a04959cee90301b3d4bc106eb8aa22ff2:
+
+Template Function VN::Math::normalize
+=====================================
+
+- Defined in :ref:`file_plugins_Math_vectornav_LinearAlgebra.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Math::normalize(const Matrix<m, 1, T>&)
+   :project: VectorNav SDK

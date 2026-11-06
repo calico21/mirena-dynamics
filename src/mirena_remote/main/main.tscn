@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://bmd7wixsl6sp4"]
+
+[ext_resource type="Script" uid="uid://br72nd2evjbuh" path="res://main/main.gd" id="1_53q0u"]
+[ext_resource type="Shader" uid="uid://c2cuhooe3lu50" path="res://main/change_channels.gdshader" id="2_pjrb6"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xwkvk"]
+shader = ExtResource("2_pjrb6")
+shader_parameter/swap_rb = false
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_53q0u"]
+
+[node name="Main" type="Control" unique_id=1117927993]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_53q0u")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=525719265]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1862758099]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer" unique_id=342134425]
+layout_mode = 2
+
+[node name="PanelContainer2" type="PanelContainer" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=420866404]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer2" unique_id=148969241]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer2/MarginContainer" unique_id=165818889]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="GasLabel" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer2/MarginContainer/VBoxContainer" unique_id=1716042390]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Gas: "
+
+[node name="SteerLabel" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer2/MarginContainer/VBoxContainer" unique_id=521032720]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Steer"
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/MarginContainer/HBoxContainer" unique_id=941868248]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer" unique_id=1822897031]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="CameraFeed" type="TextureRect" parent="PanelContainer/MarginContainer/HBoxContainer/PanelContainer/MarginContainer" unique_id=1444579797]
+unique_name_in_owner = true
+texture_filter = 1
+material = SubResource("ShaderMaterial_xwkvk")
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = SubResource("PlaceholderTexture2D_53q0u")
+expand_mode = 1
+stretch_mode = 5

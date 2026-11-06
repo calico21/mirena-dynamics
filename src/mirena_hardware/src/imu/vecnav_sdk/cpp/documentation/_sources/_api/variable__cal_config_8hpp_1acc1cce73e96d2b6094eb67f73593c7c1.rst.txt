@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1acc1cce73e96d2b6094eb67f73593c7c1:
+
+Variable VN::Calibration::dynamicAccelBiasMinAngle
+==================================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::dynamicAccelBiasMinAngle
+   :project: VectorNav SDK

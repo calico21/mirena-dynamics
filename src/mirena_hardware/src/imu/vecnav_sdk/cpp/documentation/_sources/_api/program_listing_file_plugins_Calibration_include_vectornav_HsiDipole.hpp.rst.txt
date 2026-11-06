@@ -1,0 +1,66 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_HsiDipole.hpp:
+
+Program Listing for File HsiDipole.hpp
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_HsiDipole.hpp>` (``plugins\Calibration\include\vectornav\HsiDipole.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_HSIDIPOLE_HPP_
+   #define VN_HSIDIPOLE_HPP_
+   
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/LinearAlgebra.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   class HsiDipole
+   {
+   public:
+       HsiDipole(const double& latitude, const double& longitude) { _setDipole(latitude, longitude); }
+   
+       HsiDipole(const std::optional<double>& latitude, const std::optional<double>& longitude)
+       {
+           if (latitude.has_value() && longitude.has_value()) { _setDipole(latitude.value(), longitude.value()); }
+           else { _setDipole(0.0, 0.0); }
+       }
+   
+       Vec2f getDipole(bool updatedFlag) const noexcept { return updatedFlag ? _B : _B0; }
+       float getFieldStrength(bool updatedFlag) const noexcept { return updatedFlag ? _fieldStrength : _fieldStrength0; }
+       Vec3f getUnitMagneticFieldVector(bool updatedFlag) const noexcept
+       {
+           const Vec2f B = updatedFlag ? _B : _B0;
+           return Vec3f({B[0] / _fieldStrength, 0.0, B[1] / _fieldStrength});
+       }
+   
+       void updateDipole(float Bdown, bool updateMagnitude) noexcept;
+   
+   private:
+       // latitude and longitude inputs are in degrees
+       Vec2f _dipoleMagneticModel(const double& latitude, const double& longitude) const noexcept;
+       void _setDipole(const double& latitude, const double& longitude) noexcept
+       {
+           _B0 = _dipoleMagneticModel(latitude, longitude);
+           _fieldStrength0 = Math::norm(_B0);
+           _B = _B0;
+           _fieldStrength = _fieldStrength0;
+       }
+   
+       Vec2f _B0;              // Initial North and down components of magnetic field. Order is {North, Down}
+       Vec2f _B;               // Updated magnetic field
+       float _fieldStrength0;  // Norm of the initial magnetic field model
+       float _fieldStrength;   // Norm of the updated magnetic field model
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_HSIDIPOLE_HPP_

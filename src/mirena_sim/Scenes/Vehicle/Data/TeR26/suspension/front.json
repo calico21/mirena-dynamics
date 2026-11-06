@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "axle": "FRONT",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "spring": {
+    "spring_rate_N_m": 35030.0,
+    "motion_ratio_poly": [1.14, 2.5, 0.0],
+    "effective_wheel_rate_N_m": 26954.4,
+    "preload_force_N": 420.0,
+    "free_length_m": 0.165,
+    "max_compression_travel_m": 0.032,
+    "max_droop_travel_m": 0.028,
+    "provenance": "CAD_DERIVED",
+    "source": "ter26.py (k_spring_f = 35.03 N/mm, MR = 1.14 = d_wheel / d_spring)"
+  },
+  "damper": {
+    "model": "Horstman_Digressive_4Way",
+    "c_low_bump_N_s_m": 1800.0,
+    "c_high_bump_N_s_m": 720.0,
+    "v_knee_bump_m_s": 0.10,
+    "rebound_to_bump_ratio": 1.60,
+    "c_low_rebound_N_s_m": 2880.0,
+    "c_high_rebound_N_s_m": 1152.0,
+    "v_knee_rebound_m_s": 0.10,
+    "gas_charge_force_N": 120.0,
+    "provenance": "MEASURED",
+    "source": "ter26.py Horstman damper dyno specifications"
+  },
+  "bump_stop": {
+    "engagement_jounce_m": 0.025,
+    "linear_stiffness_N_m": 50000.0,
+    "quadratic_stiffness_N_m2": 1500000.0,
+    "damping_N_s_m": 1200.0,
+    "provenance": "CAD_DERIVED"
+  },
+  "anti_roll_bar": {
+    "wheel_rate_stiffness_N_m": 4500.0,
+    "torsion_bar_stiffness_Nm_rad": 260.0,
+    "roll_stiffness_contribution_Nm_rad": 3100.0,
+    "provenance": "CAD_DERIVED",
+    "source": "active_vehicle_config.json roll_stiffness_front = 12000 Nm/rad total"
+  },
+  "compliance_matrix_6x6": {
+    "description": "6x6 wheel-center compliance matrix C [dx,dy,dz,dtheta_x(camber),dtheta_y,dtheta_z(toe)] = C * [Fx,Fy,Fz,Mx,My,Mz] in SI units (m/N, rad/N, rad/(N*m)). Symmetric Positive Definite.",
+    "camber_per_Fy_rad_N": 2.094e-5,
+    "camber_per_Mx_rad_Nm": 8.50e-5,
+    "toe_per_Fy_rad_N": -3.49e-6,
+    "toe_per_Mz_rad_Nm": 4.20e-5,
+    "toe_per_Fx_rad_N": 1.75e-6,
+    "lateral_deflection_per_Fy_m_N": 5.0e-6,
+    "longitudinal_deflection_per_Fx_m_N": 4.0e-6,
+    "filter_time_constant_s": 0.005,
+    "provenance": "ESTIMATED",
+    "source": "ter26.py (k_camber = 1.2 deg/kN = 2.094e-5 rad/N, k_toe = -0.2 deg/kN)"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "protocol": "Run-separated train/validation split (zero data leakage)",
+  "tires": {
+    "Hoosier_16.0x7.5-10_R20_8in": {
+      "train_runs": [
+        "B2356run5.dat",
+        "B2356run7.dat",
+        "B2356run8.dat"
+      ],
+      "val_runs": [
+        "B2356run6.dat",
+        "B2356run9.dat"
+      ],
+      "metrics": {
+        "train_runs": {
+          "num_samples": 16684,
+          "Fy_RMSE_N": 213.09,
+          "Fy_MAE_N": 165.55,
+          "Fy_NRMSE_pct_of_peak": 7.28,
+          "Fy_R2": 0.9823
+        },
+        "val_runs": {
+          "num_samples": 16000,
+          "Fy_RMSE_N": 171.17,
+          "Fy_MAE_N": 128.3,
+          "Fy_NRMSE_pct_of_peak": 5.92,
+          "Fy_R2": 0.9897
+        }
+      }
+    },
+    "Hoosier_16.0x6.0-10_R20_7in": {
+      "train_runs": [
+        "B2356run13.dat",
+        "B2356run14.dat"
+      ],
+      "val_runs": [
+        "B2356run15.dat"
+      ],
+      "metrics": {
+        "train_runs": {
+          "num_samples": 8684,
+          "Fy_RMSE_N": 161.69,
+          "Fy_MAE_N": 127.44,
+          "Fy_NRMSE_pct_of_peak": 6.12,
+          "Fy_R2": 0.9896
+        },
+        "val_runs": {
+          "num_samples": 8000,
+          "Fy_RMSE_N": 148.96,
+          "Fy_MAE_N": 120.09,
+          "Fy_NRMSE_pct_of_peak": 5.67,
+          "Fy_R2": 0.9907
+        }
+      }
+    }
+  }
+}

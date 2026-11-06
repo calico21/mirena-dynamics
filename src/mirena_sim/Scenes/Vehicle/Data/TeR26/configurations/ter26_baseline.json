@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "configuration_name": "ter26_baseline",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "files": {
+    "vehicle": "../vehicle.json",
+    "mass_properties": "../mass_properties.json",
+    "inertias": "../inertias.json",
+    "hardpoints_front": "../hardpoints/front.json",
+    "hardpoints_rear": "../hardpoints/rear.json",
+    "suspension_front": "../suspension/front.json",
+    "suspension_rear": "../suspension/rear.json",
+    "powertrain": "../powertrain.json",
+    "brakes": "../brakes.json",
+    "aerodynamics": "../aerodynamics.json",
+    "tire_front": "../../Tires/HPITM/hoosier_16x75_10_r20_8in.json",
+    "tire_rear": "../../Tires/HPITM/hoosier_16x75_10_r20_8in.json"
+  },
+  "integrator": {
+    "default_dt_s": 0.0025,
+    "substeps": 2,
+    "method": "RK4_LIE",
+    "differentiable_softplus_beta": 500.0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "vehicle_id": "TeR26",
+  "coordinate_frame": "ISO_8855_X_FWD_Y_LEFT_Z_UP",
+  "units_system": "SI_M_KG_S_RAD",
+  "hydraulic_brakes": {
+    "max_total_brake_torque_Nm": 1600.0,
+    "front_brake_bias_fraction": 0.60,
+    "rear_brake_bias_fraction": 0.40,
+    "max_front_wheel_torque_Nm": 480.0,
+    "max_rear_wheel_torque_Nm": 320.0,
+    "disc_effective_radius_front_m": 0.088,
+    "disc_effective_radius_rear_m": 0.082,
+    "caliper_piston_area_front_m2": 0.00101,
+    "caliper_piston_area_rear_m2": 0.00072,
+    "pad_friction_mu": 0.45,
+    "hydraulic_time_constant_s": 0.015,
+    "caliper_mounting": "UPRIGHT_OUTBOARD",
+    "provenance": "CAD_DERIVED",
+    "source": "active_vehicle_config.json (max_brake_torque = 1600 Nm, brake_bias_front = 0.60)"
+  },
+  "ebs_emergency_brake": {
+    "ebs_line_pressure_bar": 80.0,
+    "ebs_total_torque_Nm": 2000.0,
+    "ebs_engagement_time_constant_s": 0.025,
+    "provenance": "MEASURED",
+    "source": "FS Driverless EBS pneumatic/hydraulic accumulator spec"
+  }
+}

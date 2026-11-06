@@ -1,0 +1,36 @@
+.. _dir_plugins_Calibration_include_vectornav:
+
+
+Directory vectornav
+===================
+
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_Calibration_include>` (``plugins\Calibration\include``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``plugins\Calibration\include\vectornav``
+
+
+Files
+-----
+
+- :ref:`file_plugins_Calibration_include_vectornav_CalBase.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_CalError.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_CalSolution.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_CalStream.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBiasAuto.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi2d.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi3d.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_HsiDipole.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_HsiPatch.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp`
+- :ref:`file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp`
+
+

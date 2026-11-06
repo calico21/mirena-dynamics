@@ -1,0 +1,14 @@
+# Validation Plan, Test Matrix, and Correlation Protocol — TeR26
+
+## 1. Verification & Validation Hierarchy
+
+| Level | Scope | Executable Target | Acceptance Criteria |
+| :--- | :--- | :--- | :--- |
+| **L1: Mathematical & Lie-Group Unit Tests** | $SO(3)$, $SE(3)$, skew/vee, Rodrigues, right Jacobian $J_r(\boldsymbol{\psi})$, spatial inertia transforms | `Native/build/test_ter26_suite` (`[math]`) | $R^T R = I$ ($\|R^T R - I\|_\infty < 10^{-14}$), $\log(\exp([\boldsymbol{\psi}]_\times)) = [\boldsymbol{\psi}]_\times$, analytical vs. FD Jacobians $< 10^{-7}$. |
+| **L2: 3D Suspension Kinematics & 6x6 Joint Loads** | 16-point closure $\Phi(x_u, \theta_r, \delta) = 0$, implicit velocity/acceleration, 6x6 link equilibrium | `Native/build/test_ter26_suite` (`[kinematics]`) | $\|\Phi\|_\infty < 10^{-12}\text{ m}^2$, implicit $\dot{x}_u$ matches FD within $10^{-7}$, 6x6 link forces satisfy $\sum \mathbf{F} = \mathbf{0}$ and $\sum \mathbf{M} = \mathbf{0}$ to $< 10^{-10}\text{ N}$. |
+| **L3: HPITM Tire & Standstill Slope Holding** | MF6.2 pure/combined slip, bounded neural correction, relaxation length, bristle static friction | `Native/build/test_ter26_suite` (`[tire]`) | Zero force at zero slip ($|F_y(0,0)| < 10^{-12}\text{ N}$), zero NaN across grid, TTC Round 9 validation $R^2 > 0.96$, slope standstill drift $< 1\text{ mm/s}$. |
+| **L4: 14-DOF Multibody & Planetary Powertrain** | $M(q) = M(q)^T \succ 0$, energy conservation, static equilibrium, planetary FBD & $I_{\text{eq}}$ | `Native/build/test_ter26_suite` (`[multibody]`, `[powertrain]`) | $M(q)$ symmetric PD, unforced energy drift $< 10^{-4}$, flat static vertical forces $\sum F_{z,i} = m g$ within $0.1\%$, impulse conservation exact. |
+| **L5: Differentiability & Sensitivities** | Analytical/forward sensitivity vs. central finite differences | `Native/build/test_ter26_suite` (`[sensitivity]`) | Relative gradient error $< 10^{-4}$ across state and parameter Jacobians. |
+| **L6: Real-Time 400 Hz Performance** | 10,000 steps of full 14-DOF + 3D kinematics + HPITM at $\Delta t = 2.5\text{ ms}$ | `Native/build/test_ter26_suite` (`[benchmark]`) | Mean, P95, and P99 step times strictly $< 2.50\text{ ms}$ ($400\text{ Hz}$ budget). |
+| **L7: Godot 4.7 Headless Integration** | GDExtension loading, `MirenaCar` stepping, cone collision impulse, sensor (`RosIns`) compatibility | `godot --headless --path src/mirena_sim -s Scenes/Vehicle/Tests/integration/run_godot_integration_tests.gd` | Zero script/GDExtension errors, vehicle settles to static ride height, accelerates, steers, brakes, and exchanges cone impulses. |
+| **L8: Real Telemetry Open-Loop Correlation** | Continuous open-loop replay against `imu_compare/real_*.csv` | `/home/alexr/project_gp_env/bin/python Tools/validation/correlate_telemetry.py` | Full time-domain & metric report (RMSE, MAE, Bias, Pearson $r$, gain, phase lag) without hidden state resets. |

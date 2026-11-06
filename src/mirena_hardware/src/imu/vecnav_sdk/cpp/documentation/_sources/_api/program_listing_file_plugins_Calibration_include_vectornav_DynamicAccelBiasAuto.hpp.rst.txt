@@ -1,0 +1,100 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_DynamicAccelBiasAuto.hpp:
+
+Program Listing for File DynamicAccelBiasAuto.hpp
+=================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_DynamicAccelBiasAuto.hpp>` (``plugins\Calibration\include\vectornav\DynamicAccelBiasAuto.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_DYNAMICACCELBIASAUTO_HPP_
+   #define VN_DYNAMICACCELBIASAUTO_HPP_
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/DynamicAccelBias.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/SampleStats.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct DynamicAccelBiasAutoConfig : public DynamicAccelBiasConfig
+   {
+       float angRateThreshold = 3.0f;  // deg
+       float dynamicPadding = 0.5f;    // sec
+   };
+   
+   class DynamicAccelBiasAuto : public CalBase<DynamicAccelBiasMeas, DynamicAccelBiasAutoConfig, dynamicAccelBiasFom.size(), dynamicAccBiasAutoBufferSize>
+   {
+   public:
+       DynamicAccelBiasAuto(const DynamicAccelBiasAutoConfig& config) : CalBase(config, dynamicAccelBiasFom)
+       {
+           for (DynamicAccelBias& cal : _calibrations) { cal._config = static_cast<DynamicAccelBiasConfig&>(_config); }
+       }
+   
+       using CalBase::addMeasurement;
+       ErrorCal addMeasurement(const float& dt, const Vec3f& dTheta, const Vec3f& dVel) { return addMeasurement({{dt, dTheta}, dVel}); }
+       ErrorCal addMeasurement(const DeltaTheta& dTheta, const Vec3f& dVel) { return addMeasurement({dTheta, dVel}); }
+   
+       std::optional<DynamicAccelBias> getCalibration(uint16_t ind) const noexcept
+       {
+           if (ind <= _calCnt) { return _calibrations[ind]; }
+           else { return std::nullopt; }
+       }
+   
+       DynamicAccelBias getActiveCalibration() const noexcept { return _activeCal; }
+   
+       ErrorCal solve() noexcept override;
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::IMU::DeltaThetaVelConfig dtvConfig;
+   
+           static constexpr size_t NumRegisters = 2;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &dtvConfig}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.common.deltas = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::dynamicAccelBiasAutoMeasRate;
+   
+           storage.dtvConfig.accelCompensation = Registers::IMU::DeltaThetaVelConfig::AccelCompensation::None;
+           storage.dtvConfig.gyroCompensation = Registers::IMU::DeltaThetaVelConfig::GyroCompensation::None;
+           storage.dtvConfig.earthRateCompensation = Registers::IMU::DeltaThetaVelConfig::EarthRateCompensation::None;
+           storage.dtvConfig.integrationFrame = Registers::IMU::DeltaThetaVelConfig::IntegrationFrame::Body;
+           storage.dtvConfig.resv = 0;
+       }
+   
+   private:
+       ErrorCal _addMeasurement() noexcept override;
+   
+       std::optional<DynamicAccelBiasMeas> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override
+       {
+           std::optional<DeltaTheta> dTheta = cdMeas.imu.deltaTheta;
+           std::optional<Vec3f> dVel = cdMeas.imu.deltaVel;
+           if (dTheta.has_value() && dVel.has_value()) { return std::make_optional(DynamicAccelBiasMeas{dTheta.value(), dVel.value()}); }
+           else { return std::nullopt; }
+       }
+   
+       std::array<DynamicAccelBias, dynamicAccBiasAutoMaxNumCals> _calibrations;
+       uint16_t _calCnt = 0;
+   
+       DynamicAccelBias _activeCal{DynamicAccelBiasConfig{_config.gval}};
+       float _dynamicPaddingTimer = 0.0f;
+       bool _addToStaticBuffer = true;
+       uint16_t _paddingIndex = 0;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_DYNAMICACCELBIASAUTO_HPP_

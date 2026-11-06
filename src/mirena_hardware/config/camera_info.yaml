@@ -1,0 +1,54 @@
+image_width: 640
+image_height: 480
+camera_name: mirena_camera
+camera_matrix:
+  rows: 3
+  cols: 3
+  data:
+  - 526.8495976438526
+  - 0.0
+  - 324.8831803562954
+  - 0.0
+  - 529.1214004849196
+  - 241.76168293208593
+  - 0.0
+  - 0.0
+  - 1.0
+distortion_model: equidistant
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data:
+  - -0.08076739659887858
+  - 0.14279943818695054
+  - -0.47134798529624633
+  - 0.567041857799674
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data:
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+projection_matrix:
+  rows: 3
+  cols: 4
+  data:
+  - 526.8495976438526
+  - 0.0
+  - 324.8831803562954
+  - 0.0
+  - 0.0
+  - 529.1214004849196
+  - 241.76168293208593
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0

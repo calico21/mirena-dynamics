@@ -1,0 +1,14 @@
+.. _exhale_function__stream_8hpp_1a73e7c702ae413728c2377aed1776ed30:
+
+Function VN::operator<<(std::ostream&, const time_point&)
+=========================================================
+
+- Defined in :ref:`file_include_vectornav_Interface_Stream.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::operator<<(std::ostream&, const time_point&)
+   :project: VectorNav SDK

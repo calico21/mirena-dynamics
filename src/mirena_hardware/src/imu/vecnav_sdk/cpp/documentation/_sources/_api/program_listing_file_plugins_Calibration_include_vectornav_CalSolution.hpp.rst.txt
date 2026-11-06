@@ -1,0 +1,201 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalSolution.hpp:
+
+Program Listing for File CalSolution.hpp
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalSolution.hpp>` (``plugins\Calibration\include\vectornav\CalSolution.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALSOLUTION_HPP_
+   #define VN_CALSOLUTION_HPP_
+   
+   #include <cstdint>
+   
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/LinearAlgebra.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   #include "vectornav/TemplateLibrary/String.hpp"
+   
+   #define FOMNAMEMAXLENGTH 40
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct ImuCal
+   {
+       Mat3f scale;
+       Vec3f bias;
+   
+       ImuCal() { scale = Mat3f::identity(); }
+       ImuCal(Mat3f S, Vec3f b)
+       {
+           scale = S;
+           bias = b;
+       }
+       ImuCal(Vec3f b)
+       {
+           scale = Mat3f::identity();
+           bias = b;
+       }
+   };
+   
+   enum class FomScore
+   {
+       GREAT,
+       GOOD,
+       FAIR,
+       POOR,
+   };
+   
+   struct FomDef
+   {
+       char name[FOMNAMEMAXLENGTH];
+       float greatThresh;
+       float goodThresh;
+       float fairThresh;
+       float poorVal;
+       bool threshAsMin;
+   };
+   
+   inline static std::string_view fomScoreToString(FomScore score)
+   {
+       switch (score)
+       {
+           case FomScore::GREAT:
+               return "Great";
+           case FomScore::GOOD:
+               return "Good";
+           case FomScore::FAIR:
+               return "Fair";
+           case FomScore::POOR:
+               return "Poor";
+           default:
+               return "Error";
+       }
+   }
+   
+   template <uint16_t nFom>
+   class CalSolution
+   {
+   public:
+       CalSolution(const std::array<FomDef, nFom>& fomDef) : _foms(fomDef) {}
+   
+       class CalFom
+       {
+       public:
+           CalFom(const std::array<FomDef, nFom>& fomDef)
+           {
+               for (uint16_t i = 0; i < nFom; i++)
+               {
+                   _def[i] = const_cast<FomDef*>(&fomDef[i]);
+                   _setFom(_def[i]->poorVal, i);
+               }
+           }
+   
+           std::array<FomScore, nFom> getScores() const noexcept { return _fomScore; }
+           std::array<float, nFom> getVals() const noexcept { return _fom; }
+           std::array<FomDef*, nFom> getDefs() const noexcept { return _def; }
+   
+           friend class CalSolution;
+   
+       private:
+           std::array<FomDef*, nFom> _def;
+           std::array<float, nFom> _fom;
+           std::array<FomScore, nFom> _fomScore;
+   
+           void _setFom(float fom, uint16_t ind) noexcept
+           {
+               VN_ASSERT(ind < nFom);
+               _fom[ind] = fom;
+               _setFomScore(ind);
+           }
+   
+           void _setFomScore(uint16_t ind) noexcept
+           {
+               float asMin = 1.0f;
+               if (_def[ind]->threshAsMin) { asMin = -1.0f; }
+               if (asMin * _fom[ind] < asMin * _def[ind]->greatThresh) { _fomScore[ind] = FomScore::GREAT; }
+               else if (asMin * _fom[ind] < asMin * _def[ind]->goodThresh) { _fomScore[ind] = FomScore::GOOD; }
+               else if (asMin * _fom[ind] < asMin * _def[ind]->fairThresh) { _fomScore[ind] = FomScore::FAIR; }
+               else { _fomScore[ind] = FomScore::POOR; }
+           }
+       };
+   
+       inline std::optional<Vec3f> getGyroBias() const noexcept { return _gyroBias; }
+       inline std::optional<Vec3f> getAccelBias() const noexcept { return _accelBias; }
+       inline std::optional<Mat3f> getSI() const noexcept { return _si; }
+       inline std::optional<Vec3f> getHI() const noexcept { return _hi; }
+       inline std::optional<Mat3f> getRFR() const noexcept { return _rfr; }
+   
+       inline CalFom getFiguresOfMerit() const noexcept { return _foms; }
+       inline std::array<FomScore, nFom> getFomScores() const noexcept { return _foms.getScores(); }
+       inline std::array<float, nFom> getFomVals() const noexcept { return _foms.getVals(); }
+       inline std::array<FomDef*, nFom> getFomDefs() const noexcept { return _foms.getDefs(); }
+   
+       inline std::optional<ImuCal> getAccelCal(const ImuCal& initAccCal, const Mat3f& initRfr) const
+       {
+           if (!_accelBias.has_value()) { return std::nullopt; }
+           return _finalizeCal(initAccCal, initRfr, ImuCal{_accelBias.value()});
+       }
+   
+       inline std::optional<ImuCal> getGyroCal(const ImuCal& initGyroCal, const Mat3f& initRfr) const
+       {
+           if (!_gyroBias.has_value()) { return std::nullopt; }
+           return _finalizeCal(initGyroCal, initRfr, ImuCal{_gyroBias.value()});
+       }
+   
+       inline std::optional<ImuCal> getMagCal(const ImuCal& initMagCal, const Mat3f& initRfr) const
+       {
+           if (!_hi.has_value()) { return std::nullopt; }
+           ImuCal hsi{_hi.value()};
+           if (_si.has_value()) { hsi.scale = _si.value(); }
+           return _finalizeCal(initMagCal, initRfr, hsi);
+       }
+   
+   protected:
+       template <typename MeasType, typename ConfigType, uint16_t nFomBase, uint16_t MaxNumMeas>
+       friend class CalBase;
+   
+       inline void _setGyroBias(Vec3f gyroBias) { _gyroBias = gyroBias; }
+       inline void _setAccelBias(Vec3f accelBias) { _accelBias = accelBias; }
+       inline void _setHSI(Mat3f si, Vec3f hi)
+       {
+           _si = si;
+           _hi = hi;
+       }
+       inline void _setRFR(Mat3f rfr) { _rfr = rfr; }
+   
+       inline void _setFom(float fom, uint16_t ind) noexcept { _foms._setFom(fom, ind); }
+   
+   private:
+       std::optional<Vec3f> _gyroBias;
+       std::optional<Vec3f> _accelBias;
+       std::optional<Mat3f> _si;
+       std::optional<Vec3f> _hi;
+       std::optional<Mat3f> _rfr;
+       CalFom _foms;
+   
+       std::optional<ImuCal> _finalizeCal(const ImuCal& initCal, const Mat3f& initRfr, const ImuCal& sol) const
+       {
+           ImuCal ret;
+   
+           std::optional<Vec3f> newBias = Math::solveLinearSystemLU(initCal.scale, Math::transpose(initRfr) * sol.bias);
+           if (!newBias.has_value()) { return std::nullopt; }
+           ret.bias = initCal.bias + newBias.value();
+   
+           ret.scale = Math::transpose(initRfr) * sol.scale * initRfr * initCal.scale;
+   
+           return std::make_optional<ImuCal>(ret);
+       }
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_CALSOLUTION_HPP_

@@ -1,0 +1,14 @@
+.. _exhale_typedef__errors_8hpp_1a6c4c1fa4d17a05b6fca39ff5be89bf73:
+
+Typedef VN::VnErr_File
+======================
+
+- Defined in :ref:`file_include_vectornav_Interface_Errors.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::VnErr_File
+   :project: VectorNav SDK

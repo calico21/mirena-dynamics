@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a5ad3817d95170d7fe0aae7b1c078813f:
+
+Variable VN::Calibration::gref
+==============================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::gref
+   :project: VectorNav SDK
