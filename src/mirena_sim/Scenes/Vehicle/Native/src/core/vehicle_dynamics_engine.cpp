@@ -297,6 +297,10 @@ VehicleStepResult VehicleDynamicsEngine::evaluate_derivatives(
     C.segment<3>(0) = state.omega_b.cross(params_.sprung_mass_kg * state.v_b);
     C.segment<3>(3) = state.omega_b.cross(params_.sprung_inertia_b * state.omega_b);
 
+    const Vec3 g_w_comp(0.0, 0.0, -params_.gravity_m_s2);
+    Vec14 Q_comp_grav = Vec14::Zero();
+    double V_comp_grav_J = 0.0;
+
     // 3b. Unsprung Upright + Wheel + Reflected Drivetrain Contributions (Corners i = 0..3)
     for (int i = 0; i < 4; ++i) {
         const double m_u  = params_.unsprung_mass_kg[i];
@@ -363,10 +367,16 @@ VehicleStepResult VehicleDynamicsEngine::evaluate_derivatives(
 
         // Optional Component-Level Suspension Link + Rocker Inertial & Convective Contributions (§1.3 & §2.1)
         if (params_.component_inertias.include_component_inertias) {
-            double T_comp_dummy = 0.0;
+            double T_comp_J = 0.0;
+            double V_comp_J = 0.0;
+            Vec14 Q_comp_i = Vec14::Zero();
             assemble_corner_component_dynamics(
                 i, params_.hardpoints[i], params_.component_inertias, kin[i],
-                state.v_b, state.omega_b, z_dot, M, C, T_comp_dummy);
+                params_.h_cg_m, state.p_w, state.R_wb,
+                state.v_b, state.omega_b, z_dot, g_w_comp,
+                M, C, Q_comp_i, T_comp_J, V_comp_J, nullptr);
+            Q_comp_grav += Q_comp_i;
+            V_comp_grav_J += V_comp_J;
         }
     }
 
@@ -385,6 +395,8 @@ VehicleStepResult VehicleDynamicsEngine::evaluate_derivatives(
         Q.segment<3>(3) += r_i.cross(F_grav_u);
         Q(6 + i)        += kin[i].dp_wc_dz.dot(F_grav_u);
     }
+
+    Q += Q_comp_grav;
 
     // 4b. Aerodynamic Forces & Moments (Ride-Height, Pitch, Roll, and Sideslip Sensitive)
     const double vx = state.v_b.x();
@@ -869,9 +881,11 @@ VehicleStepResult VehicleDynamicsEngine::evaluate_derivatives(
     for (int i = 0; i < 4; ++i) v_vec(10 + i) = state.omega_wheel[i];
 
     const double T_kin = 0.5 * v_vec.dot(M * v_vec);
-    double V_pot = params_.sprung_mass_kg * params_.gravity_m_s2 * state.p_w.z() + V_arb_energy_J;
+    double V_pot = params_.sprung_mass_kg * params_.gravity_m_s2 * state.p_w.z()
+                 + V_arb_energy_J + V_comp_grav_J;
     for (int i = 0; i < 4; ++i) {
-        const Vec3 p_wc_w = state.p_w + state.R_wb * kin[i].wheel_center_b;
+        const Vec3 p_wc_w = state.p_w + state.R_wb *
+            (kin[i].wheel_center_b - Vec3(0.0, 0.0, params_.h_cg_m));
         V_pot += params_.unsprung_mass_kg[i] * params_.gravity_m_s2 * p_wc_w.z();
         const auto& sp = (i < 2) ? params_.susp_front : params_.susp_rear;
         const double xs = kin[i].spring_deflection_m;
@@ -1095,6 +1109,137 @@ VehicleStepResult VehicleDynamicsEngine::step_vehicle_dynamics(
     return last_eval;
 }
 
+ComponentMultibodyEquivalenceReport VehicleDynamicsEngine::compute_component_equivalence_report(
+    const VehicleState& state,
+    const ControlInputs& controls,
+    const std::array<GroundContactQuery, 4>& ground) const
+{
+    ComponentMultibodyEquivalenceReport rep{};
+    const VehicleStepResult res = evaluate_derivatives(state, controls, ground, ExternalInteraction{}, 0.0025);
+
+    const double delta_rack = std::clamp(state.steering_rack_angle_rad,
+                                         -params_.max_steering_angle_rad,
+                                         params_.max_steering_angle_rad);
+    std::array<double, 4> delta_corner{0.0, 0.0, 0.0, 0.0};
+    if (std::abs(delta_rack) > 1e-7) {
+        const double tan_d = std::tan(delta_rack);
+        const double half_track_over_L = (0.5 * params_.track_front_m * params_.ackermann_factor) / params_.wheelbase_m;
+        delta_corner[FL] = -std::atan(tan_d / std::max(0.2, 1.0 - tan_d * half_track_over_L));
+        delta_corner[FR] = -std::atan(tan_d / std::max(0.2, 1.0 + tan_d * half_track_over_L));
+    }
+
+    const Vec3 g_w(0.0, 0.0, -params_.gravity_m_s2);
+    const Vec3 z_cg(0.0, 0.0, params_.h_cg_m);
+
+    Vec14 v_gen = Vec14::Zero();
+    v_gen.segment<3>(0) = state.v_b;
+    v_gen.segment<3>(3) = state.omega_b;
+    for (int i = 0; i < 4; ++i) {
+        v_gen(6 + i)  = state.v_susp[i];
+        v_gen(10 + i) = state.omega_wheel[i];
+    }
+
+    // El marco de cada cuerpo se toma igual al del chasis (R_wb): todas las
+    // velocidades e inercias del modelo reducido están expresadas en F_B.
+    auto add_body = [&](const std::string& name, double mass, const Mat3& inertia_b,
+                        const Vec3& r_cm_b, const Vec3& v_lin_b, const Vec3& omega_b) {
+        RigidBodyComponent b;
+        b.id            = static_cast<int>(rep.bodies.size());
+        b.name          = name;
+        b.mass_kg       = mass;
+        b.com_local_m   = Vec3::Zero();
+        b.inertia_com_b = inertia_b;
+        b.pos_w         = state.p_w + state.R_wb * r_cm_b;
+        b.rot_wb        = state.R_wb;
+        b.vel_b         = v_lin_b;
+        b.omega_b       = omega_b;
+        rep.bodies.push_back(b);
+    };
+
+    add_body("Chassis", params_.sprung_mass_kg, params_.sprung_inertia_b,
+             Vec3::Zero(), state.v_b, state.omega_b);
+
+    const char* names[4] = {"FL", "FR", "RL", "RR"};
+    double T_drivetrain_J = 0.0;
+    double T_comp_J = 0.0;
+    double V_comp_J = 0.0;
+
+    for (int i = 0; i < 4; ++i) {
+        const auto kin = kin_solvers_[i].solve(state.q_susp[i], delta_corner[i]);
+        const std::string prefix = std::string(names[i]) + "_";
+
+        const Vec3 r_i   = kin.wheel_center_b - z_cg;
+        const double zd  = state.v_susp[i];
+        const double ws  = state.omega_wheel[i];
+        const Vec3& s_i  = kin.spindle_axis_b;
+
+        const Vec3 v_up    = state.v_b + state.omega_b.cross(r_i) + kin.dp_wc_dz * zd;
+        const Vec3 w_up    = state.omega_b + kin.domega_u_dz * zd;
+        const Vec3 w_wheel = w_up + s_i * ws;
+
+        const Mat3 I_u_b = kin.R_upright * params_.upright_inertia[i] * kin.R_upright.transpose();
+        const double I_spin = params_.wheel_spin_inertia_kg_m2[i];
+        const double I_diam = params_.wheel_diametral_inertia_kg_m2[i];
+        const Mat3 I_w_b = I_diam * Mat3::Identity() + (I_spin - I_diam) * (s_i * s_i.transpose());
+
+        // Masa no suspendida concentrada en el centro de rueda; la rueda aporta solo inercia.
+        add_body(prefix + "Upright", params_.unsprung_mass_kg[i], I_u_b, r_i, v_up, w_up);
+        add_body(prefix + "Wheel",   0.0,                          I_w_b, r_i, v_up, w_wheel);
+
+        // Inercia reflejada del tren motriz: acopla solo la coordenada de giro (10+i).
+        T_drivetrain_J += 0.5 * params_.powertrain.reflected_inertia_at_wheel(i) * ws * ws;
+
+        if (params_.component_inertias.include_component_inertias) {
+            Mat14 M_unused = Mat14::Zero();
+            Vec14 C_unused = Vec14::Zero();
+            Vec14 Q_unused = Vec14::Zero();
+            double T_c = 0.0, V_c = 0.0;
+            assemble_corner_component_dynamics(
+                i, params_.hardpoints[i], params_.component_inertias, kin,
+                params_.h_cg_m, state.p_w, state.R_wb,
+                state.v_b, state.omega_b, zd, g_w,
+                M_unused, C_unused, Q_unused, T_c, V_c, &rep.bodies);
+            T_comp_J += T_c;
+            V_comp_J += V_c;
+        }
+    }
+    (void)T_comp_J;
+    (void)V_comp_J;
+
+    // --- Lado de cuerpos ---
+    for (const auto& b : rep.bodies) {
+        rep.T_bodies_sum_J         += b.kinetic_energy();
+        rep.V_grav_bodies_sum_J    += b.potential_energy(g_w);
+        const Vec3 r_b = state.R_wb.transpose() * (b.pos_w - state.p_w);
+        const Vec3 p_b = b.mass_kg * b.vel_b;
+        rep.linear_momentum_bodies_b  += p_b;
+        rep.angular_momentum_bodies_b += r_b.cross(p_b) + b.inertia_com_b * b.omega_b;
+    }
+    rep.T_bodies_sum_J += T_drivetrain_J;
+
+    // --- Lado reducido ---
+    const Vec14 Mv = res.mass_matrix * v_gen;
+    rep.T_reduced_quad_J = 0.5 * v_gen.dot(Mv);
+    rep.linear_momentum_reduced_b  = Mv.segment<3>(0);
+    rep.angular_momentum_reduced_b = Mv.segment<3>(3);
+
+    // V reducido: misma fórmula que el balance de energía del motor
+    // (chasis + upright en centro de rueda) más el potencial de los componentes.
+    rep.V_grav_reduced_J = params_.sprung_mass_kg * params_.gravity_m_s2 * state.p_w.z();
+    for (int i = 0; i < 4; ++i) {
+        const auto kin = kin_solvers_[i].solve(state.q_susp[i], delta_corner[i]);
+        const Vec3 p_wc_w = state.p_w + state.R_wb * (kin.wheel_center_b - z_cg);
+        rep.V_grav_reduced_J += params_.unsprung_mass_kg[i] * params_.gravity_m_s2 * p_wc_w.z();
+    }
+    rep.V_grav_reduced_J += V_comp_J;
+
+    rep.kinetic_energy_abs_diff_J   = std::abs(rep.T_bodies_sum_J - rep.T_reduced_quad_J);
+    rep.potential_energy_abs_diff_J = std::abs(rep.V_grav_bodies_sum_J - rep.V_grav_reduced_J);
+    rep.linear_momentum_diff_norm   = (rep.linear_momentum_bodies_b - rep.linear_momentum_reduced_b).norm();
+    rep.angular_momentum_diff_norm  = (rep.angular_momentum_bodies_b - rep.angular_momentum_reduced_b).norm();
+    return rep;
+}
+
 void VehicleDynamicsEngine::compute_linearization_jacobians(
     const VehicleState& state,
     const ControlInputs& controls,
@@ -1234,6 +1379,9 @@ std::array<CornerStructuralLoadsANSYS, 4> VehicleDynamicsEngine::compute_ansys_c
 
     const Vec3 g_b = state.R_wb.transpose() * Vec3(0.0, 0.0, -params_.gravity_m_s2);
     const Vec3 alpha_chassis_b = step_res.generalized_accel.segment<3>(3);
+    // dv_b/dt es derivada en frame rotatorio; la aceleración en F_B añade ω×v.
+    const Vec3 a_chassis_b = step_res.generalized_accel.segment<3>(0)
+                           + state.omega_b.cross(state.v_b);
 
     std::array<CornerStructuralLoadsANSYS, 4> loads{};
     for (int i = 0; i < 4; ++i) {
@@ -1248,20 +1396,28 @@ std::array<CornerStructuralLoadsANSYS, 4> VehicleDynamicsEngine::compute_ansys_c
         const Vec3 e_y_b = state.R_wb.transpose() * e_y_w;
 
         const auto& cd = step_res.corners[i];
-        const Vec3 F_tire_b = cd.Fx_N * e_x_b + cd.Fy_N * e_y_b + cd.Fz_N * n_b;
+        const Vec3 F_tire_b  = cd.Fx_N * e_x_b + cd.Fy_N * e_y_b + cd.Fz_N * n_b;
         const Vec3 M_patch_b = cd.Mx_Nm * e_x_b + cd.My_Nm * e_y_b + cd.Mz_Nm * n_b;
         const Vec3 r_wc_to_cp_b = -cd.effective_rolling_radius_m * n_b;
-        const Vec3 M_total_at_wc_b = M_patch_b + r_wc_to_cp_b.cross(F_tire_b)
-                                   + (-cd.brake_torque_wheel_Nm) * kin_i.spindle_axis_b;
+        // Sin par de freno/tracción: la función lo suma desde sus argumentos
+        // dedicados; incluirlo aquí lo contaría dos veces.
+        const Vec3 M_tire_at_wc_b = M_patch_b + r_wc_to_cp_b.cross(F_tire_b);
+
+        const Mat3 I_upright_b = kin_i.R_upright * params_.upright_inertia[i]
+                               * kin_i.R_upright.transpose();
 
         loads[i] = compute_dynamic_structural_loads_ansys(
-            i, params_.hardpoints[i], params_.component_inertias,
-            params_.unsprung_mass_kg[i], params_.upright_inertia[i],
+            i, params_.hardpoints[i], params_.component_inertias, params_.h_cg_m,
+            params_.unsprung_mass_kg[i], I_upright_b,
             params_.wheel_spin_inertia_kg_m2[i], state.omega_wheel[i],
-            kin_i, cd.joint_reactions, F_tire_b, M_total_at_wc_b,
-            -cd.brake_torque_wheel_Nm, cd.upright_reaction_torque_Nm + cd.brake_torque_wheel_Nm,
-            step_res.generalized_accel.segment<3>(0), alpha_chassis_b, state.omega_b,
-            state.v_susp[i], step_res.generalized_accel(6 + i), g_b);
+            kin_i, kin_solvers_[i], delta_corner[i],
+            cd.arb_force_N,
+            F_tire_b, M_tire_at_wc_b,
+            -cd.brake_torque_wheel_Nm,
+            cd.upright_reaction_torque_Nm + cd.brake_torque_wheel_Nm,
+            a_chassis_b, alpha_chassis_b, state.omega_b,
+            state.v_susp[i], step_res.generalized_accel(6 + i),
+            g_b);
     }
     return loads;
 }

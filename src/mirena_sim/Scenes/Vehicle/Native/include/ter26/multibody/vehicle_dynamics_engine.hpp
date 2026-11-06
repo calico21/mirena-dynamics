@@ -255,6 +255,18 @@ public:
         const ControlInputs& controls,
         const std::array<GroundContactQuery, 4>& ground) const noexcept;
 
+        /**
+     * @brief Auditoría de equivalencia entre el modelo reducido de 14 DOF y la
+     *        descomposición explícita en cuerpos rígidos (chasis + 4x[upright, rueda]
+     *        + 4x5 componentes de suspensión = 29 cuerpos con inercias de componentes
+     *        activadas; 9 si están desactivadas).
+     *        Compara energía cinética, energía potencial gravitatoria y los momentos
+     *        lineal y angular en F_B contra 0.5 v^T M(q) v y (M(q) v)[0..5].
+     */
+    ComponentMultibodyEquivalenceReport compute_component_equivalence_report(
+        const VehicleState& state,
+        const ControlInputs& controls,
+        const std::array<GroundContactQuery, 4>& ground) const;
 private:
     VehicleParameters params_;
     std::array<SuspensionKinematicsSolver, 4> kin_solvers_;

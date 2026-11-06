@@ -8,6 +8,7 @@
 #include "ter26/multibody/component_multibody.hpp"
 #include <cmath>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <algorithm>
 

@@ -922,6 +922,49 @@ void test_l12_parameter_sensitivities_jvp_vjp_and_c_abi() {
                "duality_err = " + std::to_string(duality_err) + ", c_abi_err = " + std::to_string(c_abi_err));
 }
 
+void test_l13_component_equivalence_audit() {
+    std::cout << "\n=== [L13] 29-Body Component Decomposition vs Reduced 14-DOF Equivalence (T, V, P, L) ===\n";
+
+    auto params = VehicleDynamicsEngine::default_ter26_parameters();
+    params.component_inertias.include_component_inertias = true;
+    VehicleDynamicsEngine eng(params);
+
+    std::array<GroundContactQuery, 4> flat_ground{};
+    for (int i = 0; i < 4; ++i) flat_ground[i].normal_w = Vec3::UnitZ();
+
+    VehicleState s = eng.compute_static_equilibrium(Vec3(0.0, 0.0, 0.305), Vec3::Zero(), &flat_ground);
+    s.R_wb        = math::rpy_to_rot_iso(Vec3(0.03, -0.02, 0.40));
+    s.v_b         = Vec3(14.0, -0.8, 0.10);
+    s.omega_b     = Vec3(0.20, -0.10, 0.90);
+    s.q_susp      = {0.012, -0.008, 0.006, -0.004};
+    s.v_susp      = {0.30, -0.25, 0.20, -0.15};
+    s.omega_wheel = {68.0, 68.0, 69.0, 69.0};
+    s.steering_rack_angle_rad = 0.10;
+
+    ControlInputs u{};
+    u.throttle = 0.30;
+
+    const auto rep = eng.compute_component_equivalence_report(s, u, flat_ground);
+    const double T_tol = 1e-10 * std::max(1.0, rep.T_reduced_quad_J);
+    const double P_tol = 1e-10 * std::max(1.0, rep.linear_momentum_reduced_b.norm());
+    const double L_tol = 1e-10 * std::max(1.0, rep.angular_momentum_reduced_b.norm());
+
+    check_cond(rep.bodies.size() == 29,
+               "Component decomposition builds 29 explicit rigid bodies (1 chassis + 4x[upright, wheel, 5 links])",
+               "n_bodies = " + std::to_string(rep.bodies.size()));
+    check_cond(rep.kinetic_energy_abs_diff_J < T_tol,
+               "Kinetic energy: sum_k 0.5 V_k^T M_k V_k + T_rotors == 0.5 v^T M(q) v",
+               "T_bodies = " + std::to_string(rep.T_bodies_sum_J) + " J, T_reduced = "
+               + std::to_string(rep.T_reduced_quad_J) + " J, |dT| = " + std::to_string(rep.kinetic_energy_abs_diff_J));
+    check_cond(rep.linear_momentum_diff_norm < P_tol && rep.angular_momentum_diff_norm < L_tol,
+               "Linear & angular momentum about CoG in F_B: bodies == (M(q) v)[0..5]",
+               "|dP| = " + std::to_string(rep.linear_momentum_diff_norm)
+               + ", |dL| = " + std::to_string(rep.angular_momentum_diff_norm));
+    check_cond(rep.potential_energy_abs_diff_J < 1e-9,
+               "Gravitational potential energy: bodies == reduced",
+               "|dV| = " + std::to_string(rep.potential_energy_abs_diff_J) + " J");
+}
+
 } // anonymous namespace
 
 int main() {
@@ -941,6 +984,7 @@ int main() {
     test_l10_multicontact_pgs_and_two_body_impact();
     test_l11_integrators_convergence_and_recovery_guard();
     test_l12_parameter_sensitivities_jvp_vjp_and_c_abi();
+    test_l13_component_equivalence_audit();
 
     std::cout << "\n================================================================================\n";
     std::cout << "  SUMMARY: " << g_tests_passed << " PASSED, " << g_tests_failed << " FAILED\n";
