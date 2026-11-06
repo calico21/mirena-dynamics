@@ -104,7 +104,7 @@ flowchart TD
 
 El núcleo utiliza un vector de velocidades generalizadas de 14 componentes:
 
-\[
+$$
 \boldsymbol{\nu} =
 \begin{bmatrix}
 \mathbf{v}_b \\
@@ -119,16 +119,16 @@ El núcleo utiliza un vector de velocidades generalizadas de 14 componentes:
 \omega_{RR}
 \end{bmatrix}
 \in \mathbb{R}^{14}
-\]
+$$
 
 Donde:
 
 | Coordenadas | Número | Descripción |
 |---|---:|---|
-| \(\mathbf{v}_b\) | 3 | Velocidad lineal del chasis expresada en el marco del cuerpo \(F_B\) |
-| \(\boldsymbol{\omega}_b\) | 3 | Velocidad angular del chasis expresada en \(F_B\) |
-| \(\dot q_{s,i}\) | 4 | Velocidad de recorrido de suspensión de FL, FR, RL y RR |
-| \(\omega_i\) | 4 | Velocidad de giro de cada rueda |
+| $\mathbf{v}_b$ | 3 | Velocidad lineal del chasis expresada en el marco del cuerpo $F_B$ |
+| $\boldsymbol{\omega}_b$ | 3 | Velocidad angular del chasis expresada en $F_B$ |
+| $\dot q_{s,i}$ | 4 | Velocidad de recorrido de suspensión de FL, FR, RL y RR |
+| $\omega_i$ | 4 | Velocidad de giro de cada rueda |
 | **Total** | **14** | **14 velocidades generalizadas** |
 
 Por tanto, el vector agrupa:
@@ -139,17 +139,17 @@ Por tanto, el vector agrupa:
 
 La matriz de masa generalizada es de dimensión:
 
-\[
+$$
 \mathbf{M}(q) \in \mathbb{R}^{14\times14}
-\]
+$$
 
 La energía cinética asociada a la formulación reducida se calcula como:
 
-\[
+$$
 T_{\mathrm{red}} =
 \frac{1}{2}\boldsymbol{\nu}^{T}
 \mathbf{M}(q)\boldsymbol{\nu}
-\]
+$$
 
 Esta expresión es una de las referencias utilizadas por la auditoría de equivalencia multibody.
 
@@ -187,11 +187,11 @@ La auditoría puede construir una descomposición con los siguientes elementos:
 
 La cuenta es:
 
-\[
+$$
 N_{\mathrm{cuerpos}} =
 1 + 4(1_{\mathrm{upright}} + 1_{\mathrm{rueda}} + 5_{\mathrm{componentes}})
 = 29
-\]
+$$
 
 Cuando `include_component_inertias` está desactivado, la descomposición del informe contiene 9 elementos: el chasis, los cuatro uprights y las cuatro ruedas.
 
@@ -217,14 +217,14 @@ Uno de los cambios centrales incorporados consiste en contabilizar de forma expl
 
 En el código nativo, el vector de gravedad global se define con el eje Z positivo hacia arriba:
 
-\[
+$$
 \mathbf{g}_w =
 \begin{bmatrix}
 0\\
 0\\
 -g
 \end{bmatrix}
-\]
+$$
 
 La contribución de cada componente se transforma y proyecta sobre las coordenadas generalizadas durante el ensamblaje dinámico.
 
@@ -232,16 +232,16 @@ La contribución de cada componente se transforma y proyecta sobre las coordenad
 
 Para cada esquina, el motor acumula un vector de contribuciones:
 
-\[
+$$
 \mathbf{Q}_{\mathrm{comp},i}\in\mathbb{R}^{14}
-\]
+$$
 
 Y lo incorpora al vector generalizado total:
 
-\[
+$$
 \mathbf{Q}\leftarrow
 \mathbf{Q}+\sum_{i=1}^{4}\mathbf{Q}_{\mathrm{comp},i}
-\]
+$$
 
 La implementación utiliza `assemble_corner_component_dynamics(...)` para obtener las contribuciones de cada esquina, incluyendo el estado del chasis, la cinemática local, la gravedad y el recorrido de suspensión.
 
@@ -249,17 +249,17 @@ La implementación utiliza `assemble_corner_component_dynamics(...)` para obtene
 
 El balance energético del motor incluye:
 
-\[
+$$
 V =
 V_{\mathrm{chasis}}+
 V_{\mathrm{no\ suspendido}}+
 V_{\mathrm{ARB}}+
 V_{\mathrm{componentes}}
-\]
+$$
 
 La posición del centro de rueda se calcula respecto al centro de gravedad del chasis mediante la corrección de altura `h_cg_m`:
 
-\[
+$$
 \mathbf{p}_{wc,w} =
 \mathbf{p}_{b,w}+
 \mathbf{R}_{wb}
@@ -271,7 +271,7 @@ La posición del centro de rueda se calcula respecto al centro de gravedad del c
 h_{cg}
 \end{bmatrix}
 \right)
-\]
+$$
 
 La energía potencial de los componentes se acumula en `V_comp_grav_J` y se añade al balance `V_pot`.
 
@@ -297,13 +297,13 @@ apply_collision_impulse_godot
 
 El esquema físico empleado por el puente nativo se basa en el impulso y el cambio de momento:
 
-\[
+$$
 \Delta\mathbf{v} =
 \mathbf{M}(q)^{-1}
 \mathbf{J}_{c}(q)^T\boldsymbol{\Lambda}
-\]
+$$
 
-Donde \(\mathbf{J}_c\) representa el Jacobiano de contacto y \(\boldsymbol{\Lambda}\) el impulso aplicado.
+Donde $\mathbf{J}_c$ representa el Jacobiano de contacto y $\boldsymbol{\Lambda}$ el impulso aplicado.
 
 El puente también devuelve el impulso correspondiente al objeto externo para aplicar la reacción opuesta cuando el objeto es un `RigidBody3D`.
 
@@ -347,12 +347,12 @@ La función se apoya en:
 
 La derivada de la velocidad lineal expresada en un marco rotatorio no es directamente la aceleración física expresada en ese marco. Por ello, se incorpora el término convectivo:
 
-\[
+$$
 \mathbf{a}_{b} =
 \left(\frac{d\mathbf{v}_b}{dt}\right)_{F_B}
 +
 \boldsymbol{\omega}_b\times\mathbf{v}_b
-\]
+$$
 
 En el código:
 
@@ -365,11 +365,11 @@ const Vec3 a_chassis_b = step_res.generalized_accel.segment<3>(0)
 
 El momento de contacto se traslada al centro de rueda mediante:
 
-\[
+$$
 \mathbf{M}_{wc} =
 \mathbf{M}_{patch}+
 \mathbf{r}_{wc\rightarrow cp}\times\mathbf{F}_{tire}
-\]
+$$
 
 El par de freno se pasa mediante los argumentos específicos de la función de cargas estructurales, en lugar de volver a sumarlo dentro de `M_tire_at_wc_b`. Esto evita contabilizar dos veces el mismo término.
 
@@ -377,10 +377,10 @@ El par de freno se pasa mediante los argumentos específicos de la función de c
 
 La matriz de inercia del upright se rota a la orientación actual del componente:
 
-\[
+$$
 \mathbf{I}_{u,b} =
 \mathbf{R}_{u}\mathbf{I}_{u}\mathbf{R}_{u}^{T}
-\]
+$$
 
 La función recibe además el solver de cinemática de la esquina, el ángulo de dirección, la fuerza del ARB y las magnitudes cinemáticas necesarias para reconstruir las cargas.
 
@@ -434,19 +434,19 @@ Su objetivo es comparar dos formas de describir el mismo estado del vehículo:
 
 | Magnitud | Modelo de cuerpos | Modelo reducido |
 |---|---|---|
-| Energía cinética \(T\) | Suma de energías de cuerpos + inercia reflejada del drivetrain | \(\frac12\nu^T M(q)\nu\) |
-| Energía potencial \(V\) | Suma de potencial gravitatorio de cuerpos | Balance reducido de chasis, masas no suspendidas y componentes |
-| Momento lineal \(P\) | Suma de momentos lineales de los cuerpos | Primeras 3 componentes de \(M(q)\nu\) |
-| Momento angular \(L\) | Suma de momento orbital y espín | Componentes 4 a 6 de \(M(q)\nu\) |
+| Energía cinética $T$ | Suma de energías de cuerpos + inercia reflejada del drivetrain | $\frac12\nu^T M(q)\nu$ |
+| Energía potencial $V$ | Suma de potencial gravitatorio de cuerpos | Balance reducido de chasis, masas no suspendidas y componentes |
+| Momento lineal $P$ | Suma de momentos lineales de los cuerpos | Primeras 3 componentes de $M(q)\nu$ |
+| Momento angular $L$ | Suma de momento orbital y espín | Componentes 4 a 6 de $M(q)\nu$ |
 
 Para el momento angular de cada cuerpo se incluye el momento orbital respecto al centro de gravedad de referencia y el momento de espín:
 
-\[
+$$
 \mathbf{L}_b =
 \mathbf{r}_b\times(m_b\mathbf{v}_b)
 +
 \mathbf{I}_b\boldsymbol{\omega}_b
-\]
+$$
 
 ### 9.2 Estado de prueba
 
@@ -465,23 +465,23 @@ La configuración evita limitar la comprobación a un estado estático o perfect
 
 El test utiliza:
 
-\[
+$$
 \epsilon_T =
 10^{-10}\max(1,|T_{red}|)
-\]
+$$
 
-\[
+$$
 \epsilon_P =
 10^{-10}\max(1,\|P_{red}\|),\qquad
 \epsilon_L =
 10^{-10}\max(1,\|L_{red}\|)
-\]
+$$
 
 Y para la energía potencial:
 
-\[
+$$
 |V_{cuerpos}-V_{red}| < 10^{-9}\;\mathrm{J}
-\]
+$$
 
 ### 9.4 Resultado registrado
 
@@ -576,7 +576,7 @@ La prueba verifica:
 
 Cambios revisados:
 
-- Incorporación del término \(\boldsymbol{\omega}\times\mathbf{v}\) a la aceleración física del chasis expresada en el marco del cuerpo.
+- Incorporación del término $\boldsymbol{\omega}\times\mathbf{v}$ a la aceleración física del chasis expresada en el marco del cuerpo.
 - Separación del momento generado por la fuerza y el momento del parche de contacto respecto al par de freno suministrado por separado.
 - Rotación de la matriz de inercia del upright a su orientación actual.
 - Transferencia explícita del solver de cinemática, ángulo de dirección y fuerza del ARB al cálculo estructural.
