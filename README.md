@@ -12,7 +12,7 @@
   <img alt="Multibody audit" src="https://img.shields.io/badge/Multibody%20audit-29%20bodies-2ea44f">
 </p>
 
-> **TeR26** es el modelo de dinámica vehicular integrado en **Mirena Dynamics**. Su núcleo nativo resuelve la dinámica mediante una formulación reducida de 14 grados de libertad y permite contrastar esa formulación con una descomposición explícita en cuerpos rígidos. Godot proporciona el entorno de simulación y la interacción con objetos externos; ROS 2 forma parte de la integración del sistema.
+> **TeR26** es el modelo de dinámica vehicular integrado en **Mirena Dynamics**. Su núcleo nativo resuelve la dinámica mediante una formulación reducida de 14 grados de libertad (DOF) y permite contrastar esa formulación con una descomposición explícita en cuerpos rígidos. Godot proporciona el entorno de simulación y la interacción con objetos externos; ROS 2 forma parte de la integración del sistema.
 
 ---
 
@@ -62,21 +62,27 @@ La formulación reducida concentra el comportamiento de los conjuntos en una mat
 
 ```mermaid
 flowchart TD
-    A[Entradas de control y estado del vehículo] --> B[VehicleDynamicsEngine · C++20]
-    B --> C[Modelo reducido · 14 DOF]
-    C --> D[Matriz de masa M(q)]
-    C --> E[Fuerzas y momentos generalizados]
-    C --> F[Derivadas y avance temporal]
-    B --> G[Cinématica de suspensión por esquina]
-    G --> H[Contribuciones de upright, rueda y componentes]
-    H --> I[Auditoría multibody · hasta 29 cuerpos]
-    B --> J[Cargas estructurales por esquina]
-    K[Godot 4] <--> L[Puente de integración]
+    A["Entradas de control y estado del vehículo"] --> B["VehicleDynamicsEngine - C++20"]
+
+    B --> C["Modelo reducido - 14 DOF"]
+    C --> D["Matriz de masa M(q)"]
+    C --> E["Fuerzas y momentos generalizados"]
+    C --> F["Derivadas y avance temporal"]
+
+    B --> G["Cinemática de suspensión por esquina"]
+    G --> H["Upright, rueda y componentes"]
+    H --> I["Auditoría multibody - hasta 29 cuerpos"]
+
+    B --> J["Cargas estructurales por esquina"]
+
+    K["Godot 4"] <--> L["Puente de integración"]
     L <--> B
-    K --> M[Colisiones externas con objetos Godot]
+    K --> M["Colisiones externas con objetos Godot"]
     M --> L
-    N[ROS 2 Jazzy] <--> L
-    O[Suite nativa de tests] --> B
+
+    N["ROS 2 Jazzy"] <--> L
+
+    O["Suite nativa de tests"] --> B
     O --> I
 ```
 
@@ -127,9 +133,9 @@ Donde:
 
 Por tanto, el vector agrupa:
 
-- **6 componentes de movimiento del chasis**: traslación y rotación.
-- **4 coordenadas de suspensión**: una por cada esquina.
-- **4 coordenadas de giro de rueda**: una por cada rueda.
+- **6 componentes de movimiento del chasis:** traslación y rotación.
+- **4 coordenadas de suspensión:** una por cada esquina.
+- **4 coordenadas de giro de rueda:** una por cada rueda.
 
 La matriz de masa generalizada es de dimensión:
 
@@ -140,7 +146,8 @@ La matriz de masa generalizada es de dimensión:
 La energía cinética asociada a la formulación reducida se calcula como:
 
 \[
-T_{red} = \frac{1}{2}\,\boldsymbol{\nu}^{T}
+T_{\mathrm{red}} =
+\frac{1}{2}\boldsymbol{\nu}^{T}
 \mathbf{M}(q)\boldsymbol{\nu}
 \]
 
@@ -154,13 +161,13 @@ Esta expresión es una de las referencias utilizadas por la auditoría de equiva
 
 La cinemática se evalúa por esquina. Para cada una se obtienen, entre otras magnitudes utilizadas por el motor:
 
-- posición del centro de rueda;
-- orientación del upright;
-- eje del spindle;
-- derivada de la posición del centro de rueda respecto al recorrido de suspensión;
-- variación de la velocidad angular del upright con el recorrido;
-- deflexión de muelle;
-- magnitudes geométricas necesarias para las fuerzas y momentos generalizados.
+- Posición del centro de rueda.
+- Orientación del upright.
+- Eje del spindle.
+- Derivada de la posición del centro de rueda respecto al recorrido de suspensión.
+- Variación de la velocidad angular del upright con el recorrido.
+- Deflexión de muelle.
+- Magnitudes geométricas necesarias para las fuerzas y momentos generalizados.
 
 ### 4.1 Modelo reducido
 
@@ -181,7 +188,9 @@ La auditoría puede construir una descomposición con los siguientes elementos:
 La cuenta es:
 
 \[
-N_{cuerpos}=1+4\,(1_{upright}+1_{rueda}+5_{componentes})=29
+N_{\mathrm{cuerpos}} =
+1 + 4(1_{\mathrm{upright}} + 1_{\mathrm{rueda}} + 5_{\mathrm{componentes}})
+= 29
 \]
 
 Cuando `include_component_inertias` está desactivado, la descomposición del informe contiene 9 elementos: el chasis, los cuatro uprights y las cuatro ruedas.
@@ -211,7 +220,9 @@ En el código nativo, el vector de gravedad global se define con el eje Z positi
 \[
 \mathbf{g}_w =
 \begin{bmatrix}
-0\\0\\-g
+0\\
+0\\
+-g
 \end{bmatrix}
 \]
 
@@ -222,13 +233,14 @@ La contribución de cada componente se transforma y proyecta sobre las coordenad
 Para cada esquina, el motor acumula un vector de contribuciones:
 
 \[
-\mathbf{Q}_{comp,i}\in\mathbb{R}^{14}
+\mathbf{Q}_{\mathrm{comp},i}\in\mathbb{R}^{14}
 \]
 
 Y lo incorpora al vector generalizado total:
 
 \[
-\mathbf{Q}\leftarrow\mathbf{Q}+\sum_{i=1}^{4}\mathbf{Q}_{comp,i}
+\mathbf{Q}\leftarrow
+\mathbf{Q}+\sum_{i=1}^{4}\mathbf{Q}_{\mathrm{comp},i}
 \]
 
 La implementación utiliza `assemble_corner_component_dynamics(...)` para obtener las contribuciones de cada esquina, incluyendo el estado del chasis, la cinemática local, la gravedad y el recorrido de suspensión.
@@ -238,15 +250,27 @@ La implementación utiliza `assemble_corner_component_dynamics(...)` para obtene
 El balance energético del motor incluye:
 
 \[
-V = V_{chasis}+V_{no\ suspendido}+V_{ARB}+V_{componentes}
+V =
+V_{\mathrm{chasis}}+
+V_{\mathrm{no\ suspendido}}+
+V_{\mathrm{ARB}}+
+V_{\mathrm{componentes}}
 \]
 
 La posición del centro de rueda se calcula respecto al centro de gravedad del chasis mediante la corrección de altura `h_cg_m`:
 
 \[
-\mathbf{p}_{wc,w}=
-\mathbf{p}_w+\mathbf{R}_{wb}
-\left(\mathbf{r}_{wc,b}-\begin{bmatrix}0\\0\\h_{cg}\end{bmatrix}\right)
+\mathbf{p}_{wc,w} =
+\mathbf{p}_{b,w}+
+\mathbf{R}_{wb}
+\left(
+\mathbf{r}_{wc,b}-
+\begin{bmatrix}
+0\\
+0\\
+h_{cg}
+\end{bmatrix}
+\right)
 \]
 
 La energía potencial de los componentes se acumula en `V_comp_grav_J` y se añade al balance `V_pot`.
@@ -274,8 +298,9 @@ apply_collision_impulse_godot
 El esquema físico empleado por el puente nativo se basa en el impulso y el cambio de momento:
 
 \[
-\Delta\mathbf{v} = \mathbf{M}(q)^{-1}
-\mathbf{J}_{c}(q)^T\,\boldsymbol{\Lambda}
+\Delta\mathbf{v} =
+\mathbf{M}(q)^{-1}
+\mathbf{J}_{c}(q)^T\boldsymbol{\Lambda}
 \]
 
 Donde \(\mathbf{J}_c\) representa el Jacobiano de contacto y \(\boldsymbol{\Lambda}\) el impulso aplicado.
@@ -310,22 +335,23 @@ El motor dispone de un cálculo de cargas estructurales por esquina orientado a 
 
 La función se apoya en:
 
-- geometría y cinemática de suspensión de cada esquina;
-- fuerzas y momentos del neumático;
-- fuerzas del sistema antibalanceo (ARB);
-- par de freno y reacción de par del upright;
-- aceleración lineal y angular del chasis;
-- velocidad y aceleración del recorrido de suspensión;
-- gravedad expresada en el marco local.
+- Geometría y cinemática de suspensión de cada esquina.
+- Fuerzas y momentos del neumático.
+- Fuerzas del sistema antibalanceo (ARB).
+- Par de freno y reacción de par del upright.
+- Aceleración lineal y angular del chasis.
+- Velocidad y aceleración del recorrido de suspensión.
+- Gravedad expresada en el marco local.
 
 ### 7.1 Aceleración del chasis en el marco del cuerpo
 
 La derivada de la velocidad lineal expresada en un marco rotatorio no es directamente la aceleración física expresada en ese marco. Por ello, se incorpora el término convectivo:
 
 \[
-\mathbf{a}_{b}=
+\mathbf{a}_{b} =
 \left(\frac{d\mathbf{v}_b}{dt}\right)_{F_B}
-+\boldsymbol{\omega}_b\times\mathbf{v}_b
++
+\boldsymbol{\omega}_b\times\mathbf{v}_b
 \]
 
 En el código:
@@ -340,8 +366,9 @@ const Vec3 a_chassis_b = step_res.generalized_accel.segment<3>(0)
 El momento de contacto se traslada al centro de rueda mediante:
 
 \[
-\mathbf{M}_{wc}=
-\mathbf{M}_{patch}+\mathbf{r}_{wc\rightarrow cp}\times\mathbf{F}_{tire}
+\mathbf{M}_{wc} =
+\mathbf{M}_{patch}+
+\mathbf{r}_{wc\rightarrow cp}\times\mathbf{F}_{tire}
 \]
 
 El par de freno se pasa mediante los argumentos específicos de la función de cargas estructurales, en lugar de volver a sumarlo dentro de `M_tire_at_wc_b`. Esto evita contabilizar dos veces el mismo término.
@@ -351,7 +378,8 @@ El par de freno se pasa mediante los argumentos específicos de la función de c
 La matriz de inercia del upright se rota a la orientación actual del componente:
 
 \[
-\mathbf{I}_{u,b}=\mathbf{R}_{u}\,\mathbf{I}_{u}\,\mathbf{R}_{u}^{T}
+\mathbf{I}_{u,b} =
+\mathbf{R}_{u}\mathbf{I}_{u}\mathbf{R}_{u}^{T}
 \]
 
 La función recibe además el solver de cinemática de la esquina, el ángulo de dirección, la fuerza del ARB y las magnitudes cinemáticas necesarias para reconstruir las cargas.
@@ -414,20 +442,22 @@ Su objetivo es comparar dos formas de describir el mismo estado del vehículo:
 Para el momento angular de cada cuerpo se incluye el momento orbital respecto al centro de gravedad de referencia y el momento de espín:
 
 \[
-\mathbf{L}_b = \mathbf{r}_b\times(m_b\mathbf{v}_b)
-+\mathbf{I}_b\boldsymbol{\omega}_b
+\mathbf{L}_b =
+\mathbf{r}_b\times(m_b\mathbf{v}_b)
++
+\mathbf{I}_b\boldsymbol{\omega}_b
 \]
 
 ### 9.2 Estado de prueba
 
 El test configura un estado deliberadamente no trivial:
 
-- orientación del chasis con roll, pitch y yaw;
-- velocidades lineales y angulares distintas de cero;
-- recorridos y velocidades de suspensión diferentes por esquina;
-- velocidades de giro de rueda;
-- ángulo de dirección distinto de cero;
-- inercias de componentes activadas.
+- Orientación del chasis con roll, pitch y yaw.
+- Velocidades lineales y angulares distintas de cero.
+- Recorridos y velocidades de suspensión diferentes por esquina.
+- Velocidades de giro de rueda.
+- Ángulo de dirección distinto de cero.
+- Inercias de componentes activadas.
 
 La configuración evita limitar la comprobación a un estado estático o perfectamente simétrico.
 
@@ -436,18 +466,21 @@ La configuración evita limitar la comprobación a un estado estático o perfect
 El test utiliza:
 
 \[
-\epsilon_T=10^{-10}\max(1,|T_{red}|)
+\epsilon_T =
+10^{-10}\max(1,|T_{red}|)
 \]
 
 \[
-\epsilon_P=10^{-10}\max(1,\|P_{red}\|),\qquad
-\epsilon_L=10^{-10}\max(1,\|L_{red}\|)
+\epsilon_P =
+10^{-10}\max(1,\|P_{red}\|),\qquad
+\epsilon_L =
+10^{-10}\max(1,\|L_{red}\|)
 \]
 
 Y para la energía potencial:
 
 \[
-|V_{cuerpos}-V_{red}|<10^{-9}\;\mathrm{J}
+|V_{cuerpos}-V_{red}| < 10^{-9}\;\mathrm{J}
 \]
 
 ### 9.4 Resultado registrado
@@ -470,12 +503,12 @@ En la ejecución comunicada para L13 se obtuvo:
 
 **No demuestra por sí sola:**
 
-- que todos los Jacobianos cinemáticos sean físicamente exactos;
-- que los parámetros de masa e inercia correspondan a la geometría real;
-- que el modelo de neumático reproduzca datos experimentales;
-- que la integración temporal sea convergente para cualquier escenario;
-- que las cargas estructurales estén correlacionadas con ensayos o con un FEM independiente;
-- que la equivalencia se mantenga automáticamente en cualquier configuración o estado no cubierto por los tests.
+- Que todos los Jacobianos cinemáticos sean físicamente exactos.
+- Que los parámetros de masa e inercia correspondan a la geometría real.
+- Que el modelo de neumático reproduzca datos experimentales.
+- Que la integración temporal sea convergente para cualquier escenario.
+- Que las cargas estructurales estén correlacionadas con ensayos o con un FEM independiente.
+- Que la equivalencia se mantenga automáticamente en cualquier configuración o estado no cubierto por los tests.
 
 La equivalencia algebraica es una condición importante de consistencia, pero no sustituye a la validación física.
 
@@ -530,10 +563,10 @@ Se añade `test_l13_component_equivalence_audit()` y se registra en `main()` des
 
 La prueba verifica:
 
-- construcción de 29 cuerpos;
-- equivalencia de energía cinética;
-- equivalencia de momento lineal y angular;
-- equivalencia de energía potencial gravitatoria.
+- Construcción de 29 cuerpos.
+- Equivalencia de energía cinética.
+- Equivalencia de momento lineal y angular.
+- Equivalencia de energía potencial gravitatoria.
 
 ### 10.4 Correcciones del cálculo de cargas ANSYS
 
@@ -543,10 +576,10 @@ La prueba verifica:
 
 Cambios revisados:
 
-- incorporación del término \(\boldsymbol{\omega}\times\mathbf{v}\) a la aceleración física del chasis expresada en el marco del cuerpo;
-- separación del momento generado por la fuerza y el momento del parche de contacto respecto al par de freno suministrado por separado;
-- rotación de la matriz de inercia del upright a su orientación actual;
-- transferencia explícita del solver de cinemática, ángulo de dirección y fuerza del ARB al cálculo estructural.
+- Incorporación del término \(\boldsymbol{\omega}\times\mathbf{v}\) a la aceleración física del chasis expresada en el marco del cuerpo.
+- Separación del momento generado por la fuerza y el momento del parche de contacto respecto al par de freno suministrado por separado.
+- Rotación de la matriz de inercia del upright a su orientación actual.
+- Transferencia explícita del solver de cinemática, ángulo de dirección y fuerza del ARB al cálculo estructural.
 
 ### 10.5 Aplicación del impulso de colisión en Godot
 
@@ -556,11 +589,11 @@ Cambios revisados:
 
 Cambios revisados:
 
-- eliminación de la doble aplicación del impulso mediante impulso físico más incremento manual de velocidad;
-- actualización de `linear_velocity` una sola vez;
-- introducción de `CONE_LIFT_IMPULSE_NS` para el impulso vertical auxiliar del cono;
-- uso de `maxf` para el límite inferior de masa;
-- simplificación de la llamada al puente nativo.
+- Eliminación de la doble aplicación del impulso mediante impulso físico más incremento manual de velocidad.
+- Actualización de `linear_velocity` una sola vez.
+- Introducción de `CONE_LIFT_IMPULSE_NS` para el impulso vertical auxiliar del cono.
+- Uso de `maxf` para el límite inferior de masa.
+- Simplificación de la llamada al puente nativo.
 
 ### 10.6 Cambios que se han dejado fuera del commit previsto
 
@@ -575,10 +608,10 @@ Cambios revisados:
 
 En una ejecución comunicada durante el desarrollo, la suite nativa registró:
 
-<pre>
+```text
 44 PASSED
  0 FAILED
-</pre>
+```
 
 L13 se añadió posteriormente como comprobación de equivalencia de componentes. El resultado de una ejecución concreta debe comprobarse siempre en la salida de la versión que se esté compilando; este README no sustituye al log de CI o de la última ejecución local.
 
@@ -647,7 +680,7 @@ cmake --build build/ter26-native --target help
 Una vez identificado el target de tests de la configuración local, se puede compilar con:
 
 ```bash
-cmake --build build/ter26-native --target <target_de_tests> -j$(nproc)
+cmake --build build/ter26-native --target <target_de_tests> -j"$(nproc)"
 ```
 
 Si el proyecto registra las pruebas en CTest, pueden ejecutarse con:
