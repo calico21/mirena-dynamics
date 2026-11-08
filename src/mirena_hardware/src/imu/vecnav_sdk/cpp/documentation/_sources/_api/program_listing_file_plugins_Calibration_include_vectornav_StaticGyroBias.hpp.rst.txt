@@ -1,0 +1,96 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp:
+
+Program Listing for File StaticGyroBias.hpp
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp>` (``plugins\Calibration\include\vectornav\StaticGyroBias.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_STATICGYROBIAS_HPP_
+   #define VN_STATICGYROBIAS_HPP_
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Conversions.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/SampleStats.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct StaticGyroBiasConfig
+   {
+       uint8_t temp = 0;
+   };
+   
+   class StaticGyroBias : public CalBase<Vec3f, StaticGyroBiasConfig, staticGyroBiasFom.size(), 1>
+   {
+   public:
+       StaticGyroBias() : CalBase(StaticGyroBiasConfig{}, staticGyroBiasFom) {}
+   
+       ErrorCal solve() noexcept override
+       {
+           _setGyroBias(_gyroBias.getMean());
+   
+           Vec3f varVec = _gyroBias.getVariance();
+           float varScalar = (varVec[0] + varVec[1] + varVec[2]) / static_cast<float>(_gyroBias.getCount());
+           _setFom(Math::rad2deg(std::sqrt(varScalar)) * 3600.0f, 0);
+           return ErrorCal::None;
+       }
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::IMU::ImuFilterControl imuFilter;
+   
+           static constexpr size_t NumRegisters = 2;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &imuFilter}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.imu.uncompAccel = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::staticGyroBiasMeasRate;
+   
+           storage.imuFilter.accelFilterMode.emplace();
+           storage.imuFilter.accelFilterMode->uncomp = true;
+           storage.imuFilter.accelWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.gyroFilterMode.emplace();
+           storage.imuFilter.gyroFilterMode->uncomp = true;
+           storage.imuFilter.gyroWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.magFilterMode.emplace();
+           storage.imuFilter.magFilterMode->uncomp = true;
+           storage.imuFilter.magWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.presFilterMode.emplace();
+           storage.imuFilter.presFilterMode->uncomp = true;
+           storage.imuFilter.presWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.tempFilterMode.emplace();
+           storage.imuFilter.tempFilterMode->uncomp = true;
+           storage.imuFilter.tempWindowSize = storage.binOut1.rateDivisor;
+       }
+   
+   private:
+       Math::SampleStats<3, float> _gyroBias;
+   
+       ErrorCal _addMeasurement() noexcept override
+       {
+           _measIndex = 0;
+           _gyroBias.addSample(_measBuff[_measIndex]);
+           return ErrorCal::None;
+       }
+   
+       std::optional<Vec3f> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override { return cdMeas.imu.uncompGyro; }
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_STATICGYROBIAS_HPP_

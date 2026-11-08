@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mirena_remote</name>
+  <version>0.1.0</version>
+  <description>Remote control of the car</description>
+  <maintainer email="adiazgarcia@alumni.unav.es">Ana Díaz</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>rclgd</buildtool_depend>
+
+  <export>
+    <build_type>rclgd</build_type>
+  </export>
+</package>

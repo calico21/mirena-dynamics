@@ -1,0 +1,274 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp:
+
+Program Listing for File CalSensorConfig.hpp
+============================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp>` (``plugins\Calibration\include\vectornav\CalSensorConfig.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALSENSORCONFIG_HPP_
+   #define VN_CALSENSORCONFIG_HPP_
+   
+   #include <type_traits>
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalSolution.hpp"
+   #include "vectornav/Implementation/MeasurementDatatypes.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/Interface/Registers.hpp"
+   #include "vectornav/Interface/Sensor.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   template <typename CalType>
+   class CalSensorConfig
+   {
+       using SerialPort = Registers::System::AsyncOutputType::SerialPort;
+   
+   public:
+       CalSensorConfig(Sensor* sens, CalType* cal, SerialPort port = SerialPort::ActiveSerial, uint16_t imuRate = 800, bool gnssAided = true)
+           : _sens(sens), _cal(cal), _gnssAided(gnssAided)
+       {
+           Registers::System::BinaryOutput::AsyncMode asyncMode;
+           if (port == SerialPort::Serial1) { asyncMode.serial1 = true; }
+           else if (port == SerialPort::Serial2) { asyncMode.serial2 = true; }
+           else
+           {
+               asyncMode.serial1 = true;
+               asyncMode.serial2 = true;
+           }
+           CalType::initCalRegisterValues(_calRegs, asyncMode, imuRate);
+           initOutputRegisterValues(_calOutputs);
+       }
+   
+       Error prepareSensorForCalibration()
+       {
+           Error err;
+   
+           // disable async outputs while configuring
+           if (err = _sens->asyncOutputEnable(AsyncOutputEnable::State::Disable); err != Error::None) { return err; }
+   
+           // read & store initial configuration
+           if (err = readSensorInitConfig(); err != Error::None) { return err; }
+   
+           // write required register settings
+           if (err = writeSensorCalConfig(); err != Error::None) { return err; }
+   
+           // re-enable async outputs after configuring
+           return _sens->asyncOutputEnable(AsyncOutputEnable::State::Enable);
+       }
+   
+       Error finalizeCalibrationOnSensor(bool saveSettings)
+       {
+           Error err;
+   
+           // disable async outputs while configuring
+           if (err = _sens->asyncOutputEnable(AsyncOutputEnable::State::Disable); err != Error::None) { return err; }
+   
+           // put register settings back the way they were pre-cal
+           if (err = restoreSensorInitConfig(); err != Error::None) { return err; }
+   
+           // write calibration solution to sensor
+           if (err = writeCalSolution(); err != Error::None) { return err; }
+   
+           // save settings to non-volatile memory if desired
+           if (saveSettings) { return _sens->writeSettings(); }
+           else { return Error::None; }
+       }
+   
+       Error readSensorInitConfig()
+       {
+           Error err;
+   
+           // save calibration register settings
+           Registers::IMU::AccelCal accelCalReg;
+           if (err = _sens->readRegister(&accelCalReg); err != Error::None) { return err; }
+           _initAccelCal = {accelCalReg.accelGain().value(), accelCalReg.accelBias().value()};
+   
+           Registers::IMU::GyroCal gyroCalReg;
+           if (err = _sens->readRegister(&gyroCalReg); err != Error::None) { return err; }
+           _initGyroCal = {gyroCalReg.gyroGain().value(), gyroCalReg.gyroBias().value()};
+   
+           Registers::IMU::MagCal magCalReg;
+           if (err = _sens->readRegister(&magCalReg); err != Error::None) { return err; }
+           _initHSI = {magCalReg.magGain().value(), magCalReg.magBias().value()};
+   
+           Registers::IMU::RefFrameRot rfrReg;
+           if (err = _sens->readRegister(&rfrReg); err != Error::None) { return err; }
+           _initRFR = rfrReg.rfr().value();
+   
+           // loop through calibration specific registers (incl. Reg 75)
+           auto calRegs = _initRegs.getRegisters();
+           for (auto* reg : calRegs)
+           {
+               if (err = _sens->readRegister(reg); err != Error::None) { return err; }
+           }
+   
+           // loop through output registers (excluding Reg 75)
+           auto [outRegs, count] = _initOutputs.getRegisters(_gnssAided);
+           for (size_t i = 0; i < count; i++)
+           {
+               if (err = _sens->readRegister(outRegs[i]); err != Error::None) { return err; }
+           }
+   
+           return Error::None;
+       }
+   
+       Error writeSensorCalConfig()
+       {
+           Error err;
+   
+           // set calibration specific registers (incl. Reg 75)
+           auto calRegs = _calRegs.getRegisters();
+           for (auto* reg : calRegs)
+           {
+               if (err = _sens->writeRegister(reg); err != Error::None) { return err; }
+           }
+   
+           // set output registers (excluding Reg 75)
+           auto [outRegs, count] = _calOutputs.getRegisters(_gnssAided);
+           for (size_t i = 0; i < count; i++)
+           {
+               if (err = _sens->writeRegister(outRegs[i]); err != Error::None) { return err; }
+           }
+   
+           return Error::None;
+       }
+   
+       Error restoreSensorInitConfig()
+       {
+           Error err;
+   
+           // restore calibration specific registers (incl. Reg 75)
+           auto calRegs = _initRegs.getRegisters();
+           for (auto* reg : calRegs)
+           {
+               if (err = _sens->writeRegister(reg); err != Error::None) { return err; }
+           }
+   
+           // restore output registers (excluding Reg 75)
+           auto [outRegs, count] = _initOutputs.getRegisters(_gnssAided);
+           for (size_t i = 0; i < count; i++)
+           {
+               if (err = _sens->writeRegister(outRegs[i]); err != Error::None) { return err; }
+           }
+   
+           return Error::None;
+       }
+   
+       Error writeCalSolution()
+       {
+           Error err;
+   
+           std::optional<ImuCal> accelCal = _cal->solution.getAccelCal(_initAccelCal, _initRFR);
+           if (accelCal.has_value())
+           {
+               Registers::IMU::AccelCal accelCalReg;
+               accelCalReg.accelGain(accelCal->scale);
+               accelCalReg.accelBias(accelCal->bias);
+               if (err = _sens->writeRegister(&accelCalReg); err != Error::None) { return err; }
+           }
+   
+           std::optional<ImuCal> gyroCal = _cal->solution.getGyroCal(_initGyroCal, _initRFR);
+           if (gyroCal.has_value())
+           {
+               Registers::IMU::GyroCal gyroCalReg;
+               gyroCalReg.gyroGain(gyroCal->scale);
+               gyroCalReg.gyroBias(gyroCal->bias);
+               if (err = _sens->writeRegister(&gyroCalReg); err != Error::None) { return err; }
+           }
+   
+           std::optional<ImuCal> magCal = _cal->solution.getMagCal(_initHSI, _initRFR);
+           if (magCal.has_value())
+           {
+               Registers::IMU::MagCal magCalReg;
+               magCalReg.magGain(magCal->scale);
+               magCalReg.magBias(magCal->bias);
+               if (err = _sens->writeRegister(&magCalReg); err != Error::None) { return err; }
+           }
+   
+           std::optional<Mat3f> rfr = _cal->solution.getRFR();
+           if (rfr.has_value())
+           {
+               Registers::IMU::RefFrameRot rfrReg;
+               rfrReg.rfr(rfr.value() * _initRFR);
+               if (err = _sens->writeRegister(&rfrReg); err != Error::None) { return err; }
+           }
+   
+           return Error::None;
+       }
+   
+   private:
+       Sensor* _sens;
+       CalType* _cal;
+   
+       ImuCal _initGyroCal = {Mat3f::identity(), Vec3f{0, 0, 0}};
+       ImuCal _initAccelCal = {Mat3f::identity(), Vec3f{0, 0, 0}};
+       ImuCal _initHSI = {Mat3f::identity(), Vec3f{0, 0, 0}};
+       Mat3f _initRFR = Mat3f::identity();
+       bool _gnssAided;
+   
+       typename CalType::RegisterStorage _initRegs;
+       typename CalType::RegisterStorage _calRegs;
+   
+       struct OutputRegisterStorage
+       {
+           // list of output registers (assumes binOut1 is set by cal itself)
+           Registers::System::BinaryOutput2 binOut2;
+           Registers::System::BinaryOutput3 binOut3;
+           Registers::System::AsyncOutputType ador1;
+           Registers::System::AsyncOutputType ador2;
+           Registers::System::NmeaOutput1 nmea1;
+           Registers::System::NmeaOutput2 nmea2;
+   
+           static constexpr size_t MaxRegisters = 6;
+           std::pair<std::array<ConfigurationRegister*, MaxRegisters>, size_t> getRegisters(bool gnssAided)
+           {
+               if (gnssAided) { return {{&binOut2, &binOut3, &ador1, &ador2, &nmea1, &nmea2}, 6}; }
+               else { return {{&binOut2, &binOut3, &ador1, &ador2}, 4}; }
+           }
+       };
+   
+       static void initOutputRegisterValues(OutputRegisterStorage& storage)
+       {
+           storage.binOut2.asyncMode.emplace();
+           storage.binOut2.rateDivisor = 0;
+   
+           storage.binOut3.asyncMode.emplace();
+           storage.binOut3.rateDivisor = 0;
+   
+           storage.ador1.ador = Registers::System::AsyncOutputType::Ador::OFF;
+           storage.ador1.serialPort = Registers::System::AsyncOutputType::SerialPort::Serial1;
+   
+           storage.ador2.ador = Registers::System::AsyncOutputType::Ador::OFF;
+           storage.ador2.serialPort = Registers::System::AsyncOutputType::SerialPort::Serial2;
+   
+           storage.nmea1.port = Registers::System::NmeaOutput1::Port::None;
+           storage.nmea1.rate = Registers::System::NmeaOutput1::Rate::Rate0Hz;
+           storage.nmea1.mode = Registers::System::NmeaOutput1::Mode::V23GPID;
+           storage.nmea1.gnssSelect = Registers::System::NmeaOutput1::GnssSelect::ActiveReceiver;
+           storage.nmea1.msgSelection.emplace();
+   
+           storage.nmea2.port = Registers::System::NmeaOutput2::Port::None;
+           storage.nmea2.rate = Registers::System::NmeaOutput2::Rate::Rate0Hz;
+           storage.nmea2.mode = Registers::System::NmeaOutput2::Mode::V23GPID;
+           storage.nmea2.gnssSelect = Registers::System::NmeaOutput2::GnssSelect::ActiveReceiver;
+           storage.nmea2.msgSelection.emplace();
+       }
+   
+       OutputRegisterStorage _initOutputs;
+       OutputRegisterStorage _calOutputs;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_CALSENSORCONFIG_HPP_

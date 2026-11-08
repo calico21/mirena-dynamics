@@ -1,0 +1,85 @@
+# Defaults for the MPC control node.  These mirror the values compiled in as
+# parameter defaults; override any subset from a launch file.
+#
+# Per-mission values are NOT loaded from here at runtime -- they are the
+# parameters in mirena_supervisor/launch/missions/<MISSION>.launch.py, which the
+# supervisor starts when the AS selects that mission.  `laps` in particular
+# lives there, one launch file per mission.  The node reads every parameter once
+# in its constructor and never again, so setting one on a running node does
+# nothing.
+#
+# The horizon length, number of shooting nodes and number of reference points
+# are fixed by the generated acados solver (src/mpc/codegen/generate_solver.py) and are
+# deliberately not runtime parameters.
+#
+# The inspection node takes this same node name for the INSPECTION mission, so
+# its defaults cannot live in this block -- it would reject every key below.
+# They are compiled into src/inspection/inspection_node.cpp and overridden from
+# mission_config/INSPECTION.yaml.
+mirena_control:
+  ros__parameters:
+    # Mission end.  Laps are counted from arc-length progress along the
+    # centreline, and the run ends by cutting the reference short so the MPC
+    # decelerates into the gap of its own accord -- there is no separate stop
+    # command.  laps = 0 means an open track (skidpad, acceleration): stop at
+    # the last gate.  laps > 0 means stop stop_distance metres past the final
+    # crossing of the start/finish line.
+    laps: 0
+    stop_distance: 20.0         # m past the final crossing; closed tracks only
+    min_path_length: 5.0        # m, floor on the reference window (must be > 0)
+    stop_speed_eps: 0.3         # m/s below which the car counts as stationary
+    stop_hold_time: 0.5         # s stationary before the run is reported done
+
+    # Reference window: lookahead grows with speed.  This also governs cruise
+    # speed -- the horizon settles near 2u = lookahead_base + lookahead_gain*u,
+    # so ~18.8 m/s today.  Raising the gain raises that speed, but braking
+    # distance grows as u^2 while the reference left to brake in only grows
+    # linearly, so past ~2.5 the car can no longer stop in what it is given.
+    lookahead_base: 15.0        # m
+    lookahead_gain: 1.2         # m per (m/s)
+
+    # Frames.
+    robot_frame: "car/cog"
+    work_frame: "odom"
+    map_frame: "map"
+
+    # Loop rates, in seconds.
+    solver_period: 0.05         # 20 Hz  NLP solve
+    command_period: 0.01        # 100 Hz command replay
+    heartbeat_period: 0.1       # 10 Hz  supervisor report
+    tf_timeout: 0.005
+
+    # Centreline projection search, in metres.
+    projection_window_back: 5.0
+    projection_window_forward: 20.0
+    projection_coarse_step: 0.25
+
+    # Safety envelope.  Every reason the solver has to stop producing horizons
+    # ends the same way: the commander stops trusting the last one and brakes.
+    state_timeout: 0.15         # s; /state/car arrives at 100 Hz
+    plan_timeout: 0.25          # s without a new horizon before full braking
+                                # (~5 missed solves; ~4.5 m at cruise)
+
+    # Backstop for a lap mission whose loop the planner never closes: without a
+    # closed centreline nothing in the geometry can end the run.  Counted from
+    # the moment the car first moves, not from launch.  0 disables it.
+    mission_timeout: 600.0      # s of driving
+
+    # Arming the finish truncates the reference for the rest of the run, so it
+    # takes this many consecutive solves agreeing the car is past the line.
+    finish_confirm_count: 3
+
+    # Progress may not advance faster than the car could have travelled:
+    # margin * |u| * dt + slack metres per solve.  This is what stops a SLAM
+    # loop-closure jump from arming the finish and ending the run mid-track.
+    progress_rate_margin: 1.5
+    progress_rate_slack: 0.5    # m
+
+    # A solve that ran out of iterations or out of its wall-clock budget still
+    # leaves a usable horizon; it is accepted when its residual is at most this.
+    # 0 accepts only fully converged solves.
+    max_accepted_residual: 0.1
+
+    # Horizon and reference markers.  Off takes the serialisation cost off the
+    # solver's loop.
+    publish_markers: true

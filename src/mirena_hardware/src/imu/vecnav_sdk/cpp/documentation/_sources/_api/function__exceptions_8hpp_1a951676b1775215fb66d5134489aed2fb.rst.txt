@@ -1,0 +1,14 @@
+.. _exhale_function__exceptions_8hpp_1a951676b1775215fb66d5134489aed2fb:
+
+Function VN::throwIfError
+=========================
+
+- Defined in :ref:`file_include_vectornav_Interface_Exceptions.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::throwIfError(VN::ErrorAll)
+   :project: VectorNav SDK

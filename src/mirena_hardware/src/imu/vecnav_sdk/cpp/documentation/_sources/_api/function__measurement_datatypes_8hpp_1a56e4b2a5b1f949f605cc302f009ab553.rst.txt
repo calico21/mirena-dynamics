@@ -1,0 +1,14 @@
+.. _exhale_function__measurement_datatypes_8hpp_1a56e4b2a5b1f949f605cc302f009ab553:
+
+Template Function VN::measPrint(char \*, uint16_t, const T&)
+============================================================
+
+- Defined in :ref:`file_include_vectornav_Implementation_MeasurementDatatypes.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::measPrint(char *, uint16_t, const T&)
+   :project: VectorNav SDK

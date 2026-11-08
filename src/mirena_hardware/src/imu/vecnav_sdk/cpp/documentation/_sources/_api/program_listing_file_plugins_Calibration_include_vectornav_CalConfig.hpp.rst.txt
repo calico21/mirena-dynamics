@@ -1,0 +1,102 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalConfig.hpp:
+
+Program Listing for File CalConfig.hpp
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalConfig.hpp>` (``plugins\Calibration\include\vectornav\CalConfig.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALCONFIG_HPP_
+   #define VN_CALCONFIG_HPP_
+   
+   #include <array>
+   #include <cstdint>
+   
+   #include "vectornav/CalSolution.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   constexpr float gref = 9.793746f;                        // magnitude of gravity (m/s/s)
+   constexpr uint16_t fomNameMaxLength = FOMNAMEMAXLENGTH;  // defined in CalFom to avoid circular dependency
+   constexpr float dipoleB0 = 0.312;                        // Field strength in Gauss
+   constexpr float dipoleNorthLatitude = 80.37;             // Latitude of north geomagnetic pole
+   constexpr float dipoleNorthLongitude = -72.62;           // Longitude of north geomagnetic pole
+   
+   // Hsi2d
+   constexpr uint16_t hsi2dBufferSize = 1000;
+   constexpr uint16_t hsiMeasRate = 10;  // Hz
+   constexpr std::array<FomDef, 8> hsi2dFom = {
+       FomDef{"Ellipsoid Fit Residuals Mean (%)", 0.05, 0.1, 0.2, 100.0, false}, FomDef{"Ellipsoid Fit Residuals StdDev (%)", 0.5, 1.0, 2.0, 100.0, false},
+       FomDef{"Ellipsoid Fit Residuals Max (%)", 1.5, 3.0, 6.0, 100.0, false},   FomDef{"Ellipsoid Fit Coverage Multiplier", 0.1, 0.2, 0.5, 10, false},
+       FomDef{"Alignment Fit Residuals Mean (%)", 0.05, 0.1, 0.2, 100.0, false}, FomDef{"Alignment Fit Residuals StdDev (%)", 0.5, 1.0, 2.0, 100.0, false},
+       FomDef{"Alignment Fit Residuals Max (%)", 1.5, 3.0, 6.0, 100.0, false},   FomDef{"Alignment Fit Coverage Multiplier", 0.1, 0.2, 0.5, 10, false},
+   };
+   
+   // Hsi3d
+   constexpr uint16_t hsi3dBufferSize = 1000;
+   constexpr std::array<FomDef, 8> hsi3dFom = {
+       FomDef{"Ellipsoid Fit Residuals Mean (%)", 0.01, 0.05, 0.2, 100.0, false}, FomDef{"Ellipsoid Fit Residuals StdDev (%)", 0.5, 1.0, 2.0, 100.0, false},
+       FomDef{"Ellipsoid Fit Residuals Max (%)", 1.5, 3.0, 6.0, 100.0, false},    FomDef{"Ellipsoid Fit Coverage Multiplier", 0.1, 0.2, 0.5, 10, false},
+       FomDef{"Alignment Fit Residuals Mean (%)", 0.01, 0.05, 0.2, 100.0, false}, FomDef{"Alignment Fit Residuals StdDev (%)", 0.5, 1.0, 2.0, 100.0, false},
+       FomDef{"Alignment Fit Residuals Max (%)", 1.5, 3.0, 6.0, 100.0, false},    FomDef{"Alignment Fit Coverage Multiplier", 0.1, 0.2, 0.5, 10, false},
+   };
+   #define HSI3D_PATCHES_32 (0x01 << 0)
+   #define HSI3D_PATCHES_50 (0x01 << 1)
+   #define HSI3D_PATCHES_122 (0x01 << 2)
+   #define HSI3D_PATCHES_212 (0x01 << 3)
+   #define ENABLE_HSI3D_PATCHES (HSI3D_PATCHES_32 | HSI3D_PATCHES_50 | HSI3D_PATCHES_122 | HSI3D_PATCHES_212)  // remove unused to reduce RAM
+   
+   // StaticGyroBias
+   constexpr std::array<FomDef, 1> staticGyroBiasFom = {
+       FomDef{"Gyro StdDev (deg/hr)", 50, 100, 360, 3600, false},
+   };
+   constexpr uint16_t staticGyroBiasMeasRate = 10;  // Hz
+   
+   // StaticAccelBias
+   constexpr std::array<FomDef, 1> staticAccelBiasFom = {
+       FomDef{"Undefined", 0.0, 0.0, 0.0, 0.0, false},
+   };
+   
+   constexpr uint16_t staticAccelBiasBufferSize = 10;
+   constexpr uint16_t staticAccelBiasMeasRate = 10;  // Hz
+   
+   // StaticRfrAndAccelBias
+   constexpr std::array<FomDef, 1> staticRfrAndAccelBiasFom = {
+       FomDef{"Undefined", 0.0, 0.0, 0.0, 0.0, false},
+   };
+   
+   constexpr uint16_t staticRfrAndAccelBiasBufferSize = 10;
+   constexpr uint16_t staticRfrAndAccelBiasMeasRate = 10;  // Hz
+   
+   // DynamicAccBias
+   constexpr std::array<FomDef, 4> dynamicAccelBiasFom = {
+       FomDef{"Initial Accel StdDev (mg)", 0.07, 0.15, 0.3, 1.0, false},
+       FomDef{"Rotation Angle Error (deg)", 15.0, 30.0, 60.0, 90.0, false},
+       FomDef{"Final Accel StdDev (mg)", 0.07, 0.15, 0.3, 1.0, false},
+       FomDef{"Gyro StdDev (deg/hr)", 36, 90, 180, 3600, false},
+   };
+   
+   constexpr float dynamicAccelBiasMaxDt = 0.1f;         // sec
+   constexpr float dynamicAccelBiasMinAngle = 10.0f;     // deg
+   constexpr float dynamicAccelBiasMaxAccStd = 1.0f;     // mg
+   constexpr float dynamicAccelBiasMaxGyroStd = 720.0f;  // deg/hr
+   constexpr uint16_t dynamicAccelBiasMeasRate = 25;     // Hz
+   
+   // DynamicAccBiasAuto
+   constexpr uint16_t dynamicAccBiasAutoBufferSize = 100;
+   constexpr uint16_t dynamicAccBiasAutoMaxNumCals = 10;
+   constexpr uint16_t dynamicAccelBiasAutoMeasRate = 10;  // Hz
+   
+   //-------------------------------------------------------------------------------------------------
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_CALCONFIG_HPP_

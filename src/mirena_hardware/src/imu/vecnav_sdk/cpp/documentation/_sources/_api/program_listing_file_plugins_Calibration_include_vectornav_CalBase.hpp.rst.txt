@@ -1,0 +1,96 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_CalBase.hpp:
+
+Program Listing for File CalBase.hpp
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_CalBase.hpp>` (``plugins\Calibration\include\vectornav\CalBase.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CALBASE_HPP_
+   #define VN_CALBASE_HPP_
+   
+   #include <array>
+   #include <cstdint>
+   
+   #include "vectornav/CalSolution.hpp"
+   #include "vectornav/Interface/CompositeData.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/Interface/Registers.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   template <typename MeasType, typename ConfigType, uint16_t nFomBase, uint16_t MaxNumMeas>
+   class CalBase
+   {
+   public:
+       CalBase(const ConfigType& config, const std::array<FomDef, nFomBase>& fomDef) : solution(fomDef), _config(config) {}
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+   
+           static constexpr size_t NumRegisters = 1;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+       }
+   
+       CalSolution<nFomBase> solution;
+   
+       ErrorCal addMeasurement(const CompositeData& cdMeas) noexcept
+       {
+           std::optional<MeasType> meas = _extractMeasFromCD(cdMeas);
+           if (meas.has_value()) { return addMeasurement(meas.value()); }
+           else { return ErrorCal::IgnoredMeasurement; }
+       }
+   
+       ErrorCal addMeasurement(const MeasType& meas) noexcept
+       {
+           if (_measIndex >= MaxNumMeas) { return ErrorCal::MaximumMeasurementsRecorded; }
+           _measBuff[_measIndex++] = meas;
+           _measCntAdded++;
+           return _addMeasurement();
+       }
+   
+       inline uint16_t getMeasIndex() const noexcept { return _measIndex; }
+       inline uint16_t getNumMeasAdded() const noexcept { return _measCntAdded; }
+   
+       inline std::optional<MeasType> getMeasurement(uint16_t ind) const noexcept
+       {
+           if (ind < _measIndex) { return std::make_optional(_measBuff[ind]); }
+           else { return std::nullopt; }
+       }
+   
+       virtual ErrorCal solve() noexcept { return ErrorCal::Unknown; }
+   
+   protected:
+       virtual ErrorCal _addMeasurement() noexcept { return ErrorCal::None; }
+   
+       inline void _setFom(float fom, uint16_t ind) noexcept { solution._setFom(fom, ind); }
+       inline void _setGyroBias(Vec3f gyroBias) { solution._setGyroBias(gyroBias); }
+       inline void _setAccelBias(Vec3f accelBias) { solution._setAccelBias(accelBias); }
+       inline void _setHSI(Mat3f si, Vec3f hi) { solution._setHSI(si, hi); }
+       inline void _setRFR(Mat3f rfr) { solution._setRFR(rfr); }
+   
+       virtual std::optional<MeasType> _extractMeasFromCD([[maybe_unused]] const CompositeData& cdMeas) const noexcept { return std::nullopt; };
+   
+       ConfigType _config;
+       std::array<MeasType, MaxNumMeas> _measBuff;
+       uint16_t _measIndex = 0;
+       uint16_t _measCntAdded = 0;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_CALBASE_HPP_

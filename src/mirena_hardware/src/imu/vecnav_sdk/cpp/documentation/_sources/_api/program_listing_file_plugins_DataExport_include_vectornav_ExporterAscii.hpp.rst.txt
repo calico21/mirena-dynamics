@@ -1,0 +1,95 @@
+
+.. _program_listing_file_plugins_DataExport_include_vectornav_ExporterAscii.hpp:
+
+Program Listing for File ExporterAscii.hpp
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_DataExport_include_vectornav_ExporterAscii.hpp>` (``plugins\DataExport\include\vectornav\ExporterAscii.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_EXPORTERASCII_HPP_
+   #define VN_EXPORTERASCII_HPP_
+   
+   #include "vectornav/Debug.hpp"
+   #include "vectornav/Exporter.hpp"
+   #include "vectornav/HAL/File.hpp"
+   #include "vectornav/Implementation/Packet.hpp"
+   #include "vectornav/Interface/GenericCommand.hpp"
+   
+   namespace VN
+   {
+   namespace DataExport
+   {
+   
+   class ExporterAscii : public Exporter
+   {
+   public:
+       struct AsciiGrouping
+       {
+           uint8_t groupAll : 1;
+           uint8_t groupVnMeasurements : 1;
+           uint8_t groupVnCommands : 1;
+           uint8_t groupNmea : 1;
+           uint8_t : 4;
+   
+           AsciiGrouping() = default;
+           explicit AsciiGrouping(uint8_t other) noexcept { std::memcpy(this, &other, sizeof(AsciiGrouping)); }
+   
+           explicit operator uint8_t() const
+           {
+               uint8_t result;
+               std::memcpy(&result, this, sizeof(AsciiGrouping));
+               return result;
+           }
+   
+           AsciiGrouping& operator=(uint8_t other)
+           {
+               std::memcpy(this, &other, sizeof(AsciiGrouping));
+               return *this;
+           }
+       };
+   
+       static_assert(sizeof(ExporterAscii::AsciiGrouping) == 1, "AsciiGrouping must be exactly 1 byte");
+   
+       ExporterAscii(const Filesystem::FilePath& outputDir, PacketQueueMode mode = PacketQueueMode::Force, bool enableSystemTimeStamps = false,
+                     AsciiGrouping grouping = {})
+           : Exporter(EXPORTER_PACKET_CAPACITY, mode), _filePath(outputDir), _grouping(grouping), _enableSystemTimeStamps(enableSystemTimeStamps)
+       {
+           if (!_filePath.empty() && _filePath.back() != std::filesystem::path::preferred_separator)
+           {
+               _filePath = _filePath + std::filesystem::path::preferred_separator;
+           }
+       }
+   
+       ~ExporterAscii() = default;
+   
+       void exportToFile() override;
+   
+   private:
+       static constexpr uint8_t MAX_NUM_FILES = 10;
+       static constexpr uint16_t EXPORTER_PACKET_CAPACITY = 2048;
+   
+       struct AsciiInfo
+       {
+           ShortString header;
+           OutputFile file;
+       };
+   
+       ShortString _resolveAsciiHeader(const Packet* p) const;
+       void _flushAllFiles();
+       OutputFile& _getFileHandle(const ShortString& header);
+   
+       Filesystem::FilePath _filePath;
+       AsciiGrouping _grouping{};
+       const bool _enableSystemTimeStamps = false;
+   
+       Vector<AsciiInfo, MAX_NUM_FILES> _asciiInfo;  // One entry per file created, which is per unique message
+   };
+   
+   }  // namespace DataExport
+   }  // namespace VN
+   
+   #endif  // VN_EXPORTERASCII_HPP_

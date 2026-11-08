@@ -1,0 +1,26 @@
+.. _exhale_struct_struct_v_n_1_1_registers_1_1is__optional:
+
+Template Struct is_optional
+===========================
+
+- Defined in :ref:`file_include_vectornav_Interface_Registers.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public std::false_type``
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Registers::is_optional
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

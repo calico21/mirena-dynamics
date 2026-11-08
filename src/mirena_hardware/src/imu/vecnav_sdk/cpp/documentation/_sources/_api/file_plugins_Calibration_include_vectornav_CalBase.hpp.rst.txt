@@ -1,0 +1,83 @@
+
+.. _file_plugins_Calibration_include_vectornav_CalBase.hpp:
+
+File CalBase.hpp
+================
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_Calibration_include_vectornav>` (``plugins\Calibration\include\vectornav``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\Calibration\include\vectornav\CalBase.hpp``)
+------------------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_Calibration_include_vectornav_CalBase.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``array``
+
+- ``cstdint``
+
+- ``vectornav/CalSolution.hpp``
+
+- ``vectornav/Interface/CompositeData.hpp``
+
+- ``vectornav/Interface/Errors.hpp``
+
+- ``vectornav/Interface/Registers.hpp``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_plugins_Calibration_include_vectornav_CalSensorConfig.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_DynamicAccelBiasAuto.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_Hsi.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticAccelBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticGyroBias.hpp`
+
+- :ref:`file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__Calibration`
+
+
+Classes
+-------
+
+
+
+- :ref:`exhale_class_class_v_n_1_1_calibration_1_1_cal_base`
+

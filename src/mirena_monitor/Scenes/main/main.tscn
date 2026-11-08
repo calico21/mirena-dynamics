@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://bmd7wixsl6sp4"]
+
+[ext_resource type="Script" uid="uid://dn4nsm40bgum" path="res://Scenes/main/main.gd" id="1_w1fgp"]
+[ext_resource type="Shader" uid="uid://c2cuhooe3lu50" path="res://Scenes/main/control.gdshader" id="2_4etoo"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qtu10"]
+shader = ExtResource("2_4etoo")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_62e2m"]
+shader = ExtResource("2_4etoo")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ee4bf"]
+shader = ExtResource("2_4etoo")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kbped"]
+shader = ExtResource("2_4etoo")
+
+[node name="Main" type="PanelContainer" unique_id=1235016622]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_w1fgp")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=326143157]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HFlowContainer" type="HFlowContainer" parent="MarginContainer" unique_id=1026696284]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/h_separation = 50
+theme_override_constants/v_separation = 20
+
+[node name="Camera" type="VBoxContainer" parent="MarginContainer/HFlowContainer" unique_id=2130985170]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HFlowContainer/Camera" unique_id=1676419601]
+material = SubResource("ShaderMaterial_qtu10")
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="Label" type="Label" parent="MarginContainer/HFlowContainer/Camera" unique_id=1729657990]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "Camera"
+horizontal_alignment = 1
+
+[node name="IMU" type="VBoxContainer" parent="MarginContainer/HFlowContainer" unique_id=1635175422]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HFlowContainer/IMU" unique_id=1327899948]
+material = SubResource("ShaderMaterial_62e2m")
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="Label" type="Label" parent="MarginContainer/HFlowContainer/IMU" unique_id=1782890165]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "IMU"
+horizontal_alignment = 1
+
+[node name="CAN" type="VBoxContainer" parent="MarginContainer/HFlowContainer" unique_id=307258204]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HFlowContainer/CAN" unique_id=1232019579]
+material = SubResource("ShaderMaterial_ee4bf")
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="Label" type="Label" parent="MarginContainer/HFlowContainer/CAN" unique_id=632244998]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "CAN"
+horizontal_alignment = 1
+
+[node name="Lidar" type="VBoxContainer" parent="MarginContainer/HFlowContainer" unique_id=1425602486]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HFlowContainer/Lidar" unique_id=1661004345]
+material = SubResource("ShaderMaterial_kbped")
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+
+[node name="Label" type="Label" parent="MarginContainer/HFlowContainer/Lidar" unique_id=94987071]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "LIDAR"
+horizontal_alignment = 1

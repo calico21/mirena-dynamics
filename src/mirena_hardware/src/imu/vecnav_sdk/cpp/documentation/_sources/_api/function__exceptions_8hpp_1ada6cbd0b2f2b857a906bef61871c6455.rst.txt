@@ -1,0 +1,14 @@
+.. _exhale_function__exceptions_8hpp_1ada6cbd0b2f2b857a906bef61871c6455:
+
+Function VN::errorCodeToMessage
+===============================
+
+- Defined in :ref:`file_include_vectornav_Interface_Exceptions.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::errorCodeToMessage(ErrorAll)
+   :project: VectorNav SDK

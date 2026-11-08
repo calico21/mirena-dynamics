@@ -1,0 +1,14 @@
+.. _exhale_function__string_8hpp_1ae775e8dfdae2e9ea9a24ef933d68cb10:
+
+Function VN::StringUtils::extractAfter(const std::string_view, const char)
+==========================================================================
+
+- Defined in :ref:`file_include_vectornav_TemplateLibrary_String.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::StringUtils::extractAfter(const std::string_view, const char)
+   :project: VectorNav SDK

@@ -1,0 +1,17 @@
+.. _exhale_struct_struct_v_n_1_1_calibration_1_1_imu_cal:
+
+Struct ImuCal
+=============
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalSolution.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: VN::Calibration::ImuCal
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

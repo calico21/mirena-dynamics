@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Program Listing for File CalConfig.hpp &#8212; VectorNav SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+    <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Program Listing for File CalConfig.hpp</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="program-listing-for-file-calconfig-hpp">
+<span id="program-listing-file-plugins-calibration-include-vectornav-calconfig-hpp"></span><h1>Program Listing for File CalConfig.hpp<a class="headerlink" href="#program-listing-for-file-calconfig-hpp" title="Link to this heading">¶</a></h1>
+<p>↰ <a class="reference internal" href="file_plugins_Calibration_include_vectornav_CalConfig.hpp.html#file-plugins-calibration-include-vectornav-calconfig-hpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">plugins\Calibration\include\vectornav\CalConfig.hpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#ifndef VN_CALCONFIG_HPP_</span>
+<span class="cp">#define VN_CALCONFIG_HPP_</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;array&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdint&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;vectornav/CalSolution.hpp&quot;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">VN</span>
+<span class="p">{</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">Calibration</span>
+<span class="p">{</span>
+
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">gref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">9.793746f</span><span class="p">;</span><span class="w">                        </span><span class="c1">// magnitude of gravity (m/s/s)</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">fomNameMaxLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FOMNAMEMAXLENGTH</span><span class="p">;</span><span class="w">  </span><span class="c1">// defined in CalFom to avoid circular dependency</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dipoleB0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.312</span><span class="p">;</span><span class="w">                        </span><span class="c1">// Field strength in Gauss</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dipoleNorthLatitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">80.37</span><span class="p">;</span><span class="w">             </span><span class="c1">// Latitude of north geomagnetic pole</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dipoleNorthLongitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-72.62</span><span class="p">;</span><span class="w">           </span><span class="c1">// Longitude of north geomagnetic pole</span>
+
+<span class="c1">// Hsi2d</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">hsi2dBufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">hsiMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Hz</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hsi2dFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals Mean (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w"> </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals StdDev (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals Max (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w">   </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Coverage Multiplier&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals Mean (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w"> </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals StdDev (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals Max (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w">   </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Coverage Multiplier&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="c1">// Hsi3d</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">hsi3dBufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hsi3dFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals Mean (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w"> </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals StdDev (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Residuals Max (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Ellipsoid Fit Coverage Multiplier&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals Mean (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w"> </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals StdDev (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Residuals Max (%)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span><span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Alignment Fit Coverage Multiplier&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+<span class="cp">#define HSI3D_PATCHES_32 (0x01 &lt;&lt; 0)</span>
+<span class="cp">#define HSI3D_PATCHES_50 (0x01 &lt;&lt; 1)</span>
+<span class="cp">#define HSI3D_PATCHES_122 (0x01 &lt;&lt; 2)</span>
+<span class="cp">#define HSI3D_PATCHES_212 (0x01 &lt;&lt; 3)</span>
+<span class="cp">#define ENABLE_HSI3D_PATCHES (HSI3D_PATCHES_32 | HSI3D_PATCHES_50 | HSI3D_PATCHES_122 | HSI3D_PATCHES_212)  </span><span class="c1">// remove unused to reduce RAM</span>
+
+<span class="c1">// StaticGyroBias</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">staticGyroBiasFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Gyro StdDev (deg/hr)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">360</span><span class="p">,</span><span class="w"> </span><span class="mi">3600</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">staticGyroBiasMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Hz</span>
+
+<span class="c1">// StaticAccelBias</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">staticAccelBiasFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Undefined&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">staticAccelBiasBufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">staticAccelBiasMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Hz</span>
+
+<span class="c1">// StaticRfrAndAccelBias</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">staticRfrAndAccelBiasFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Undefined&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">staticRfrAndAccelBiasBufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">staticRfrAndAccelBiasMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Hz</span>
+
+<span class="c1">// DynamicAccBias</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">FomDef</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dynamicAccelBiasFom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Initial Accel StdDev (mg)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.07</span><span class="p">,</span><span class="w"> </span><span class="mf">0.15</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Rotation Angle Error (deg)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span><span class="w"> </span><span class="mf">30.0</span><span class="p">,</span><span class="w"> </span><span class="mf">60.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Final Accel StdDev (mg)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.07</span><span class="p">,</span><span class="w"> </span><span class="mf">0.15</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="w">    </span><span class="n">FomDef</span><span class="p">{</span><span class="s">&quot;Gyro StdDev (deg/hr)&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">36</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="mi">180</span><span class="p">,</span><span class="w"> </span><span class="mi">3600</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dynamicAccelBiasMaxDt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1f</span><span class="p">;</span><span class="w">         </span><span class="c1">// sec</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dynamicAccelBiasMinAngle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10.0f</span><span class="p">;</span><span class="w">     </span><span class="c1">// deg</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dynamicAccelBiasMaxAccStd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">;</span><span class="w">     </span><span class="c1">// mg</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">dynamicAccelBiasMaxGyroStd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">720.0f</span><span class="p">;</span><span class="w">  </span><span class="c1">// deg/hr</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">dynamicAccelBiasMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">25</span><span class="p">;</span><span class="w">     </span><span class="c1">// Hz</span>
+
+<span class="c1">// DynamicAccBiasAuto</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">dynamicAccBiasAutoBufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">dynamicAccBiasAutoMaxNumCals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">dynamicAccelBiasAutoMeasRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Hz</span>
+
+<span class="c1">//-------------------------------------------------------------------------------------------------</span>
+
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace Calibration</span>
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace VN</span>
+
+<span class="cp">#endif  </span><span class="c1">// VN_CALCONFIG_HPP_</span>
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MigrationGuide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/KeyFunctionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/AdvancedFunctionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MemoryConstrained.html">Memory Constrained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/NonOsUsage.html">Non-Os Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/api_index.html">VNSDK API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plugins/index.html">Plugins</a></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_api/program_listing_file_plugins_Calibration_include_vectornav_CalConfig.hpp.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Program Listing for File CalConfig.hpp</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

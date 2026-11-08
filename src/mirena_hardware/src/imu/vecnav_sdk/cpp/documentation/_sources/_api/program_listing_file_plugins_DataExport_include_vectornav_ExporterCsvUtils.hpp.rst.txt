@@ -1,0 +1,52 @@
+
+.. _program_listing_file_plugins_DataExport_include_vectornav_ExporterCsvUtils.hpp:
+
+Program Listing for File ExporterCsvUtils.hpp
+=============================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_DataExport_include_vectornav_ExporterCsvUtils.hpp>` (``plugins\DataExport\include\vectornav\ExporterCsvUtils.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_EXPORTERCSVUTILS_HPP_
+   #define VN_EXPORTERCSVUTILS_HPP_
+   
+   #include <stdint.h>
+   
+   #include <string_view>
+   
+   #include "vectornav/Implementation/AsciiPacketProtocol.hpp"
+   
+   namespace VN
+   {
+   namespace DataExport
+   {
+   
+   inline uint8_t getGnssGroup(uint8_t group) noexcept
+   {
+       switch (group)
+       {
+           case 3:
+               return 1;
+           case 6:
+               return 2;
+           case 12:
+               return 3;
+           default:
+               return 0;
+       }
+   }
+   inline bool isSatField(uint8_t group, uint8_t field) noexcept { return getGnssGroup(group) > 0 && field == 14; }
+   inline bool isRawField(uint8_t group, uint8_t field) noexcept { return getGnssGroup(group) > 0 && field == 16; }
+   inline bool isDynamicField(uint8_t group, uint8_t field) noexcept { return isSatField(group, field) || isRawField(group, field); }
+   
+   const std::string_view getMeasurementNames(const AsciiPacketProtocol::AsciiMeasurementHeader& msg);
+   
+   const std::string_view getMeasurementNames(const size_t binaryGroup, const size_t binaryField);
+   
+   }  // namespace DataExport
+   }  // namespace VN
+   
+   #endif  // VN_EXPORTERCSVUTILS_HPP_

@@ -1,0 +1,10 @@
+mirena_camera:
+  ros__parameters:
+    video_device: "/dev/ter_camera_video"
+    image_width: 640
+    image_height: 480
+    fps: 90
+    frame_id: "camera_optical_frame"
+    camera_name: "mirena_camera"
+    # Points to the calibration result from Step 5 of our previous chat
+    camera_info_url: "file:///home/mirena/mirena_ws/src/mirena_hardware/config/camera_info.yaml"

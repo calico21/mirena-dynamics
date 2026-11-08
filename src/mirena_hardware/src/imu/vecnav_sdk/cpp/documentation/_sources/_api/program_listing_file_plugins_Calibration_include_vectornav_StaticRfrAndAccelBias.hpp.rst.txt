@@ -1,0 +1,178 @@
+
+.. _program_listing_file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp:
+
+Program Listing for File StaticRfrAndAccelBias.hpp
+==================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_Calibration_include_vectornav_StaticRfrAndAccelBias.hpp>` (``plugins\Calibration\include\vectornav\StaticRfrAndAccelBias.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_STATICRFRANDACCELBIAS_HPP_
+   #define VN_STATICRFRANDACCELBIAS_HPP_
+   
+   #include <array>
+   #include <cstdint>
+   #include <optional>
+   
+   #include "vectornav/CalBase.hpp"
+   #include "vectornav/CalConfig.hpp"
+   #include "vectornav/Interface/Errors.hpp"
+   #include "vectornav/SampleStats.hpp"
+   #include "vectornav/TemplateLibrary/Matrix.hpp"
+   
+   namespace VN
+   {
+   namespace Calibration
+   {
+   
+   struct StaticRfrAndAccelBiasMeas
+   {
+       Vec3f accel{};               // (m/s/s)
+       std::optional<float> pitch;  // (deg)
+       std::optional<float> roll;   // (deg)
+   };
+   
+   struct StaticRfrAndAccelBiasConfig
+   {
+       float gval = gref;
+   };
+   
+   class StaticRfrAndAccelBias
+       : public CalBase<StaticRfrAndAccelBiasMeas, StaticRfrAndAccelBiasConfig, staticRfrAndAccelBiasFom.size(), staticRfrAndAccelBiasBufferSize>
+   {
+   public:
+       StaticRfrAndAccelBias(const StaticRfrAndAccelBiasConfig& config) : CalBase(config, staticRfrAndAccelBiasFom) {}
+   
+       using CalBase::addMeasurement;
+       ErrorCal addMeasurement(const Vec3f& accel, bool avgWithPrev = false) noexcept
+       {
+           if (!avgWithPrev) { return addMeasurement(StaticRfrAndAccelBiasMeas{accel, std::nullopt, std::nullopt}); }
+           else if (_measIndex == 0) { return ErrorCal::IgnoredMeasurement; }
+           else
+           {
+               _accMeas.addSample(accel);
+               _measCntAdded++;
+               return ErrorCal::None;
+           }
+       }
+       ErrorCal addMeasurement(const Vec3f& accel, const float& pitch) noexcept
+       {
+           return addMeasurement(StaticRfrAndAccelBiasMeas{accel, std::make_optional(pitch), std::nullopt});
+       }
+       ErrorCal addMeasurement(const Vec3f& accel, const float& pitch, const float& roll) noexcept
+       {
+           return addMeasurement(StaticRfrAndAccelBiasMeas{accel, std::make_optional(pitch), std::make_optional(roll)});
+       }
+       ErrorCal addMeasurement(const CompositeData& cdMeas, bool avgWithPrev)
+       {
+           if (!avgWithPrev) { return addMeasurement(cdMeas); }
+           else if (cdMeas.imu.uncompAccel.has_value()) { return addMeasurement(cdMeas.imu.uncompAccel.value(), true); }
+           else { return ErrorCal::IgnoredMeasurement; }
+       }
+       ErrorCal addMeasurement(const CompositeData& cdMeas, const float& pitch)
+       {
+           ErrorCal err = addMeasurement(cdMeas);
+           if (err == ErrorCal::None) { _measBuff[_measIndex - 1].pitch = pitch; }
+           return err;
+       }
+       ErrorCal addMeasurement(const CompositeData& cdMeas, const float& pitch, const float& roll)
+       {
+           ErrorCal err = addMeasurement(cdMeas);
+           if (err == ErrorCal::None)
+           {
+               _measBuff[_measIndex - 1].pitch = pitch;
+               _measBuff[_measIndex - 1].roll = roll;
+           }
+           return err;
+       }
+   
+       std::optional<StaticRfrAndAccelBiasMeas> getCorrectedMeasurement(uint16_t ind) const noexcept;
+   
+       ErrorCal solve() noexcept override;
+       ErrorCal solve(const Mat3f& RFR0) noexcept;
+   
+       struct RegisterStorage
+       {
+           Registers::System::BinaryOutput1 binOut1;
+           Registers::IMU::ImuFilterControl imuFilter;
+   
+           static constexpr size_t NumRegisters = 2;
+           std::array<ConfigurationRegister*, NumRegisters> getRegisters() { return {&binOut1, &imuFilter}; }
+       };
+   
+       static void initCalRegisterValues(RegisterStorage& storage, Registers::System::BinaryOutput::AsyncMode asyncMode, uint16_t imuRate)
+       {
+           storage.binOut1.asyncMode = asyncMode;
+           storage.binOut1.imu.uncompAccel = true;
+           storage.binOut1.rateDivisor = imuRate / Calibration::staticRfrAndAccelBiasMeasRate;
+   
+           storage.imuFilter.accelFilterMode.emplace();
+           storage.imuFilter.accelFilterMode->uncomp = true;
+           storage.imuFilter.accelWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.gyroFilterMode.emplace();
+           storage.imuFilter.gyroFilterMode->uncomp = true;
+           storage.imuFilter.gyroWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.magFilterMode.emplace();
+           storage.imuFilter.magFilterMode->uncomp = true;
+           storage.imuFilter.magWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.presFilterMode.emplace();
+           storage.imuFilter.presFilterMode->uncomp = true;
+           storage.imuFilter.presWindowSize = storage.binOut1.rateDivisor;
+           storage.imuFilter.tempFilterMode.emplace();
+           storage.imuFilter.tempFilterMode->uncomp = true;
+           storage.imuFilter.tempWindowSize = storage.binOut1.rateDivisor;
+       }
+   
+   private:
+       Math::SampleStats<3, float> _accMeas;
+   
+       ErrorCal _addMeasurement() noexcept override
+       {
+           if (_accMeas.getCount() > 1)
+           {
+               auto currMeas = _measBuff[_measIndex - 2];
+               currMeas.accel = _accMeas.getMean();
+               _measBuff[_measIndex - 2] = currMeas;
+           }
+           _accMeas.reset();
+           _accMeas.addSample(_measBuff[_measIndex - 1].accel);
+           return ErrorCal::None;
+       }
+   
+       std::optional<StaticRfrAndAccelBiasMeas> _extractMeasFromCD(const CompositeData& cdMeas) const noexcept override
+       {
+           if (cdMeas.imu.uncompAccel.has_value())
+           {
+               return std::make_optional(StaticRfrAndAccelBiasMeas{cdMeas.imu.uncompAccel.value(), std::nullopt, std::nullopt});
+           }
+           else { return std::nullopt; }
+       }
+   
+       struct StaticAccelCalState
+       {
+           Vec3f tstar{0.0f, 0.0f, 0.0f};
+           Vec3f crp{0.0f, 0.0f, 0.0f};
+       };
+   
+       static ErrorCal _calcJacobianNormG(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, const StaticAccelCalState& X, Matrix<1, 6, float>& H,
+                                          StaticRfrAndAccelBiasConfig config) noexcept;
+       static ErrorCal _calcJacobianKnownPitch(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, const StaticAccelCalState& X, Matrix<2, 6, float>& H,
+                                               StaticRfrAndAccelBiasConfig config) noexcept;
+       static ErrorCal _calcJacobianKnownPitchRoll(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, Matrix<3, 6, float>& H,
+                                                   StaticRfrAndAccelBiasConfig config) noexcept;
+   
+       static ErrorCal _calcMeasErrNormG(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, const StaticAccelCalState& X, float& dy,
+                                         StaticRfrAndAccelBiasConfig config) noexcept;
+       static ErrorCal _calcMeasErrKnownPitch(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, const StaticAccelCalState& X, Vec2f& dy,
+                                              StaticRfrAndAccelBiasConfig config) noexcept;
+       static ErrorCal _calcMeasErrKnownPitchRoll(const StaticRfrAndAccelBiasMeas& sam, const Mat3f& RFR0, const StaticAccelCalState& X, Vec3f& dy,
+                                                  StaticRfrAndAccelBiasConfig config) noexcept;
+   };
+   
+   }  // namespace Calibration
+   }  // namespace VN
+   
+   #endif  // VN_STATICRFRANDACCELBIAS_HPP_

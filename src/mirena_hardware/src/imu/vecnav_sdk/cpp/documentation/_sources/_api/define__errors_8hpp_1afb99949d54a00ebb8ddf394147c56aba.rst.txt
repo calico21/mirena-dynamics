@@ -1,0 +1,14 @@
+.. _exhale_define__errors_8hpp_1afb99949d54a00ebb8ddf394147c56aba:
+
+Define __FIRMWARE_PROGRAMMER__
+==============================
+
+- Defined in :ref:`file_include_vectornav_Interface_Errors.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: __FIRMWARE_PROGRAMMER__
+   :project: VectorNav SDK

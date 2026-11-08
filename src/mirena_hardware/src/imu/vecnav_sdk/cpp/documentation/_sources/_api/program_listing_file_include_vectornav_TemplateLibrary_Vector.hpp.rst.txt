@@ -1,0 +1,204 @@
+
+.. _program_listing_file_include_vectornav_TemplateLibrary_Vector.hpp:
+
+Program Listing for File Vector.hpp
+===================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_TemplateLibrary_Vector.hpp>` (``include\vectornav\TemplateLibrary\Vector.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_VECTOR_HPP_
+   #define VN_VECTOR_HPP_
+   
+   #include <stdint.h>
+   
+   #include <array>
+   #include <initializer_list>
+   #include <iterator>
+   
+   #include "vectornav/Debug.hpp"
+   #if (VN_DEBUG_LEVEL > 0)
+   #include <iostream>
+   #endif
+   namespace VN
+   {
+   
+   using Errored = bool;
+   
+   template <typename T, size_t Capacity>
+   class Vector
+   {
+       static_assert(Capacity < size_t(-1));
+   
+   public:
+       constexpr Vector() = default;
+   
+       constexpr Vector(std::initializer_list<T> init) noexcept
+       {
+           VN_ASSERT(init.size() <= Capacity);
+           for (const auto& itr : init)
+           {
+               Errored retVal = push_back(itr);
+               VN_ASSERT(!retVal);
+           }
+       }
+   
+       template <size_t inputArraySize>
+       constexpr Vector(const std::array<T, inputArraySize>& arr) noexcept
+       {
+           static_assert(inputArraySize <= Capacity, "[Error]: Input array exceeds the capacity of the Vector");
+           for (const auto& element : arr)
+           {
+               Errored retVal = _array.push_back(element);
+               VN_ASSERT(!retVal);
+           }
+       }
+   
+       constexpr Errored push_back(T&& input) noexcept
+       {
+           if (_size >= Capacity) { return true; }
+           else
+           {
+               _array[_size++] = std::move(input);
+               return false;
+           }
+       }
+   
+       constexpr Errored push_back(const T& input) noexcept
+       {
+           if (_size >= Capacity) { return true; }
+           else
+           {
+               _array[_size++] = input;
+               return false;
+           }
+       }
+   
+       Errored pop_back() noexcept
+       {
+           if (_size == 0) { return true; }
+           else
+           {
+               _size -= 1;
+               return false;
+           }
+       }
+   
+       constexpr void clear() noexcept
+       {
+           _size = 0;
+           memset(&_array[0], '\0', Capacity + 1);
+       }
+   
+   #if (VN_DEBUG_LEVEL > 0)
+       void print() const noexcept
+       {
+           const T* i = _array.data();
+           std::cout << "{";
+           for (int j = 0; j < _size; j++)
+           {
+               if constexpr (std::is_same<T, uint8_t>::value)
+               {
+                   std::cout << "  0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<uint16_t>(i[j]) << "  ";
+               }
+               else if constexpr (std::is_same<T, uint16_t>::value) { std::cout << "  0x" << std::hex << std::setfill('0') << std::setw(4) << i[j] << "  "; }
+               // else if constexpr (std::is_arithmetic<T>::value) { std::cout << "  " << std::to_string(i[j]) << "  "; }
+               else { std::cout << "  " << i[j] << "  "; }
+           }
+           std::cout << std::dec << "}";  // Reset to decimal format
+       }
+   #endif
+   
+       const T& front() const noexcept { return _array[0]; }         // Undefined behavior when empty, as std::vector
+       T& front() noexcept { return _array[0]; }                     // Undefined behavior when empty, as std::vector
+       const T& back() const noexcept { return _array[_size - 1]; }  // Undefined behavior when empty, as std::vector
+       T& back() noexcept { return _array[_size - 1]; }              // Undefined behavior when empty, as std::vector
+   
+       using iterator = typename std::array<T, Capacity + 1>::iterator;
+       using const_iterator = typename std::array<T, Capacity + 1>::const_iterator;
+   
+       iterator begin() noexcept { return _array.begin(); }
+       const_iterator begin() const noexcept { return _array.begin(); }
+   
+       iterator end() noexcept { return _array.begin() + _size; }
+       const_iterator end() const noexcept { return _array.begin() + _size; }
+   
+       using reverse_iterator = typename std::array<T, Capacity + 1>::reverse_iterator;
+       using const_reverse_iterator = typename std::array<T, Capacity + 1>::const_reverse_iterator;
+   
+       reverse_iterator rbegin() noexcept { return _array.rbegin(); }
+       const_reverse_iterator rbegin() const noexcept { return _array.rbegin(); }
+   
+       reverse_iterator rend() noexcept { return _array.rbegin() - _size; }
+       const_reverse_iterator rend() const noexcept { return _array.rbegin() - _size; }
+   
+       const T& at(const size_t i) const noexcept
+       {
+           VN_ASSERT(i < _size);  // We don't have an optional return, so we will just fault here. You should be checking the size before using.
+           return _array[i];
+       }
+   
+       T& at(const size_t i) noexcept
+       {
+           VN_ASSERT(i < _size);  // We don't have an optional return, so we will just fault here. You should be checking the size before using.
+           return _array[i];
+       }
+   
+       Errored insert(const_iterator position, const T& value) noexcept
+       {
+           const size_t index = std::distance<const_iterator>(begin(), position);
+   
+           if (index > _size || _size >= Capacity) { return true; }
+   
+           std::move_backward(begin() + index, begin() + _size, begin() + _size + 1);
+   
+           _array[index] = value;
+           ++_size;
+   
+           return false;
+       }
+   
+       iterator erase(const_iterator position) noexcept
+       {
+           const size_t index = std::distance<const_iterator>(begin(), position);
+   
+           if (index >= _size || _size == 0) { return end(); }
+   
+           std::move(begin() + index + 1, begin() + _size, begin() + index);
+   
+           --_size;
+           return begin() + index;
+       }
+   
+       // Getters
+       bool full() const noexcept { return _size == Capacity; }
+       bool empty() const noexcept { return _size == 0; }
+       static constexpr size_t capacity() noexcept { return Capacity; }
+       size_t size() const noexcept { return _size; }
+       const T* data() const noexcept { return _array.data(); }
+   
+       const T& operator[](const size_t idx) const noexcept { return _array[idx]; }
+   
+       T& operator[](const size_t idx) noexcept { return _array[idx]; }
+   
+   protected:
+       std::array<T, Capacity + 1> _array{};
+       size_t _size = 0;
+   };
+   template <typename T, size_t Capacity>
+   bool operator==(const Vector<T, Capacity>& lhs, const Vector<T, Capacity>& rhs)
+   {
+       if (lhs.size() != rhs.size()) { return false; }
+       for (size_t i = 0; i < lhs.size(); i++)
+       {
+           if (lhs[i] != rhs[i]) { return false; }
+       }
+       return true;
+   }
+   
+   }  // namespace VN
+   
+   #endif  // VN_VECTOR_HPP_

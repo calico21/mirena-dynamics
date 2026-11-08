@@ -1,0 +1,119 @@
+
+.. _program_listing_file_include_vectornav_Interface_BridgeSensor.hpp:
+
+Program Listing for File BridgeSensor.hpp
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_Interface_BridgeSensor.hpp>` (``include\vectornav\Interface\BridgeSensor.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_BRIDGESENSOR_HPP_
+   #define VN_BRIDGESENSOR_HPP_
+   
+   #include "vectornav/Interface/Sensor.hpp"
+   #include "vectornav/Interface/Stream.hpp"
+   #if __CLI__
+   #else  // if !__CLI__
+   #include "vectornav/Interface/Exceptions.hpp"
+   #endif  // __CLI__
+   
+   namespace VN
+   {
+   class BridgeSensor : public Sensor
+   {
+   public:
+       using Sensor::Sensor;
+   
+       ~BridgeSensor() { disableMonitor(); }
+   
+       using Sensor::connect;
+       Error connect(const Serial_Base::PortName& portName, const BaudRate baudRate, const bool monitorAsyncErrors)
+       {
+           Error error = connect(portName, baudRate);
+           if (error != Error::None) { return error; }
+           _initMonitor(monitorAsyncErrors);
+           return error;
+       }
+   
+   #if _VN_TCP_DRIVER
+       Error connect(const Serial_Base::PortName& ipAddress, const Serial_Base::PortName& portNumber, const bool monitorAsyncErrors)
+       {
+           Error error = connect(ipAddress, portNumber);
+           if (error != Error::None) { return error; }
+           _initMonitor(monitorAsyncErrors);
+           return error;
+       }
+   #endif
+   
+       using Sensor::autoConnect;
+       Error autoConnect(const Serial_Base::PortName& portName, const bool monitorAsyncErrors)
+       {
+           Error error = autoConnect(portName);
+           if (error != Error::None) { return error; }
+           _initMonitor(monitorAsyncErrors);
+           return error;
+       }
+   
+   #if _VN_TCP_DRIVER
+       Error autoConnect(const Serial_Base::PortName& ipAddress, const Serial_Base::PortName& portNumber, const bool monitorAsyncErrors)
+       {
+           Error error = autoConnect(ipAddress, portNumber);
+           if (error != Error::None) { return error; }
+           _initMonitor(monitorAsyncErrors);
+           return error;
+       }
+   #endif
+   
+       using Sensor::reset;
+       Error reset(const bool monitorAsyncErrors)
+       {
+           Error error = reset();
+           if (error != Error::None) { return error; }
+           return error;
+       }
+   
+       bool asyncErrorThrowingEnabled() { return _asyncErrorQueueThrowingEnabled; }
+   
+       void disableMonitor()
+       {
+           _asyncErrorQueueThrowingEnabled = false;
+           if (_asyncErrorThread && _asyncErrorThread->joinable()) { _asyncErrorThread->join(); }
+       }
+   
+   private:
+       std::atomic<bool> _asyncErrorQueueThrowingEnabled = false;
+       std::unique_ptr<Thread> _asyncErrorThread = nullptr;
+   
+       void _initMonitor(const bool monitorAsyncErrors)
+       {
+           if (monitorAsyncErrors)
+           {
+               _asyncErrorQueueThrowingEnabled = true;
+               _asyncErrorThread = std::make_unique<Thread>(&BridgeSensor::_threadMonitor, this);
+           }
+       }
+   
+       void _threadMonitor()
+       {
+           while (_asyncErrorQueueThrowingEnabled)
+           {
+               VN::thisThread::sleepFor(1ms);
+               auto asyncError = Sensor::getNextAsyncError();
+               if (asyncError)
+               {
+                   std::cerr << *asyncError << std::endl;
+   #if __CLI__
+                   throw std::runtime_error(errorCodeToString(asyncError->error).data());
+   #else   // if !__CLI__
+                   throwError(asyncError->error);
+   #endif  // __CLI__
+               }
+           }
+       }
+   };
+   }  // namespace VN
+   
+   #endif  // VN_BRIDGESENSOR_HPP_

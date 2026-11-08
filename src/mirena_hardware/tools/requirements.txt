@@ -1,0 +1,14 @@
+# --- Core Math & Scientific Computing ---
+numpy>=1.22.0,<2.0.0      # Keeps compatibility with older OpenCV/SciPy APIs
+scipy>=1.8.0              # Essential for spatial transforms (Rotation)
+
+# --- Computer Vision & Image Parsing ---
+opencv-python>=4.7.0.72   # Stable bindings for cv2.aruco.ArucoDetector & CharucoBoard
+opencv-contrib-python>=4.7.0.72 # Required for older ChArUco / ArUco implementations
+
+# --- Serialization & Data Handling ---
+pyyaml>=6.0               # Used for reading and writing .yaml configurations
+
+# --- Graphical User Interface ---
+PyQt5>=5.15.6             # High-level GUI pipeline framework
+PyQt5-Qt5>=5.15.2         # Backing Qt binaries for PyQt5

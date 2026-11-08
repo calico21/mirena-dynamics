@@ -1,0 +1,543 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Calibration &#8212; VectorNav SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+    <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Export" href="DataExport.html" />
+    <link rel="prev" title="Plugins" href="index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="DataExport.html" title="Data Export"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="index.html" title="Plugins"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Calibration</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="calibration">
+<span id="cppcalibrationpage"></span><h1>Calibration<a class="headerlink" href="#calibration" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Access to the Calibration Plugin requires a license agreement; it will not be provided until the agreement is signed—please email VectorNav Support at <a class="reference external" href="mailto:support&#37;&#52;&#48;vectornav&#46;com">support<span>&#64;</span>vectornav<span>&#46;</span>com</a> to initiate the licensing process.</p>
+</div>
+<p>The Calibration Plugin offers several different tools for the user to take advantage of.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#hsi-calibration"><span class="std std-ref">Hard and Soft Iron (HSI) Calibration</span></a> - Accounts for any time-invariant magnetic disturbances fixed with respect to the VectorNav unit</p></li>
+<li><p>Bias Calibration - Estimates the accelerometer and gyroscope biases</p></li>
+<li><p>Static IMU Calibration - Estimates the static accelerometer bias of the VectorNav unit and estimates the reference frame rotation between the VectorNav unit and a platform it is mounted to.</p></li>
+</ul>
+<section id="hard-and-soft-iron-hsi-calibration">
+<span id="hsi-calibration"></span><h2>Hard and Soft Iron (HSI) Calibration<a class="headerlink" href="#hard-and-soft-iron-hsi-calibration" title="Link to this heading">¶</a></h2>
+<p>A magnetometer is used to measure the strength and direction of the local magnetic field surrounding a system. This magnetic field measurement can then be compared to models of Earth’s magnetic field to determine the heading of a system with respect to magnetic North. While seemingly straightforward, using a magnetometer to accurately estimate heading can prove to be quite challenging as Earth’s magnetic field is relatively weak and there often exist a number of different magnetic disturbances that can impact magnetometer measurements.</p>
+<p>To account for any magnetic disturbances that are time-invariant and fixed with respect to the VectorNav unit, VectorNav has developed a Hard and Soft Iron Calibration tool. It is recommended to perform this calibration if the VectorNav unit requires an accurate heading solution, and either does not have access to GNSS, or will be operating in GNSS denied areas for extended periods of time. Additionally, it is typically recommended that an HSI calibration be performed on VectorNav’s single-antenna GNSS/INS products for robustness, particularly if the system will experience static and/or low-dynamic conditions. An HSI calibration is not usually required for VectorNav’s dual-antenna GNSS/INS products if the GNSS compass is active, but it should be performed for robustness if GNSS outages are expected. More information about the HSI calibration can be found in the <a class="reference external" href="https://www.vectornav.com/resources/detail/hard-and-soft-iron-calibration-technical-notes?return=/resources/technical-documentation/technical-notes&amp;title=Technical%20Notes">Hard and Soft Iron technical note</a> available on the VectorNav website.</p>
+<section id="motion-requirements">
+<h3>Motion Requirements<a class="headerlink" href="#motion-requirements" title="Link to this heading">¶</a></h3>
+<p>The HSI calibration can be implemented using two different types of motion - a 2D calibration or a 3D calibration depending on the range of movement feasible during calibration. Typically, a 2D calibration is sufficient if the platform will stay between 5° to 10° of level in both pitch and roll. Outside of that range, a full 3D calibration is strongly recommended.</p>
+<p>A 2D calibration requires that the VectorNav unit be rotated 360° about the axis parallel to gravity. The unit should be rotated on a flat surface with less than 10° of tilt.  During a 2D calibration, the unit does not necessarily need to travel in a full circle — simply spinning the unit in place is sufficient.</p>
+<p>When performing a full 3D calibration, the unit needs to be rotated about all axes to cover as much as possible a sphere of measurement. To achieve this, the following steps are recommended:</p>
+<ol class="arabic simple">
+<li><p>Align the unit x-axis to the North-South vector and rotate a full 360°</p></li>
+<li><p>Repeat Step 1 for the y- and z-axes, aligning each to the North-South vector and rotating the unit a full 360°</p></li>
+<li><p>Align the unit x-axis to the East-West vector and rotate a full 360°</p></li>
+<li><p>Repeat Steps 1-3 for the y- and z-axes, aligning each to the East-West vector and rotating the unit a full 360°</p></li>
+</ol>
+<p>If this type of motion is not feasible, contact VectorNav support for feedback on other viable motion profiles.</p>
+</section>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When performing an HSI calibration, the latitude and longitude of the unit must be known.</p>
+</div>
+<p>The HSI calibration can be run either by from a previously logged data file or while connected to the VectorNav unit.</p>
+<section id="performing-an-hsi-calibration-from-a-data-file">
+<h4>Performing an HSI Calibration from a Data File<a class="headerlink" href="#performing-an-hsi-calibration-from-a-data-file" title="Link to this heading">¶</a></h4>
+<p>When performing an HSI calibration using recorded data from a VectorNav unit, a <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object must first be created. This allows the user to define the parameters needed for calibration. The sensor’s latitude and longitude must be provided so the calibration algorithm can accurately reference the local magnetic field. The number of patches can also be configured, which defines how the measurement space is divided for data collection. This setting determines when measurements are retained, based on whether the magnetic field vector, or the vector perpendicular to it (east), passes through a given patch. For a 3D calibration, the number of data points can also be configured. This parameter controls how measurements are retained within each patch, either by limiting the total number of stored data points or by retaining measurements when the unit’s attitude changes by at least <code class="docutils literal notranslate"><span class="pre">360/numDataPointsPerPatch</span></code> degrees, ensuring uniform orientation coverage within each patch.</p>
+<p>If performing a 2D calibration motion profile, the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi2d.html#_CPPv4N2VN11Calibration5Hsi2dE" title="VN::Calibration::Hsi2d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi2d</span></code></a> object will be used.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi2dConfig</span><span class="w"> </span><span class="n">hsiConfiguration</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">longitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-96.7</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">32.5</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numPatches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">360</span><span class="p">;</span>
+
+<span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi2d</span><span class="w"> </span><span class="nf">hsi</span><span class="p">(</span><span class="n">hsiConfiguration</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If performing a 3D calibration motion profile, the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi3d.html#_CPPv4N2VN11Calibration5Hsi3dE" title="VN::Calibration::Hsi3d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi3d</span></code></a> object will be used.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi3dConfig</span><span class="w"> </span><span class="n">hsiConfiguration</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">longitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">34.8</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">31.9</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numPatches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">NumPatches</span><span class="o">::</span><span class="n">Patches122</span><span class="p">;</span>
+<span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numDataPointsPerPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+
+<span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi3d</span><span class="w"> </span><span class="nf">hsi</span><span class="p">(</span><span class="n">hsiConfiguration</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>When processing data from a previously recorded log file, a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object must first be created and should be configured with <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor13MeasQueueMode5RetryE" title="VN::Sensor::MeasQueueMode::Retry"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">MeasQueueMode::Retry</span></code></a>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="w"> </span><span class="n">pushToCompositeData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="o">::</span><span class="n">Retry</span><span class="p">;</span><span class="w">  </span><span class="c1">// do not allow overruns</span>
+<span class="n">Sensor</span><span class="w"> </span><span class="nf">sensor</span><span class="p">(</span><span class="n">pushToCompositeData</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Next, connect to the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object using the inputted file path.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filePath</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The data from the logged file is then loaded into the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_base.html#_CPPv4I00_8uint16_t_8uint16_tEN2VN11Calibration7CalBaseE" title="VN::Calibration::CalBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalBase</span></code></a> object for processing using the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">addMeasurement()</span></code> method.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">meas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">getNextMeasurement</span><span class="p">())</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">addMeasurement</span><span class="p">(</span><span class="o">*</span><span class="n">meas</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">IgnoredMeasurement</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ignoredCnt</span><span class="o">++</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Measurement &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ignoredCnt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">getNumMeasAdded</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To close the file, disconnect from the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">disconnect</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Finally, solve and print out the HSI calibration results. This calibration solution should then be applied to the Magnetometer Calibration register (Register 23) on the VectorNav unit. A <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor13writeSettingsEv" title="VN::Sensor::writeSettings"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">writeSettings()</span></code></a> command should be issued to the sensor in order for the calibration values to persist through a reset or power cycle of the sensor.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot; encountered during solve.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">latestError</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">solution</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="performing-an-hsi-calibration-on-a-connected-vectornav-unit">
+<h4>Performing an HSI Calibration on a Connected VectorNav Unit<a class="headerlink" href="#performing-an-hsi-calibration-on-a-connected-vectornav-unit" title="Link to this heading">¶</a></h4>
+<p>When performing an HSI calibration with a connected VectorNav unit, a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object first needs to be created. This object should then be used to connect to the VectorNav unit, such as by using the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor11autoConnectERKN11Serial_Base8PortNameE" title="VN::Sensor::autoConnect"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">autoConnect()</span></code></a> method.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="w"> </span><span class="n">sensor</span><span class="p">;</span>
+<span class="n">Error</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">portName</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Once the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object has been created and connected to the VectorNav unit, a <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object must first be created to define the calibration parameters. Once the configuration is set, either a <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi2d.html#_CPPv4N2VN11Calibration5Hsi2dE" title="VN::Calibration::Hsi2d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi2d</span></code></a> or <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi3d.html#_CPPv4N2VN11Calibration5Hsi3dE" title="VN::Calibration::Hsi3d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi3d</span></code></a> object should be created which will be where the calibration measurements are added, and the calibration is solved. The sensor’s latitude and longitude must be provided so the calibration algorithm can accurately reference the local magnetic field. The number of patches can also be configured, which defines how the measurement space is divided for data collection. This setting determines when measurements are retained, based on whether the magnetic field vector, or the vector perpendicular to it (east), passes through a given patch.</p>
+<p>If performing a 2D calibration motion profile, the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi2d.html#_CPPv4N2VN11Calibration5Hsi2dE" title="VN::Calibration::Hsi2d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi2d</span></code></a> object will be used.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi2dConfig</span><span class="w"> </span><span class="n">hsiConfiguration</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">longitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-96.7</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">32.5</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numPatches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">212</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi2d</span><span class="w"> </span><span class="nf">hsi</span><span class="p">(</span><span class="n">hsiConfiguration</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If performing a 3D calibration motion profile, the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_hsi3d.html#_CPPv4N2VN11Calibration5Hsi3dE" title="VN::Calibration::Hsi3d"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Hsi3d</span></code></a> object will be used. For a 3D calibration, the number of data points can also be configured. This parameter controls how measurements are retained within each patch, either by limiting the total number of stored data points or by retaining measurements when the unit’s attitude changes by at least <code class="docutils literal notranslate"><span class="pre">360/numDataPointsPerPatch</span></code> degrees, ensuring uniform orientation coverage within each patch.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi3dConfig</span><span class="w"> </span><span class="n">hsiConfiguration</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">longitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">34.8</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">31.9</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numDataPointsPerPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">    </span><span class="n">hsiConfiguration</span><span class="p">.</span><span class="n">numPatches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">NumPatches</span><span class="o">::</span><span class="n">Patches122</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">Calibration</span><span class="o">::</span><span class="n">Hsi3d</span><span class="w"> </span><span class="nf">hsi</span><span class="p">(</span><span class="n">hsiConfiguration</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Next, the VectorNav unit must be properly configured for the calibration data collection. This can be done by creating a <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4I0EN2VN11Calibration15CalSensorConfigE" title="VN::Calibration::CalSensorConfig"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalSensorConfig</span></code></a> object, and calling the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27prepareSensorForCalibrationEv" title="VN::Calibration::CalSensorConfig::prepareSensorForCalibration"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">prepareSensorForCalibration()</span></code></a> method. This method will read and store the VectorNav unit’s initial configuration and then write the required register settings for the calibration data collection. It is recommended to perform a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command and save the current VectorNav unit’s settings by performing a <a class="reference internal" href="RegisterScan.html#cppregisterscanpage"><span class="std std-ref">Register Scan</span></a> before calibration.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">CalSensorConfig</span><span class="w"> </span><span class="nf">calSensConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sensor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">hsi</span><span class="p">,</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">System</span><span class="o">::</span><span class="n">AsyncOutputType</span><span class="o">::</span><span class="n">SerialPort</span><span class="o">::</span><span class="n">ActiveSerial</span><span class="p">,</span><span class="w"> </span><span class="n">imuRate</span><span class="p">,</span><span class="w"> </span><span class="n">gnssAided</span><span class="p">);</span>
+<span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calSensConfig</span><span class="p">.</span><span class="n">prepareSensorForCalibration</span><span class="p">();</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when configuring Sensor for calibration.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After the VectorNav unit has been properly configured, the <a class="reference internal" href="../_api/class_v_n_1_1_known_magnetic_disturbance.html#_CPPv4N2VN24KnownMagneticDisturbanceE" title="VN::KnownMagneticDisturbance"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">KnownMagneticDisturbance</span></code></a> command must be set to <a class="reference internal" href="../_api/class_v_n_1_1_known_magnetic_disturbance.html#_CPPv4N2VN24KnownMagneticDisturbance5State7PresentE" title="VN::KnownMagneticDisturbance::State::Present"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">Present</span></code></a> before collecting data for calibration.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">knownMagneticDisturbance</span><span class="p">(</span><span class="n">KnownMagneticDisturbance</span><span class="o">::</span><span class="n">State</span><span class="o">::</span><span class="n">Present</span><span class="p">);</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when enabling KnownMagneticDisturbance&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To collect data when performing an HSI calibration on a connected VectorNav unit, a separate thread or loop needs to be created to get the sensor’s most recent measurement and add it to the <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object. In the HsiFromSensor example, this thread is started and stopped by the user pressing the <code class="docutils literal notranslate"><span class="pre">Enter</span></code> key. It is recommended that the user configure the thread or loop to their application as it is not required the that the measurements be added to the <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object using a key press.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Thread</span><span class="w"> </span><span class="nf">thread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">getStopChar</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">stopFlag</span><span class="p">);</span>
+<span class="kr">thread</span><span class="p">.</span><span class="n">detach</span><span class="p">();</span>
+</pre></div>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">getStopChar</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_bool</span><span class="o">*</span><span class="w"> </span><span class="n">flag</span><span class="p">);</span>
+
+<span class="cp">#define EXIT_IF_ERROR(message)                                     \</span>
+<span class="cp">    if (latestError != Error::None)                                \</span>
+<span class="cp">    {                                                              \</span>
+<span class="cp">        std::cerr &lt;&lt; latestError &lt;&lt; &quot; : &quot; &lt;&lt; message &lt;&lt; std::endl; \</span>
+<span class="cp">        return static_cast&lt;int&gt;(latestError);                      \</span>
+<span class="cp">    }</span>
+</pre></div>
+</div>
+<p>While the calibration thread or loop is running, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object is reading the measurements that were configured when setting the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27prepareSensorForCalibrationEv" title="VN::Calibration::CalSensorConfig::prepareSensorForCalibration"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">prepareSensorForCalibration()</span></code></a> function. These measurements are added to the HSI calibration. It is during this time that the motion requirements for the HSI calibration are performed. Once all motion requirements have been fulfilled, the thread or loop should be stopped and no more measurements should be added to the <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stopFlag</span><span class="p">.</span><span class="n">load</span><span class="p">())</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">meas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">getMostRecentMeasurement</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">meas</span><span class="p">)</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">calError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">addMeasurement</span><span class="p">(</span><span class="o">*</span><span class="n">meas</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">MaximumMeasurementsRecorded</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Maximum number of measurements recorded for HSI calibration&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="n">stopFlag</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calError</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">calError</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">IgnoredMeasurement</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">calError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot; : Encountered when streaming data for HSI calibration&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">calError</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">thisThread</span><span class="o">::</span><span class="n">sleepFor</span><span class="p">(</span><span class="n">Microseconds</span><span class="p">(</span><span class="mi">1000</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;NumMeasKept: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">getMeasIndex</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Finally, solve and print out the HSI calibration results. To view the solution in while performing the calibration, place the following code block inside of a while loop. The <code class="code docutils literal notranslate"><span class="pre">hsi.solve()</span></code> computes the solution based on the measurements that were previously added to the <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_hsi_config.html#_CPPv4N2VN11Calibration9HsiConfigE" title="VN::Calibration::HsiConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">HsiConfig</span></code></a> object while the <code class="code docutils literal notranslate"><span class="pre">hsi.solution</span></code> prints out the solution and figures of merit of the calibration to the user.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">calError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calError</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">calError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">calError</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">hsi</span><span class="p">.</span><span class="n">solution</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>After the calibration is performed, the VectorNav unit will need to be restored to its original state. The <a class="reference internal" href="../_api/class_v_n_1_1_known_magnetic_disturbance.html#_CPPv4N2VN24KnownMagneticDisturbanceE" title="VN::KnownMagneticDisturbance"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">KnownMagneticDisturbance</span></code></a> command will be set to <a class="reference internal" href="../_api/class_v_n_1_1_known_magnetic_disturbance.html#_CPPv4N2VN24KnownMagneticDisturbance5State10NotPresentE" title="VN::KnownMagneticDisturbance::State::NotPresent"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">NotPresent</span></code></a>. By sending <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27finalizeCalibrationOnSensorEb" title="VN::Calibration::CalSensorConfig::finalizeCalibrationOnSensor"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">finalizeCalibrationOnSensor()</span></code></a> with the <code class="docutils literal notranslate"><span class="pre">saveSettings</span></code> argument as <code class="docutils literal notranslate"><span class="pre">false</span></code>, the previous configuration is restored to the unit and the calibration written to the Magnetometer Calibration register (Register 23). To allow the calibration results to persist over a reset or a power cycle, a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command should be issued to the sensor. If a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command is not issued to the sensor, these calibration results will be erased upon a power cycle or reset.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">knownMagneticDisturbance</span><span class="p">(</span><span class="n">KnownMagneticDisturbance</span><span class="o">::</span><span class="n">State</span><span class="o">::</span><span class="n">NotPresent</span><span class="p">);</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when disabling KnownMagneticDisturbance&quot;</span><span class="p">)</span>
+
+<span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calSensConfig</span><span class="p">.</span><span class="n">finalizeCalibrationOnSensor</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when restoring sensor configuration and writing calibration&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, disconnect from the VectorNav unit.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">disconnect</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="bias-calibration">
+<span id="id1"></span><h2>Bias Calibration<a class="headerlink" href="#bias-calibration" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended to perform a bias calibration on VectorNav Industrial Series surface mount device (SMD) parts after installation and cleaning as the heat and stress from soldering the sensor will cause bias shifts.</p>
+</div>
+<p>All VectorNav sensors are calibrated for bias, scale factor, misalignment, and gyro g-sensitivity errors across the full temperature range of the sensor from -40°C to +85°C. This factory calibration is effective over the life of the part. However, due to the nature of MEMS inertial sensors, accelerometer and gyroscopes biases do drift over the life of the part regardless of the quality of the factory calibration. In rare circumstances, the biases on VectorNav Industrial Series sensors may drift enough to elicit a user calibration. A bias calibration can be performed on a VectorNav sensor using this tool within the Calibration plugin.</p>
+<section id="id2">
+<h3>Motion Requirements<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>To properly estimate the inertial sensor biases using this tool, a bias calibration must be performed about the axis that is parallel to the gravity vector. The sensor must be placed on a flat surface before performing the calibration.</p>
+<p>To perform a bias calibration, the following steps are recommended:</p>
+<ol class="arabic simple">
+<li><p>Hold the sensor completely static for approximately 30 seconds.</p></li>
+<li><p>Rotate the sensor a minimum of 90 degrees about the axis parallel to the gravity vector over the course of a few seconds.</p></li>
+<li><p>Hold the sensor completely static for another 30 seconds.</p></li>
+</ol>
+<p>If this type of motion is not feasible, contact VectorNav support for feedback on other calibration options.</p>
+</section>
+<section id="id3">
+<h3>Usage<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure that the sensor is on a flat surface before performing the bias calibration.</p>
+</div>
+<p>The bias calibration can be run either by from a previously logged data file or while connected to the VectorNav unit.</p>
+<section id="performing-a-bias-calibration-from-a-data-file">
+<h4>Performing a Bias Calibration from a Data File<a class="headerlink" href="#performing-a-bias-calibration-from-a-data-file" title="Link to this heading">¶</a></h4>
+<p>When performing a bias calibration using recorded data from a VectorNav unit, there are two different methods that can be used: the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> method or the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> method. The <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> method will automatically detect the different dynamic and static portions of the file, while the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> method requires the user to manually split and add the measurements of the dynamic and static portions of their file. This is useful if a user desires more control over the static and dynamic portions of the calibration. The following example focuses on the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> method.</p>
+<p>To begin, a <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto_config.html#_CPPv4N2VN11Calibration26DynamicAccelBiasAutoConfigE" title="VN::Calibration::DynamicAccelBiasAutoConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAutoConfig</span></code></a> object must first be created. This allows the user to define the parameters needed for calibration.  Once the configuration is set, a <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> object should be created, which will be used to add the calibration measurements and then solve for the estimated biases.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBiasAutoConfig</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
+
+<span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBiasAuto</span><span class="w"> </span><span class="nf">biasCalc</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>When processing data from a previously recorded log file, a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object must first be created and should be configured with <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor13MeasQueueMode5RetryE" title="VN::Sensor::MeasQueueMode::Retry"><code class="xref cpp cpp-enumerator docutils literal notranslate"><span class="pre">MeasQueueMode::Retry</span></code></a>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="w"> </span><span class="n">pushToCompositeData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sensor</span><span class="o">::</span><span class="n">MeasQueueMode</span><span class="o">::</span><span class="n">Retry</span><span class="p">;</span><span class="w">  </span><span class="c1">// do not allow overruns</span>
+<span class="n">Sensor</span><span class="w"> </span><span class="nf">sensor</span><span class="p">(</span><span class="n">pushToCompositeData</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Next, connect to the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object using the inputted file path.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filePath</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The data from the logged file is then loaded into the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_base.html#_CPPv4I00_8uint16_t_8uint16_tEN2VN11Calibration7CalBaseE" title="VN::Calibration::CalBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalBase</span></code></a> object for processing.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">meas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">getNextMeasurement</span><span class="p">())</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasCalc</span><span class="p">.</span><span class="n">addMeasurement</span><span class="p">(</span><span class="o">*</span><span class="n">meas</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">IgnoredMeasurement</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ignoredCnt</span><span class="o">++</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Measurement &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ignoredCnt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">biasCalc</span><span class="p">.</span><span class="n">getNumMeasAdded</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To close the file, disconnect from the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">disconnect</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Finally, solve and print out the bias calibration. The accelerometer bias solution should then be applied to the Accel Calibration register (Register 25) and the gyroscope bias calibration solution should be written to the Gyro Calibration register (Register 84) on the VectorNav unit. A <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor13writeSettingsEv" title="VN::Sensor::writeSettings"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">writeSettings()</span></code></a> command should be issued to the sensor in order for the calibration values to persist through a reset or power cycle of the sensor.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasCalc</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latestError</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot; encountered during solve.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">latestError</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="performing-a-bias-calibration-on-a-connected-vectornav-unit">
+<h4>Performing a Bias Calibration on a Connected VectorNav Unit<a class="headerlink" href="#performing-a-bias-calibration-on-a-connected-vectornav-unit" title="Link to this heading">¶</a></h4>
+<p>When performing a bias calibration with a connected VectorNav unit, a <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object first needs to be created. This object should then be used to connect to the VectorNav unit, such as by using the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6Sensor11autoConnectERKN11Serial_Base8PortNameE" title="VN::Sensor::autoConnect"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">autoConnect()</span></code></a> method.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Sensor</span><span class="w"> </span><span class="n">sensor</span><span class="p">;</span>
+<span class="n">Error</span><span class="w"> </span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">portName</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Once the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object has been created and connected to the VectorNav unit, a <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_config.html#_CPPv4N2VN11Calibration22DynamicAccelBiasConfigE" title="VN::Calibration::DynamicAccelBiasConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasConfig</span></code></a> object must be created. This method empowers the user to clearly separate and control the static and dynamic components of the bias calibration process. Alternatively, the user can create a <a class="reference internal" href="../_api/struct_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto_config.html#_CPPv4N2VN11Calibration26DynamicAccelBiasAutoConfigE" title="VN::Calibration::DynamicAccelBiasAutoConfig"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAutoConfig</span></code></a> object that will automatically detect when the VectorNav unit is static and when the VectorNav unit is dynamic. This configuration object allows the user to define the parameters necessary for calibration. Once the configuration is set, the bias calibration object should be created which is where the calibration measurements will be added. For the manual detection method, two <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> objects must be created to allow for each static and dynamic cycle to be added to the previous cycle. If performing bias calibration using the automatic detection method, only one <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> object would be created since the automatic detection method performs the cycle saving by default.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBiasConfig</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
+<span class="n">config</span><span class="p">.</span><span class="n">gval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">9.81f</span><span class="p">;</span>
+
+<span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBias</span><span class="w"> </span><span class="nf">biasCal</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+<span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBias</span><span class="w"> </span><span class="nf">biasCalNext</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Next, the VectorNav unit must be properly configured for the calibration data collection. This can be done by creating a <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4I0EN2VN11Calibration15CalSensorConfigE" title="VN::Calibration::CalSensorConfig"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalSensorConfig</span></code></a> object, and calling the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27prepareSensorForCalibrationEv" title="VN::Calibration::CalSensorConfig::prepareSensorForCalibration"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">prepareSensorForCalibration()</span></code></a> method. This method will read and store the VectorNav unit’s initial configuration and then write the required register settings for the calibration data collection. It is recommended to perform a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command and save the current VectorNav unit’s settings by performing a <a class="reference internal" href="RegisterScan.html#cppregisterscanpage"><span class="std std-ref">Register Scan</span></a> before calibration.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">CalSensorConfig</span><span class="w"> </span><span class="nf">calSensConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sensor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">biasCal</span><span class="p">,</span><span class="w"> </span><span class="n">Registers</span><span class="o">::</span><span class="n">System</span><span class="o">::</span><span class="n">AsyncOutputType</span><span class="o">::</span><span class="n">SerialPort</span><span class="o">::</span><span class="n">ActiveSerial</span><span class="p">,</span><span class="w"> </span><span class="n">imuRate</span><span class="p">,</span><span class="w"> </span><span class="n">gnssAided</span><span class="p">);</span>
+<span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calSensConfig</span><span class="p">.</span><span class="n">prepareSensorForCalibration</span><span class="p">();</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when configuring Sensor for calibration.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To collect data when performing a bias calibration on a connected VectorNav unit, a separate thread or loop needs to be created to obtain the unit’s most recent measurement and add it to the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a> or <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> object. In the BiasCalculatorFromSensor example, this thread is started and stopped by the user pressing the <code class="docutils literal notranslate"><span class="pre">Enter</span></code> key. It is recommended that the user configure the thread or loop to their application as it is not required the that the measurements be added to the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a>  or <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> object using a key press.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">VN</span><span class="o">::</span><span class="n">Thread</span><span class="w"> </span><span class="n">keyPressThread</span><span class="p">{[]()</span>
+<span class="w">                          </span><span class="p">{</span>
+<span class="w">                              </span><span class="c1">// 0 = Initial Dynamic</span>
+<span class="w">                              </span><span class="c1">// 1 = Static (wait)</span>
+<span class="w">                              </span><span class="c1">// 2 = Dynamic (Rotate)</span>
+<span class="w">                              </span><span class="c1">// 3 = Static (wait)</span>
+
+<span class="w">                              </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Press [Enter] to start calibration(s) once unit is stationary.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">                              </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Press [q] then [Enter] to quit.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="w">                              </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">isCollectingData</span><span class="p">)</span>
+<span class="w">                              </span><span class="p">{</span>
+<span class="w">                                  </span><span class="n">VN</span><span class="o">::</span><span class="n">thisThread</span><span class="o">::</span><span class="n">sleepFor</span><span class="p">(</span><span class="mi">1</span><span class="n">ms</span><span class="p">);</span>
+
+<span class="w">                                  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cin</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="w">                                  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;q&#39;</span><span class="p">)</span>
+<span class="w">                                  </span><span class="p">{</span>
+<span class="w">                                      </span><span class="n">isCollectingData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                                      </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">                                  </span><span class="p">}</span>
+<span class="w">                                  </span><span class="n">isStatic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">isStatic</span><span class="p">;</span>
+
+<span class="w">                                  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isStatic</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Press [Enter] to advance to the Dynamic step.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                                  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Press [Enter] to advance to the Static step.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                              </span><span class="p">}</span>
+<span class="w">                          </span><span class="p">}};</span>
+</pre></div>
+</div>
+<p>While the calibration thread or loop is running, the <a class="reference internal" href="../_api/class_v_n_1_1_sensor.html#_CPPv4N2VN6SensorE" title="VN::Sensor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Sensor</span></code></a> object is reading the measurements that were configured when setting the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27prepareSensorForCalibrationEv" title="VN::Calibration::CalSensorConfig::prepareSensorForCalibration"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">prepareSensorForCalibration()</span></code></a> function. These measurements are added to the bias calibration. It is during this time that the motion requirements for the bias calibration would be performed. Once all motion requirements have been fulfilled, the thread or loop should be stopped and no more measurements should be added to the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a>  or <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> object.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">isCollectingData</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sensor</span><span class="p">.</span><span class="n">getNextMeasurement</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cd</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">cd</span><span class="o">-&gt;</span><span class="n">imu</span><span class="p">.</span><span class="n">deltaTheta</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">cd</span><span class="o">-&gt;</span><span class="n">imu</span><span class="p">.</span><span class="n">deltaVel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()))</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_static</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">isStatic</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">is_static</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isStatic</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_static</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">CalState</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">advanceState</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_static</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">biasCal</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">CalState</span><span class="o">::</span><span class="n">InitStatic</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">advanceState</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">biasCal</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">CalState</span><span class="o">::</span><span class="n">FinalStatic</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="w"> </span><span class="n">calError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">solution</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">biasCal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasCalNext</span><span class="p">;</span><span class="w">                                </span><span class="c1">// copy over the InitStatic results</span>
+<span class="w">                </span><span class="n">biasCal</span><span class="p">.</span><span class="n">advanceState</span><span class="p">();</span><span class="w">                               </span><span class="c1">// advance to Dynamic state</span>
+<span class="w">                </span><span class="n">biasCalNext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBias</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">  </span><span class="c1">// reset for next cycle</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">biasCal</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">DynamicAccelBiasState</span><span class="o">::</span><span class="n">FinalStatic</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">biasCalNext</span><span class="p">.</span><span class="n">addMeasurement</span><span class="p">(</span><span class="o">*</span><span class="n">cd</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">biasCal</span><span class="p">.</span><span class="n">addMeasurement</span><span class="p">(</span><span class="o">*</span><span class="n">cd</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Finally, solve and print out the bias calibration results. To view the solution while performing the calibration, place the following code block inside of a while loop. The <code class="code docutils literal notranslate"><span class="pre">biasCal.solve()</span></code> computes the solution based on the measurements that were previously added to the <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias_auto.html#_CPPv4N2VN11Calibration20DynamicAccelBiasAutoE" title="VN::Calibration::DynamicAccelBiasAuto"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBiasAuto</span></code></a>  or <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_dynamic_accel_bias.html#_CPPv4N2VN11Calibration16DynamicAccelBiasE" title="VN::Calibration::DynamicAccelBias"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">DynamicAccelBias</span></code></a> object while the <code class="code docutils literal notranslate"><span class="pre">biasCal.solution</span></code> prints out the solution and figures of merit of the calibration to the user.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="w"> </span><span class="n">calError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">calError</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Calibration</span><span class="o">::</span><span class="n">ErrorCal</span><span class="o">::</span><span class="n">None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">biasCal</span><span class="p">.</span><span class="n">solution</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>After the calibration is performed, the VectorNav unit will need to be restored to its original state. By sending <a class="reference internal" href="../_api/class_v_n_1_1_calibration_1_1_cal_sensor_config.html#_CPPv4N2VN11Calibration15CalSensorConfig27finalizeCalibrationOnSensorEb" title="VN::Calibration::CalSensorConfig::finalizeCalibrationOnSensor"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">finalizeCalibrationOnSensor()</span></code></a> with the <code class="docutils literal notranslate"><span class="pre">saveSettings</span></code> argument as <code class="docutils literal notranslate"><span class="pre">false</span></code>, the previous configuration is restored to the unit and the calibration written to the Accel Calibration register (Register 25) and the Gyro Calibration register (Register 84) on the VectorNav unit. To allow the calibration results to persist over a reset or a power cycle, a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command should be issued to the sensor. If a <a class="reference internal" href="../_api/class_v_n_1_1_write_settings.html#_CPPv4N2VN13WriteSettingsE" title="VN::WriteSettings"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">WriteSettings</span></code></a> command is not issued to the sensor, these calibration results will be erased upon a power cycle or reset.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">latestError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calSensConfig</span><span class="p">.</span><span class="n">finalizeCalibrationOnSensor</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+<span class="n">EXIT_IF_ERROR</span><span class="p">(</span><span class="s">&quot;Encountered when restoring sensor configuration and writing calibration&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, disconnect from the VectorNav unit.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span><span class="p">.</span><span class="n">disconnect</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="../_api/namespace_VN__Calibration.html#namespace-vn-calibration"><span class="std std-ref">Calibration</span></a></p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/MigrationGuide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/KeyFunctionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/AdvancedFunctionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/MemoryConstrained.html">Memory Constrained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/NonOsUsage.html">Non-Os Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/api_index.html">VNSDK API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Plugins</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DataExport.html">Data Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FirmwareProgrammer.html">Firmware Programmer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Logger.html">Logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Math.html">Math</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RegisterScan.html">Register Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Ros2.html">ROS2</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="index.html"
+                          title="Previous page">&larr; Plugins</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="DataExport.html"
+                          title="Next page">&rarr; Data Export</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plugins/Calibration.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="DataExport.html" title="Data Export"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="index.html" title="Plugins"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav SDK  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Calibration</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,14 @@
+.. _exhale_define__exceptions_8hpp_1a55df971f2478973009b4ce52a57b9f7f:
+
+Define _VN_THROW_EXCEPTION
+==========================
+
+- Defined in :ref:`file_include_vectornav_Interface_Exceptions.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: _VN_THROW_EXCEPTION
+   :project: VectorNav SDK

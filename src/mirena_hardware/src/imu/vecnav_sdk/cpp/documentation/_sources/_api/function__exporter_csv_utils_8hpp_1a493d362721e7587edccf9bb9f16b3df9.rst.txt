@@ -1,0 +1,14 @@
+.. _exhale_function__exporter_csv_utils_8hpp_1a493d362721e7587edccf9bb9f16b3df9:
+
+Function VN::DataExport::isSatField
+===================================
+
+- Defined in :ref:`file_plugins_DataExport_include_vectornav_ExporterCsvUtils.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::DataExport::isSatField(uint8_t, uint8_t)
+   :project: VectorNav SDK

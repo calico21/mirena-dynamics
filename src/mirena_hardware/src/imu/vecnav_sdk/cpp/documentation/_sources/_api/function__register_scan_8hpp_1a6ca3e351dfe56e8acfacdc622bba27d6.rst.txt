@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1a6ca3e351dfe56e8acfacdc622bba27d6:
+
+Function VN::RegisterScan::_getRegId
+====================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::_getRegId(const AsciiMessage&)
+   :project: VectorNav SDK

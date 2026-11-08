@@ -1,0 +1,14 @@
+.. _exhale_function__string_8hpp_1a1377e2c37ac0d5df14e1a5b602460b40:
+
+Template Function VN::StringUtils::fromString(const String<Capacity>&, uint16_t)
+================================================================================
+
+- Defined in :ref:`file_include_vectornav_TemplateLibrary_String.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::StringUtils::fromString(const String<Capacity>&, uint16_t)
+   :project: VectorNav SDK

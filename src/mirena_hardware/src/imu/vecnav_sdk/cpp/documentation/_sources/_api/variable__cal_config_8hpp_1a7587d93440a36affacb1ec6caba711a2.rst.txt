@@ -1,0 +1,14 @@
+.. _exhale_variable__cal_config_8hpp_1a7587d93440a36affacb1ec6caba711a2:
+
+Variable VN::Calibration::dynamicAccelBiasMeasRate
+==================================================
+
+- Defined in :ref:`file_plugins_Calibration_include_vectornav_CalConfig.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Calibration::dynamicAccelBiasMeasRate
+   :project: VectorNav SDK
